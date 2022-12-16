@@ -99,7 +99,7 @@ class OneHotEncoder():
         if self.fit == False:
             self.L1 = []
             for e in y:
-                if [e] not in self.L1:
+                if [e] not in self.L1 and e == e:
                     self.L1.append([e])
             self.L2 = list(self.L1)
             for i in range(len(self.L2)):
@@ -110,11 +110,14 @@ class OneHotEncoder():
             self.fit = True
             
         for i in range(len(y)):
-            for j in range(len(self.L3)):
-                if y[i] == self.L3[j][-1]:
-                    self.L4.append(list(self.L3[j][:-1]))
-        
-        return np.array(self.L4, dtype=np.intc)
+            if y[i] != y[i]: 
+                self.L4.append([np.nan]*len(list(self.L3[0][:-1])))
+            else:
+                for j in range(len(self.L3)):
+                    if y[i] == self.L3[j][-1]:
+                        self.L4.append(list(self.L3[j][:-1]))
+
+        return np.array(self.L4, dtype=np.float64)
 
 class StringEncoder():
     def __init__(self):
