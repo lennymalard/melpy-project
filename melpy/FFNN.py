@@ -301,9 +301,9 @@ class Sequential:
                                 f"val_accuracy: {np.around(self.val_accuracy,5)} |"
                     string1_length = len(string1)
                     string2_length = len(string2)
-                    print("\n" + string1_length * "-" + "\n"| + string1 + "\n" + 
+                    print("\n" + string1_length * "-" + "\n" + string1 + "\n" +
                           string1_length * "-" + "\n" + \
-                          string2+ (string1_length-string2_length-1) * " " + "|\n" + 
+                          string2+ (string1_length-string2_length-1) * " " + "\n" +
                           string1_length * "-")
                     print(f"{round(self.runtime, 5)} seconds")
                 else:
@@ -319,11 +319,11 @@ class Sequential:
                     string1 = f"| [TRAINING METRICS] train_loss: {np.around(self.train_loss,5)} · " + \
                                 f"train_accuracy: {np.around(self.train_accuracy,5)} |"
                     string2 = f"| [VALIDATION METRICS] val_loss: {np.around(self.val_loss,5)} · " + \
-                                f"val_accuracy: {np.around(self.val_accuracy,5)}"
+                                f"val_accuracy: {np.around(self.val_accuracy,5)} |"
                     string1_length = len(string1)
                     string2_length = len(string2)
                     print("\n" + string1_length * "-" + "\n" + string1 + "\n" + string1_length * "-" + "\n" + 
-                          string2 + (string1_length-string2_length-1) * " " + "|\n" + string1_length * "-")
+                          string2 + (string1_length-string2_length-1) * " " + "\n" + string1_length * "-")
                 else:
                     string = f"| [TRAINING METRICS] train_loss: {np.around(self.train_loss,5)} · " + \
                             f"train_accuracy: {np.around(self.train_accuracy,5)} |"
