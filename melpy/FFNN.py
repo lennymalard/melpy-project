@@ -1,6 +1,3 @@
-# TODO 
-# Refaire sequential.add et gestion de la validation
-
 import numpy as np
 
 from .functions import *
