@@ -66,15 +66,17 @@ class OneHotEncoder:
         self.categories = []
 
     def fit(self, y):
+        y = np.asarray(y).flatten()
         self.categories = np.unique(y)
         self.fitted = True
-        
+
     def transform(self, y):
         if not self.fitted:
             self.fit(y)
+        y = np.asarray(y).flatten()
         result = np.zeros((len(y), len(self.categories)))
         for i, category in enumerate(self.categories):
-            result[:, i] = (y == category).astype(float)
+            result[:, i] = (y == category)
         return np.array(result, dtype=np.float64)
 
 class StringEncoder:
