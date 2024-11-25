@@ -444,7 +444,7 @@ class Sequential:
         else:
             tqdm_steps = True
         
-        for epoch in (epoch_bar := tqdm(range(epochs), disable=not tqdm_epochs)):
+        for epoch in (epoch_bar := tqdm(range(epochs), disable=not tqdm_epochs, file=sys.stdout)):
             epoch_bar.set_description(f"Epoch [{epoch+1}/{epochs}]")
             
             train_accumulated_loss = 0
@@ -453,7 +453,7 @@ class Sequential:
             val_accumulated_loss = 0
             val_accumulated_accuracy = 0
             
-            for step in (step_bar :=tqdm(range(steps), disable=not tqdm_steps)):
+            for step in (step_bar :=tqdm(range(steps), disable=not tqdm_steps, file=sys.stdout)):
                 step_bar.set_description(f"Epoch [{epoch+1}/{epochs}]")
                 
                 if batch_size is None:
@@ -510,7 +510,7 @@ class Sequential:
             if live_metrics.type != 0:
                 if epoch % update == 0:
                     live_metrics.run(self, figure)
-                        
+
             self.verbose(verbose, epoch, epochs, start_time)
                     
             if callable(extension):
