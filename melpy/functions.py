@@ -19,7 +19,15 @@ class Layer:
     def backward(self):
         pass
 
-class MSE():   
+class Loss:
+    def __init__(self):
+        pass
+    def loss(self):
+        pass
+    def derivative(self):
+        pass
+
+class MSE(Loss):
     def __init__(self):
         super().__init__()
         
@@ -27,7 +35,7 @@ class MSE():
         diff = targets - outputs
         return np.sum(diff * diff) / np.size(diff)
     
-class Binary_CrossEntropy():   
+class BinaryCrossEntropy(Loss):
     def __init__(self):
         super().__init__()
         
@@ -40,7 +48,7 @@ class Binary_CrossEntropy():
         e = 1e-10
         return -(targets / outputs - (1 - targets + e) / (1 - outputs + e)) / len(outputs) 
     
-class Categorical_CrossEntropy():
+class CategoricalCrossEntropy(Loss):
     def __init__(self):
         super().__init__()
         
@@ -68,19 +76,19 @@ class Dense(Layer):
     def __init__(self, n_in, n_out, weight_init="he_normal"):
         super().__init__()
         
-        def initialize_weights(weight_init, n_in, n_out):
-            if weight_init == "he_normal":
+        def initialize_weights(weight_initializer, n_in, n_out):
+            if weight_initializer == "he_normal":
                 weights = np.random.randn(n_in, n_out) * np.sqrt(2.0 / n_in)
-            elif weight_init == "glorot_uniform":
+            elif weight_initializer == "glorot_uniform":
                 limit = np.sqrt(6 / (n_in + n_out))
                 weights = np.random.uniform(-limit, limit, (n_in, n_out))
-            elif weight_init == "he_uniform":
+            elif weight_initializer == "he_uniform":
                 limit = np.sqrt(6 / n_in)
                 weights = np.random.uniform(-limit, limit, (n_in, n_out))
-            elif weight_init == "glorot_normal":
+            elif weight_initializer == "glorot_normal":
                 weights = np.random.randn(n_in, n_out) * np.sqrt(2.0 / (n_in + n_out))
             else:
-                raise ValueError("invalid value for 'weight_init'")
+                raise ValueError("invalid value for 'weight_initializer'")
             return weights
         
         self.weights = initialize_weights(weight_init, n_in, n_out)
