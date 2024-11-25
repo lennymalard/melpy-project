@@ -168,8 +168,8 @@ class Sequential:
                                          "sigmoid": Sigmoid(),
                                          "softmax": Softmax()}
         
-        self.__cost_functions__ = {"binary_crossentropy": Binary_CrossEntropy(),
-                                   "categorical_crossentropy": Categorical_CrossEntropy()}
+        self.__cost_functions__ = {"binary_crossentropy": BinaryCrossEntropy(),
+                                   "categorical_crossentropy": CategoricalCrossEntropy()}
         self.__is_trained__ = False
         self.runtime = 0.0
         self.optimizer = None
@@ -645,4 +645,3 @@ class Sequential:
                     self.train_layers[i].biases = parameters["biases"][i]
         else:
             raise TypeError("invalid type for 'parameters'")
-            
