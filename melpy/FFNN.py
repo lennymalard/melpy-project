@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 import time
 import pickle
+import sys
 
 
 class Sequential:
