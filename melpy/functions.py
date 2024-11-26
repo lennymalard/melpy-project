@@ -29,7 +29,7 @@ class Loss:
 
 class MSE(Loss):
     """
-    A class to perform computations regarding the mean squared error.
+    A class to perform the mean squared error loss.
 
     Methods
     -------
@@ -67,6 +67,7 @@ class BinaryCrossEntropy(Loss):
     def loss(self, targets, outputs):
         """
         Computes the binary cross entropy loss.
+
         Parameters
         ----------
         targets : ndarray
@@ -85,6 +86,7 @@ class BinaryCrossEntropy(Loss):
     def derivative(self, targets, outputs):
         """
         Computes the binary cross entropy derivative.
+
         Parameters
         ----------
         targets : ndarray
@@ -109,6 +111,7 @@ class CategoricalCrossEntropy(Loss):
     def loss(self, targets, outputs):
         """
         Computes the categorical cross entropy loss.
+
         Parameters
         ----------
         targets : ndarray
@@ -137,6 +140,7 @@ class CategoricalCrossEntropy(Loss):
     def derivative(self, targets, outputs):
         """
         Computes the categorical cross entropy derivative.
+
         Parameters
         ----------
         targets : ndarray
@@ -160,18 +164,23 @@ class Dense(Layer):
     ----------
     inputs : ndarray
         Input data.
-    targets : ndarray
-        Target data.
     outputs : ndarray
         Output data.
     dX : ndarray
-        Derivative of input with respect to loss.
+        Partial derivative of input with respect to loss.
     dY : ndarray
-        Derivative of output with respect to loss.
+        Partial derivative of output with respect to loss.
     dW : ndarray
-        Derivative of weight with respect to loss.
+        Partial derivative of weight with respect to loss.
     dB : ndarray
-        Derivative of bias with respect to loss.
+        Partial derivative of bias with respect to loss.
+
+    Methods
+    -------
+    forward()
+        Computes the dense layer forward pass.
+    backward()
+        Computes the dense layer backward pass.
     """
     def __init__(self, n_in, n_out, weight_init="he_normal"):
         super().__init__()
@@ -197,10 +206,31 @@ class Dense(Layer):
         self.b_momentum = np.zeros_like(self.biases)
 
     def forward(self):
+        """
+        Computes the dense layer forward pass.
+
+        Returns
+        -------
+        outputs : ndarray
+            The output data.
+        """
         self.outputs = np.dot(self.inputs, self.weights) + self.biases
         return self.outputs
 
     def backward(self, dX):
+        """
+        Computes the dense layer backward pass.
+
+        Parameters
+        ----------
+        dX : ndarray
+            Partial derivative of output data (dY -> dX) with respect to loss.
+
+        Returns
+        -------
+        dX : ndarray
+            Partial derivative of input data with respect to loss.
+        """
         self.dY = dX
         self.dW = np.dot(self.inputs.T, self.dY)
         self.dB = np.sum(self.dY, axis=0, keepdims=True)
@@ -209,53 +239,195 @@ class Dense(Layer):
         return self.dX
 
 class ReLU(Layer):
+    """
+    A class that performs ReLU layer operations.
+
+    Attributes
+    ----------
+     inputs : ndarray
+        Input data.
+    outputs : ndarray
+        Output data.
+    dX : ndarray
+        Partial derivative of input with respect to loss.
+    dY : ndarray
+        Partial derivative of output with respect to loss.
+
+    derivative()
+        Computes the ReLU derivative.
+    forward()
+        Computes the ReLU forward pass.
+    backward()
+        Computes the ReLU backward pass.
+    """
     def __init__(self):
         super().__init__()
 
     def derivative(self):
+        """
+        Computes the ReLU derivative.
+
+        Returns
+        -------
+        dA : ndarray
+            The differentiated input data.
+        """
         dA = np.ones_like(self.inputs)
         dA[self.inputs <= 0] = 0
         return dA
 
     def forward(self):
+        """
+        Computes the ReLU forward pass.
+
+        Returns
+        -------
+        outputs : ndarray
+            The output data.
+        """
         self.outputs = np.maximum(0,self.inputs)
         return self.outputs
 
     def backward(self, dX):
+        """
+        Computes the ReLU backward pass.
+
+        Parameters
+        ----------
+        dX : ndarray
+            Partial derivative of output data (dY -> dX) with respect to loss.
+
+        Returns
+        -------
+        dX : ndarray
+            Partial derivative of input data with respect to loss.
+        """
         self.dY = dX
         self.dX = self.dY * self.derivative()
         return self.dX
 
 class LeakyReLU(Layer):
+    """
+    A class that performs Leaky ReLU layer operations.
+
+    Attributes
+    ----------
+    inputs : ndarray
+        Input data.
+    outputs : ndarray
+        Output data.
+    dX : ndarray
+        Partial derivative of input with respect to loss.
+    dY : ndarray
+        Partial derivative of output with respect to loss.
+
+    derivative()
+        Computes the Leaky ReLU derivative.
+    forward()
+        Computes the Leaky ReLU forward pass.
+    backward()
+        Computes the Leaky ReLU backward pass.
+    """
     def __init__(self):
         super().__init__()
 
     def derivative(self):
+        """
+        Computes the Leaky ReLU derivative.
+
+        Returns
+        -------
+        dA : ndarray
+            The differentiated input data with respect to loss.
+        """
         dA = np.ones_like(self.inputs)
         dA[self.inputs <= 0] = 0.01
         return dA
 
     def forward(self):
+        """
+        Computes the Leaky ReLU forward pass.
+
+        Returns
+        -------
+        outputs : ndarray
+            The output data.
+        """
         self.outputs = np.where(self.inputs > 0, self.inputs, self.inputs * 0.01)
         return self.outputs
 
     def backward(self, dX):
+        """
+        Computes the Leaky ReLU backward pass.
+
+        Parameters
+        ----------
+        dX : ndarray
+            Partial derivative of output data (dY -> dX) data with respect to loss.
+
+        Returns
+        -------
+        dX : ndarray
+            Partial derivative of input data with respect to loss.
+        """
         self.dY = dX
         self.dX = self.dY * self.derivative()
         return self.dX
 
 class Sigmoid(Layer):
+    """
+    A class that performs Sigmoid layer operations.
+    
+    Attributes
+    ----------
+     inputs : ndarray
+        Input data.
+    outputs : ndarray
+        Output data.
+    dX : ndarray
+        Partial derivative of input with respect to loss.
+    dY : ndarray
+        Partial derivative of output with respect to loss.
+    """
     def __init__(self):
         super().__init__()
 
     def derivative(self):
+        """
+        Computes the Sigmoid derivative.
+
+        Returns
+        -------
+        The Sigmoid derivative.
+        """
         return self.outputs * (1-self.outputs)
 
     def forward(self):
+        """
+        Computes the Sigmoid forward pass.
+
+        Returns
+        -------
+        outputs : ndarray
+            The output data.
+        """
         self.outputs = 1 / (1+np.exp(-self.inputs))
         return self.outputs
 
     def backward(self, dX):
+        """
+        Computes the Sigmoid backward pass.
+
+        Parameters
+        ----------
+        dX : ndarray
+            Partial derivative of output data (dY -> dX) data with respect to loss.
+
+        Returns
+        -------
+        dX : ndarray
+            Partial derivative of input data with respect to loss.
+        """
         self.dY = dX
         self.dX = self.dY * self.derivative()
         return self.dX
