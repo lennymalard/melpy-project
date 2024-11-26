@@ -1,8 +1,3 @@
-# TODO
-# Rajouter KNN Imputer
-# Vérifier à nouveau chaque classe
-# Features Encoder ???
-
 import numpy as np
 
 class RobustScaler:
