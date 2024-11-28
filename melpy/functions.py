@@ -964,7 +964,7 @@ class Dropout(Layer):
             self.dX = dX
         return self.dX
 
-class Linear(Layer):
+class Linear:
     """
     A class that performs linear layer operations.
 
