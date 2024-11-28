@@ -103,6 +103,7 @@ class Adam(Optimizer):
         Updates the parameters of the given layer using Adam.
     """
     def __init__(self):
+        super().__init__()
         """
         Initializes the Adam optimizer.
         """
