@@ -47,6 +47,9 @@ class LinearRegression:
         self.prediction = None
         self.loss = None
 
+        if not isinstance(train_inputs, np.ndarray) or not isinstance(train_targets, np.ndarray):
+            raise TypeError("Input data must be of type ndarray.")
+
     def forward(self):
         """
         Performs the forward pass to compute the output.

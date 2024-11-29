@@ -10,6 +10,7 @@ from tqdm import tqdm
 import time
 import pickle
 import sys
+from datetime import datetime
 
 class Sequential:
     """
@@ -49,7 +50,7 @@ class Sequential:
     train_layers : list
         List of layers used during training.
     val_layers : list
-        List of layers used during validation.
+        List of layers used for validation.
 
     train_loss : float
         Calculated loss for the training dataset.
@@ -69,15 +70,15 @@ class Sequential:
     val_accuracy_history : list
         History of validation accuracy values for each epoch.
 
-    train_cost_fn : callable
+    train_cost_function : melpy.functions.Loss
         Cost function used for training.
-    val_cost_fn : callable
+    val_cost_function : melpy.functions.Loss
         Cost function used for validation.
 
     runtime : float
         Total time taken to train the model.
 
-    optimizer : Optimizer object
+    optimizer : melpy.optimizers.Optimizer
         Optimizer instance used to update model parameters.
     validation : bool
         Indicates whether a validation dataset is used.
@@ -90,8 +91,8 @@ class Sequential:
         Executes the backward pass to compute gradients for training layers.
     verbose(verbose : int, epoch : int, epochs : int, start_time : float)
         Displays training and validation metrics based on the specified verbosity level.
-    fit(cost_fn : callable, epochs : int, batch_size : int, optimizer : callable, learning_rate : float,
-        momentum : float, verbose : int, live_metrics : int or LiveMetrics, extension : callable)
+    fit(cost_function : melpy.functions.Loss, epochs : int, batch_size : int, optimizer : melpy.optimizers.Optimizer, learning_rate : float,
+        momentum : float, verbose : int, live_metrics : int or melpy.LiveMetrics.LiveMetrics, extension : callable)
         Trains the model using the specified configurations and tracks metrics over epochs.
     predict(X : ndarray)
         Generates predictions for the input data `X`.
@@ -101,34 +102,30 @@ class Sequential:
         Saves the model's weights and biases to a file.
     load_params(path : str, parameters : dict)
         Loads model weights and biases from a file or dictionary.
+    save_histories(name : str)
+        Saves the training and validation histories to a file.
     """
+
     def __init__(self, train_inputs, train_targets, val_inputs=None, val_targets=None):
         """
         Initializes the architecture with training and optional validation data.
-
-        This constructor method sets up the necessary inputs and targets for both training
-        and validation (if provided). The `train_inputs` and `train_targets` are essential
-        for training the model, while `val_inputs` and `val_targets` are used for model
-        evaluation during training. If validation data is not provided, the model will
-        only be trained on the training data.
 
         Parameters
         ----------
         train_inputs : ndarray
             The input data used to train the model.
-
         train_targets : ndarray
             The target labels or values corresponding to the `train_inputs`.
-
         val_inputs : ndarray, optional
-            The input data used for validation. Default is 'None'.
-
+            The input data used for validation. Default is `None`.
         val_targets : ndarray, optional
             The target labels or values corresponding to the `val_inputs`. Default is `None`.
 
-        Returns
-        -------
-        None
+        Raises
+        ------
+        TypeError
+            If `train_inputs` and `train_targets` are not of type `numpy.ndarray`.
+            If `val_inputs` and `val_targets` are provided and not of type `numpy.ndarray`.
         """
         self.train_inputs = train_inputs
         self.train_input_batch = None
@@ -158,23 +155,48 @@ class Sequential:
         self.val_accuracy = 0.0
         self.train_accuracy_history = []
         self.val_accuracy_history = []
-        self.train_cost_fn = None
-        self.val_cost_fn = None
 
-        self.__activation_functions__ = {"relu": ReLU(),
-                                         "leaky_relu": LeakyReLU(),
-                                         "sigmoid": Sigmoid(),
-                                         "softmax": Softmax()}
+        self.train_cost_function = None
+        self.val_cost_function = None
+        self.optimizer = None
 
-        self.__cost_functions__ = {"binary_crossentropy": BinaryCrossEntropy(),
-                                   "categorical_crossentropy": CategoricalCrossEntropy()}
         self.__is_trained__ = False
         self.runtime = 0.0
-        self.optimizer = None
         self.validation = False
 
         if self.val_inputs is not None and self.val_targets is not None:
             self.validation = True
+
+        if not isinstance(train_inputs, np.ndarray) or not isinstance(train_targets, np.ndarray):
+            raise TypeError('`train_inputs` and `train_targets` must be of type numpy.ndarray.')
+        if self.val_inputs is not None and self.val_targets is not None:
+            if not isinstance(val_inputs, np.ndarray) or not isinstance(val_targets, np.ndarray):
+                raise TypeError('`val_inputs` and `val_targets` must be of type numpy.ndarray.')
+
+    def add(self, layer, activation=None):
+        """
+        Adds a layer and its corresponding activation to the training layers.
+
+        Parameters
+        ----------
+        layer : Dense or Convolution2D
+            The layer to be added. Must be an instance of Dense or Convolution2D.
+        activation : Activation, optional
+            The activation layer to be added. Must be an instance of Activation. Default is `None`.
+
+        Raises
+        ------
+        TypeError
+            If `layer` is not an instance of Dense or Convolution2D when `activation` is provided.
+            If `activation` is not an instance of Activation when provided.
+        """
+        if not isinstance(layer, (Dense, Convolution2D)) and activation is not None:
+            raise TypeError("`layer` must be of type `Dense` or `Convolution2D`.")
+        if not isinstance(activation, Activation) and activation is not None:
+            raise TypeError("`activation` must be of type `Activation`.")
+        self.train_layers.append(layer)
+        if activation is not None:
+            self.train_layers.append(activation)
 
     def forward(self):
         """
@@ -221,7 +243,15 @@ class Sequential:
         -------
         predictions : ndarray
             The predicted output for the given input `X`.
+
+        Raises
+        ------
+        TypeError
+            If `X` is not of type `numpy.ndarray`.
         """
+        if not isinstance(X, np.ndarray):
+            raise TypeError('`X` must be of type numpy.ndarray.')
+
         self.train_layers[0].inputs = X
         for i in range(len(self.train_layers)):
             if i + 1 == len(self.train_layers):
@@ -245,7 +275,7 @@ class Sequential:
         -------
         None
         """
-        self.dX = self.train_cost_fn.derivative(self.train_target_batch, self.train_output_batch)
+        self.dX = self.train_cost_function.derivative(self.train_target_batch, self.train_output_batch)
         for layer in reversed(self.train_layers):
             self.dX = layer.backward(self.dX)
 
@@ -263,8 +293,8 @@ class Sequential:
         verbose : int
             The verbosity level (0, 1, or 2).
             0 - No output.
-            1 - Print at the end of each epoch.
-            2 - Print periodically during training.
+            1 - Print at the end of the training.
+            2 - Print at the end of each epoch.
         epoch : int
             The current epoch number.
         epochs : int
@@ -276,11 +306,20 @@ class Sequential:
         ------
         ValueError
             If the `verbose` parameter is not 0, 1, or 2.
+        TypeError
+            If `verbose`, `epochs`, or `start_time` are not of the correct type.
 
         Returns
         -------
         None
         """
+        if not isinstance(verbose, int) and verbose is not None:
+            raise TypeError('`verbose` must be of type int.')
+        if not isinstance(epochs, int):
+            raise TypeError('`epochs` must be of type int.')
+        if not isinstance(start_time, float):
+            raise TypeError('`start_time` must be of type float.')
+
         if verbose == 2:
             if epoch + 1 < epochs:
                 if self.validation:
@@ -328,12 +367,12 @@ class Sequential:
                              f"train_accuracy: {np.around(self.train_accuracy, 5)} |"
                     string_length = len(string)
                     print("\n" + string_length * "-" + "\n" + string + "\n" + string_length * "-")
-        elif verbose == 0:
+        elif verbose == 0 or verbose is None:
             return
         else:
-            raise ValueError("invalid value for 'verbose'")
+            raise ValueError("`verbose` must be 0, 1, or 2.'")
 
-    def fit(self, cost_fn, epochs=1000, batch_size=None, optimizer=SGD(), learning_rate=0.1, momentum=None, verbose=1, live_metrics=None, extension=None):
+    def fit(self, cost_function, epochs=1000, batch_size=None, optimizer=SGD(), learning_rate=0.1, momentum=None, verbose=1, live_metrics=None, extension=None):
         """
         Trains the model using the provided cost function, optimizer, and other parameters.
 
@@ -344,7 +383,7 @@ class Sequential:
 
         Parameters
         ----------
-        cost_fn : melpy.functions
+        cost_function : melpy.functions.Loss
             The cost function to use for training (e.g., "binary_crossentropy").
         epochs : int, optional
             The number of epochs for training. The default is 1000.
@@ -355,23 +394,42 @@ class Sequential:
         learning_rate : float, optional
             The learning rate for the optimizer. The default is 0.1.
         momentum : int, optional
-            The momentum to use for the optimizer. The default is None.
+            The momentum to use for the optimizer. The default is `None`.
         verbose : int, optional
             The verbosity level for printing metrics during training. Default is 1.
         live_metrics : int or melpy.LiveMetrics.LiveMetrics, optional
-            Controls the plotting of live metrics during training. Default is None.
+            Controls the plotting of live metrics during training. Default is `None`.
         extension : callable, optional
-            A custom function to extend training functionality. The default is None.
+            A custom function to extend training functionality. The default is `None`.
 
         Raises
         ------
         ValueError
-            If some types or values are invalid.
+            If some values are invalid.
+        TypeError
+            If some types are invalid.
 
         Returns
         -------
         None
         """
+        if not isinstance(cost_function, Loss):
+            raise ValueError("`cost_function` must be of type `Loss`.")
+        if not isinstance(optimizer, Optimizer):
+            raise ValueError("`optimizer` must be of type `Optimizer`.")
+        if not isinstance(batch_size, int) and batch_size is not None:
+            raise ValueError("`batch_size` must be of type `int`.")
+        if not isinstance(epochs, int):
+            raise ValueError("`epochs` must be of type `int`.")
+        if not isinstance(learning_rate, float):
+            raise ValueError("`learning_rate` must be of type `float`.")
+        if not isinstance(momentum, int) and momentum is not None:
+            raise ValueError("`momentum` must be of type `int`.")
+        if not isinstance(verbose, int) and verbose is not None:
+            raise ValueError("`verbose` must be of type `int`.")
+        if not isinstance(live_metrics, LiveMetrics) and not isinstance(live_metrics, int) and live_metrics is not None:
+            raise ValueError("`live_metrics` must be of type `LiveMetrics`.")
+
         if self.validation:
             self.val_layers = deepcopy(self.train_layers)
 
@@ -381,24 +439,20 @@ class Sequential:
             live_metrics = LiveMetrics(type=live_metrics)
 
         if live_metrics.type not in [-1, 0, 1, 2]:
-            raise ValueError("invalid value for 'type'")
+            raise ValueError("`type` must be either -1, 0, 1, or 2.")
 
         if live_metrics.row_select != "full" and live_metrics.row_select != "limited":
-            raise ValueError("invalid value for 'live_metrics.row_select'")
+            raise ValueError("`live_metrics.row_select` must be 'full' or 'limited'.")
 
-        if type(live_metrics.f1) != int:
-            raise ValueError("invalid value for 'live_metrics.f1'")
+        if not isinstance(live_metrics.f1, int):
+            raise TypeError("`live_metrics.f1` must be of type int.")
 
-        if type(live_metrics.f2) != int:
-            raise ValueError("invalid value for 'live_metrics.f2'")
+        if not isinstance(live_metrics.f2, int):
+            raise TypeError("`live_metrics.f2` must be of type int.")
 
         self.__is_trained__ = True
 
         start_time = time.time()
-
-        self.optimizer = optimizer
-        self.optimizer.learning_rate = learning_rate
-        self.optimizer.momentum = momentum
 
         if batch_size is None:
             steps = 1
@@ -411,18 +465,13 @@ class Sequential:
         if self.validation:
             val_batch_size = self.val_inputs.shape[0] // steps
 
-        train_cost_functions = deepcopy(self.__cost_functions__)
-        for name, function in train_cost_functions.items():
-            if cost_fn == name:
-                self.train_cost_fn = function
-                break
+        self.optimizer = optimizer
+        self.optimizer.learning_rate = learning_rate
+        self.optimizer.momentum = momentum
 
+        self.train_cost_function = cost_function
         if self.validation:
-            val_cost_functions = deepcopy(self.__cost_functions__)
-            for name, function in val_cost_functions.items():
-                if cost_fn == name:
-                    self.val_cost_fn = function
-                    break
+            self.val_cost_function = deepcopy(self.train_cost_function)
 
         if live_metrics.type == -1:
             update = 50
@@ -439,7 +488,7 @@ class Sequential:
 
         if verbose == 1:
             tqdm_epochs = True
-        else:
+        elif verbose is not None and verbose != 0 and verbose != 1:
             tqdm_steps = True
 
         for epoch in (epoch_bar := tqdm(range(epochs), disable=not tqdm_epochs, file=sys.stdout)):
@@ -480,11 +529,11 @@ class Sequential:
                             self.val_layers[i].weights = self.train_layers[i].weights
                             self.val_layers[i].biases = self.train_layers[i].biases
 
-                train_accumulated_loss += self.train_cost_fn.loss(self.train_target_batch, self.train_output_batch)
+                train_accumulated_loss += self.train_cost_function.loss(self.train_target_batch, self.train_output_batch)
                 train_accumulated_accuracy += accuracy(self.train_target_batch, self.train_output_batch)
 
                 if self.validation:
-                    val_accumulated_loss += self.val_cost_fn.loss(self.val_target_batch, self.val_output_batch)
+                    val_accumulated_loss += self.val_cost_function.loss(self.val_target_batch, self.val_output_batch)
                     val_accumulated_accuracy += accuracy(self.val_target_batch, self.val_output_batch)
 
             self.train_loss = train_accumulated_loss / steps
@@ -556,7 +605,7 @@ class Sequential:
 
             plt.show()
         else:
-            raise RuntimeError("model not trained")
+            raise RuntimeError("the model has not been trained yet.")
 
     def save_params(self, name="parameters"):
         """
@@ -575,13 +624,18 @@ class Sequential:
         ------
         RuntimeError
             If the model has not been trained yet.
+        TypeError
+            If `name` is not a string.
 
         Returns
         -------
         parameters : dict
             A dictionary containing the model's weights and biases.
         """
+        if not isinstance(name, str):
+            raise TypeError("`name` must be a string")
         if self.__is_trained__:
+            date_time = datetime.now().strftime("%m_%d_%Y-%H_%M_%S")
             parameters = {"weights": None, "biases": None}
             weights = []
             biases = []
@@ -594,10 +648,10 @@ class Sequential:
                     biases.append(np.array(0.0))
             parameters["weights"] = weights
             parameters["biases"] = biases
-            with open(name + ".pkl", 'wb') as f:
+            with open(name + f"_{date_time}" + ".pkl", 'wb') as f:
                 pickle.dump(parameters, f)
             return parameters
-        raise RuntimeError("model not trained")
+        raise RuntimeError("the model has not been trained yet.")
 
     def load_params(self, path="parameters.pkl", parameters=None):
         """
@@ -617,12 +671,15 @@ class Sequential:
         Raises
         ------
         TypeError
-            If the type of `parameters` is not a dictionary.
+            If `path` is not a string.
+            If `parameters` is not a dictionary.
 
         Returns
         -------
         None
         """
+        if not isinstance(path, str):
+            raise TypeError("`path` must be a string")
         if type(parameters) == dict or parameters is None:
             if parameters is None:
                 with open(path, 'rb') as f:
@@ -632,4 +689,48 @@ class Sequential:
                     self.train_layers[i].weights = parameters["weights"][i]
                     self.train_layers[i].biases = parameters["biases"][i]
         else:
-            raise TypeError("invalid type for 'parameters'")
+            raise TypeError("`parameters` must be a dictionary")
+
+    def save_histories(self, name="metrics_history"):
+        """
+        Saves the training and validation histories to a pickle file.
+
+        Parameters
+        ----------
+        name : str, optional
+            The base name of the file to save the histories. The default is "metrics_history".
+
+        Returns
+        -------
+        histories : dict
+            A dictionary containing the training and validation histories.
+
+        Raises
+        ------
+        TypeError
+            If `name` is not a string.
+
+        Notes
+        -----
+        The histories are saved in a pickle file with a timestamp appended to the base name.
+        The dictionary includes the following keys:
+        - "train_loss": List of training loss values.
+        - "train_accuracy": List of training accuracy values.
+        - "val_loss": List of validation loss values (if validation is enabled).
+        - "val_accuracy": List of validation accuracy values (if validation is enabled).
+        """
+        if not isinstance(name, str):
+            raise TypeError("`name` must be a string")
+        date_time = datetime.now().strftime("%m_%d_%Y-%H_%M_%S")
+        histories = {
+            "train_loss": self.train_loss_history,
+            "train_accuracy": self.train_accuracy_history
+        }
+        if self.validation:
+            histories["val_loss"] = self.val_loss_history
+            histories["val_accuracy"] = self.val_accuracy_history
+
+        with open(name + f"_{date_time}.pkl", 'wb') as f:
+            pickle.dump(histories, f)
+
+        return histories

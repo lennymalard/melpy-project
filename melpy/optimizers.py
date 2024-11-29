@@ -1,5 +1,5 @@
 from .functions import *
-from math import sqrt
+import numpy as np
 
 class Optimizer:
     """
@@ -64,6 +64,8 @@ class SGD(Optimizer):
         layer : melpy.Layer
             The layer with updated parameters.
         """
+        if not isinstance(layer, Layer):
+            raise TypeError("'layer' must be of type 'Layer'.")
         if isinstance(layer, Dense) or isinstance(layer, Convolution2D):
             if self.momentum is not None:
                 weights = self.momentum * layer.weight_momentums - layer.dW * self.learning_rate
@@ -103,7 +105,6 @@ class Adam(Optimizer):
         Updates the parameters of the given layer using Adam.
     """
     def __init__(self):
-        super().__init__()
         """
         Initializes the Adam optimizer.
         """
@@ -111,7 +112,7 @@ class Adam(Optimizer):
         self.beta1 = 0.9
         self.beta2 = 0.999
         self.epsilon = 1e-7
-        self.step = 0
+        self.step = 1
 
     def update_params(self, layer):
         """
@@ -125,28 +126,30 @@ class Adam(Optimizer):
         Returns
         -------
         layer : melpy.Layer
-            The layer with updated parameters.
+            The layer with updated parameters.@
         """
+        if not isinstance(layer, Layer):
+            raise TypeError("'layer' must be of type 'Layer'.")
         if isinstance(layer, Dense) or isinstance(layer, Convolution2D):
             layer.weight_momentums = self.beta1 * layer.weight_momentums + (1 - self.beta1) * layer.dW
-            layer.bias_momentums = self.beta1 * layer.bias_momentums + (1 - self.beta1) * layer.dB
-
             weight_momentums_corrected = layer.weight_momentums / (1 - self.beta1**self.step)
-            bias_momentums_corrected = layer.bias_momentums / (1 - self.beta1**self.step)
 
             layer.weight_cache = self.beta2 * layer.weight_cache + (1 - self.beta2) * layer.dW**2
-            layer.bias_cache = self.beta2 * layer.bias_cache + (1 - self.beta2) * layer.dB**2
-
             weight_cache_corrected = layer.weight_cache / (1 - self.beta2**self.step)
-            bias_cache_corrected = layer.bias_cache / (1 - self.beta2**self.step)
 
-            weights = - self.learning_rate * weight_momentums_corrected / (sqrt(weight_cache_corrected) + self.epsilon)
             if layer.biases is not None:
-                biases = - self.learning_rate * bias_momentums_corrected / (sqrt(bias_cache_corrected) + self.epsilon)
+                layer.bias_momentums = self.beta1 * layer.bias_momentums + (1 - self.beta1) * layer.dB
+                bias_momentums_corrected = layer.bias_momentums / (1 - self.beta1 ** self.step)
 
+                layer.bias_cache = self.beta2 * layer.bias_cache + (1 - self.beta2) * layer.dB ** 2
+                bias_cache_corrected = layer.bias_cache / (1 - self.beta2 ** self.step)
+
+            weights = - self.learning_rate * weight_momentums_corrected / (np.sqrt(weight_cache_corrected) + self.epsilon)
             layer.weights += weights
-            layer.biases += biases
+
+            if layer.biases is not None:
+                biases = - self.learning_rate * bias_momentums_corrected / (np.sqrt(bias_cache_corrected) + self.epsilon)
+                layer.biases += biases
 
             self.step += 1
-
         return layer

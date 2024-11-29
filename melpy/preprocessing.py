@@ -44,7 +44,7 @@ class RobustScaler:
             If the input data has more than 2 dimensions.
         """
         if X.ndim > 2:
-            raise ValueError("scalers don't support more than 2 dimensions")
+            raise ValueError("scalers don't support more than 2 dimensions.")
         self.q1_list = np.quantile(X, 0.25, axis=0)
         self.median_list = np.quantile(X, 0.5, axis=0)
         self.q3_list = np.quantile(X, 0.75, axis=0)

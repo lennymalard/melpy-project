@@ -10,22 +10,12 @@ class Layer:
     ----------
     inputs : ndarray
         Input data.
-    targets : ndarray
-        Target data.
     outputs : ndarray
         Output data.
-    weights : ndarray
-        Weights of the layer.
-    biases : ndarray
-        Biases of the layer.
     dX : ndarray
         Partial derivative of input with respect to loss.
     dY : ndarray
         Partial derivative of output with respect to loss.
-    dW : ndarray
-        Partial derivative of weight with respect to loss.
-    dB : ndarray
-        Partial derivative of bias with respect to loss.
 
     Methods
     -------
@@ -33,35 +23,53 @@ class Layer:
         Computes the derivative of the layer.
     forward()
         Computes the forward pass of the layer.
-    backward()
+    backward(dX : ndarray)
         Computes the backward pass of the layer.
     """
     def __init__(self):
+        """
+        Initializes the Layer class.
+        """
         self.inputs = None
-        self.targets = None
         self.outputs = None
-        self.weights = None
-        self.biases = None
         self.dX = None
         self.dY = None
-        self.dW = None
-        self.dB = None
 
     def derivative(self):
         """
         Computes the derivative of the layer.
+
+        Returns
+        -------
+        ndarray
+            The derivative of the layer.
         """
         pass
 
     def forward(self):
         """
         Computes the forward pass of the layer.
+
+        Returns
+        -------
+        ndarray
+            The output data.
         """
         pass
 
     def backward(self, dX):
         """
         Computes the backward pass of the layer.
+
+        Parameters
+        ----------
+        dX : ndarray
+            Partial derivative of output data (dY -> dX) with respect to loss.
+
+        Returns
+        -------
+        ndarray
+            Partial derivative of input data with respect to loss.
         """
         pass
 
@@ -73,21 +81,58 @@ class Loss:
     -------
     loss(targets : ndarray, outputs : ndarray)
         Computes the loss.
-    derivative()
+    derivative(targets : ndarray, outputs : ndarray)
         Computes the derivative of the loss.
     """
     def __init__(self):
+        """
+        Initializes the Loss class.
+        """
         pass
 
     def loss(self, targets, outputs):
         """
         Computes the loss.
+
+        Parameters
+        ----------
+        targets : ndarray
+            Target data.
+        outputs : ndarray
+            Output data.
+
+        Returns
+        -------
+        float
+            The computed loss.
         """
         pass
 
     def derivative(self, targets, outputs):
         """
         Computes the derivative of the loss.
+
+        Parameters
+        ----------
+        targets : ndarray
+            Target data.
+        outputs : ndarray
+            Output data.
+
+        Returns
+        -------
+        ndarray
+            The derivative of the loss.
+        """
+        pass
+
+class Activation:
+    """
+    Base class for all activation functions.
+    """
+    def __init__(self):
+        """
+        Initializes the Activation class.
         """
         pass
 
@@ -101,6 +146,9 @@ class MSE(Loss):
         Computes the mean squared error.
     """
     def __init__(self):
+        """
+        Initializes the MSE class.
+        """
         super().__init__()
 
     def loss(self, targets, outputs):
@@ -130,10 +178,13 @@ class BinaryCrossEntropy(Loss):
     -------
     loss(targets : ndarray, outputs : ndarray)
         Computes the binary cross entropy loss.
-    derivative(targets, outputs)
+    derivative(targets : ndarray, outputs : ndarray)
         Computes the binary cross entropy derivative.
     """
     def __init__(self):
+        """
+        Initializes the BinaryCrossEntropy class.
+        """
         super().__init__()
 
     def loss(self, targets, outputs):
@@ -187,6 +238,9 @@ class CategoricalCrossEntropy(Loss):
         Computes the categorical cross entropy derivative.
     """
     def __init__(self):
+        """
+        Initializes the CategoricalCrossEntropy class.
+        """
         super().__init__()
 
     def loss(self, targets, outputs):
@@ -288,8 +342,13 @@ class Dense(Layer):
         n_out : int
             Number of output features.
         weight_initializer : str, optional
-            Weight initialization method ('he_normal', 'glorot_uniform', 'he_uniform', 'glorot_normal').
+            Weight initialization method ('he_normal', 'glorot_normal', 'he_uniform', 'glorot_uniform').
             Default is 'he_normal'.
+
+        Raises
+        ------
+        ValueError
+            If the weight initialization method is invalid.
         """
         super().__init__()
 
@@ -322,15 +381,17 @@ class Dense(Layer):
             elif weight_init == "glorot_normal":
                 weights = np.random.randn(n_in, n_out) * np.sqrt(2.0 / (n_in + n_out))
             else:
-                raise ValueError("Invalid value for 'weight_init'")
+                raise ValueError("`weight_init` must be either 'he_uniform', 'he_normal', 'glorot_uniform' or 'glorot_normal'.")
             return weights
 
         self.weights = initialize_weights(weight_initializer, n_in, n_out)
         self.biases = np.random.rand(1, n_out)
+        self.dW = np.zeros_like(self.weights)
+        self.dB = np.zeros_like(self.biases)
         self.weight_momentums = np.zeros_like(self.weights)
         self.bias_momentums = np.zeros_like(self.biases)
-        self.weight_cache = None
-        self.bias_cache = None
+        self.weight_cache = np.zeros_like(self.weights)
+        self.bias_cache = np.zeros_like(self.biases)
 
     def forward(self):
         """
@@ -365,8 +426,7 @@ class Dense(Layer):
 
         return self.dX
 
-
-class ReLU(Layer):
+class ReLU(Layer, Activation):
     """
     A class that performs ReLU (Rectified Linear Unit) layer operations.
 
@@ -391,6 +451,9 @@ class ReLU(Layer):
         Computes the ReLU backward pass.
     """
     def __init__(self):
+        """
+        Initializes the ReLU layer.
+        """
         super().__init__()
 
     def derivative(self):
@@ -436,7 +499,7 @@ class ReLU(Layer):
         self.dX = self.dY * self.derivative()
         return self.dX
 
-class LeakyReLU(Layer):
+class LeakyReLU(Layer, Activation):
     """
     A class that performs Leaky ReLU layer operations.
 
@@ -461,6 +524,9 @@ class LeakyReLU(Layer):
         Computes the Leaky ReLU backward pass.
     """
     def __init__(self):
+        """
+        Initializes the LeakyReLU layer.
+        """
         super().__init__()
 
     def derivative(self):
@@ -506,7 +572,7 @@ class LeakyReLU(Layer):
         self.dX = self.dY * self.derivative()
         return self.dX
 
-class Sigmoid(Layer):
+class Sigmoid(Layer, Activation):
     """
     A class that performs Sigmoid layer operations.
 
@@ -531,6 +597,9 @@ class Sigmoid(Layer):
         Computes the Sigmoid backward pass.
     """
     def __init__(self):
+        """
+        Initializes the Sigmoid layer.
+        """
         super().__init__()
 
     def derivative(self):
@@ -574,7 +643,7 @@ class Sigmoid(Layer):
         self.dX = self.dY * self.derivative()
         return self.dX
 
-class Softmax(Layer):
+class Softmax(Layer, Activation):
     """
     A class that performs Softmax layer operations.
 
@@ -597,6 +666,9 @@ class Softmax(Layer):
         Computes the Softmax backward pass.
     """
     def __init__(self):
+        """
+        Initializes the Softmax layer.
+        """
         super().__init__()
 
     def forward(self):
@@ -687,6 +759,13 @@ class Convolution2D(Layer):
             Padding type ('valid' or 'same'). Default is 'valid'.
         stride : int, optional
             Stride of the convolution. Default is 1.
+
+        Raises
+        ------
+        TypeError
+            If `padding` is not a string.
+        ValueError
+            If `padding` is not 'valid' or 'same'.
         """
         super().__init__()
         self.in_channels = in_channels
@@ -696,14 +775,19 @@ class Convolution2D(Layer):
             sqrt(6 / (in_channels + out_channels)),
             (out_channels, in_channels, kernel_size, kernel_size)
         )
+        self.biases = None
+        self.dW = np.zeros_like(self.weights)
+        self.dB = None
         self.padding = padding
         self.kernel_size = kernel_size
         self.stride = stride
         self.weight_momentums = np.zeros_like(self.weights)
-        self.weight_cache = None
+        self.weight_cache = np.zeros_like(self.weights)
 
-        if self.padding not in ["valid", "same"]:
-            raise ValueError("Invalid value for 'padding'")
+        if not isinstance(padding, str):
+            raise TypeError("`padding` must be a string.")
+        if self.padding not in ("valid", "same"):
+            raise ValueError("`padding` must be 'valid' or 'same'.")
 
         if self.padding == "same":
             self.stride = 1
@@ -866,14 +950,19 @@ class Pooling2D(Layer):
             Stride of the pooling.
         mode : str, optional
             Pooling mode ('max'). Default is 'max'.
+
+        Raises
+        ------
+        ValueError
+            If the pooling mode is invalid.
         """
         super().__init__()
         self.pool_size = pool_size
         self.stride = stride
         self.mode = mode
 
-        if self.mode not in ["max"]:
-            raise ValueError("Invalid value for 'mode'")
+        if self.mode not in ("max"):
+            raise ValueError("`mode` must be 'max'.")
 
     def forward(self):
         """
@@ -944,6 +1033,9 @@ class Flatten(Layer):
         Computes the backward pass of the flattening layer.
     """
     def __init__(self):
+        """
+        Initializes the Flatten layer.
+        """
         super().__init__()
 
     def forward(self):
@@ -1004,6 +1096,11 @@ class Dropout(Layer):
         ----------
         p : float
             Dropout probability. Must be between 0 and 1.
+
+        Raises
+        ------
+        ValueError
+            If the dropout probability is not between 0 and 1.
         """
         super().__init__()
         if p < 0 or p > 1:
@@ -1048,7 +1145,6 @@ class Dropout(Layer):
             self.dX = dX
         return self.dX
 
-
 class Linear:
     """
     A class that performs linear layer operations.
@@ -1068,8 +1164,20 @@ class Linear:
         Computes the backward pass of the linear layer.
     """
     def __init__(self, n_in, n_out):
+        """
+        Initializes the Linear layer.
+
+        Parameters
+        ----------
+        n_in : int
+            Number of input features.
+        n_out : int
+            Number of output features.
+        """
         self.weights = np.random.rand(n_in, n_out)
         self.biases = np.random.rand(1, n_out)
+        self.dW = None
+        self.dB = None
 
     def forward(self):
         """

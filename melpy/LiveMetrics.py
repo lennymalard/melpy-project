@@ -45,15 +45,15 @@ class LiveMetrics:
         Raises
         ------
         ValueError
-            If the `type` parameter is not one of [-1, 0, 1, 2].
+            If the `type` parameter is not one of (-1, 0, 1, 2).
         """
         self.type = type
         self.f1 = f1
         self.f2 = f2
         self.row_select = row_select
 
-        if self.type not in [-1, 0, 1, 2]:
-            raise ValueError("invalid value for 'type'")
+        if self.type not in (-1, 0, 1, 2):
+            raise ValueError("`type` must be one of (-1, 0, 1, 2).")
 
     def run(self, model, figure):
         """
@@ -73,8 +73,11 @@ class LiveMetrics:
         Raises
         ------
         ValueError
-            If the `row_select` parameter is not one of ["limited", "full"].
+            If the `row_select` parameter is not one of ("limited", "full").
         """
+        if self.row_select not in ("limited", "full"):
+            raise ValueError("`row_select` must be one of ('limited', 'full').")
+
         if self.type == 1:
             figure.clear()
 
@@ -110,8 +113,6 @@ class LiveMetrics:
                     X_set, y_set = model.train_input_batch, model.train_targets
                 elif (len(model.train_input_batch[:, 0]) <= 1000 and self.row_select == "full") or (len(model.train_input_batch[:, 0]) <= 1000 and self.row_select == "limited"):
                     X_set, y_set = model.train_input_batch, model.train_targets
-                else:
-                    raise ValueError("invalid value for 'row_select'")
 
                 X1, X2 = np.meshgrid(np.arange(start=X_set[:, self.f1].min() - 1, stop=X_set[:, self.f1].max() + 1, step=0.01),
                                      np.arange(start=X_set[:, self.f2].min() - 1, stop=X_set[:, self.f2].max() + 1, step=0.01))
@@ -124,8 +125,6 @@ class LiveMetrics:
                 plt.scatter(model.train_input_batch[:, self.f1], model.train_input_batch[:, self.f2], c=model.train_output_batch[:, :], cmap="coolwarm", alpha=1)
             elif (len(model.train_input_batch[:, 0]) <= 1000 and self.row_select == "full") or (len(model.train_input_batch[:, 0]) <= 1000 and self.row_select == "limited"):
                 plt.scatter(model.train_input_batch[:, self.f1], model.train_input_batch[:, self.f2], c=model.train_output_batch[:, :], cmap="coolwarm", alpha=1)
-            else:
-                raise ValueError("invalid value for 'row_select'")
 
             figure.canvas.draw()
             figure.canvas.flush_events()
@@ -141,8 +140,7 @@ class LiveMetrics:
                     X_set, y_set = model.train_input_batch, model.train_targets
                 elif (len(model.train_input_batch[:, 0]) <= 1000 and self.row_select == "full") or (len(model.train_input_batch[:, 0]) <= 1000 and self.row_select == "limited"):
                     X_set, y_set = model.train_input_batch, model.train_targets
-                else:
-                    raise ValueError("invalid value for 'row_select'")
+
                 X1, X2 = np.meshgrid(np.arange(start=X_set[:, self.f1].min() - 1, stop=X_set[:, self.f1].max() + 1, step=0.01),
                                      np.arange(start=X_set[:, self.f2].min() - 1, stop=X_set[:, self.f2].max() + 1, step=0.01))
                 plt.contourf(X1, X2, model.predict(np.array([X1.ravel(), X2.ravel()]).T).reshape(X1.shape),
@@ -154,8 +152,6 @@ class LiveMetrics:
                 plt.scatter(model.train_input_batch[:, self.f1], model.train_input_batch[:, self.f2], c=model.train_output_batch[:, :], cmap="coolwarm", alpha=1)
             elif (len(model.train_input_batch[:, 0]) <= 1000 and self.row_select == "full") or (len(model.train_input_batch[:, 0]) <= 1000 and self.row_select == "limited"):
                 plt.scatter(model.train_input_batch[:, self.f1], model.train_input_batch[:, self.f2], c=model.train_output_batch[:, :], cmap="coolwarm", alpha=1)
-            else:
-                raise ValueError("invalid value for 'row_select'")
 
             plt.subplot(2, 2, 1)
             plt.title("Loss Evolution")
