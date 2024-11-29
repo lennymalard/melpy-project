@@ -372,7 +372,7 @@ class Sequential:
         else:
             raise ValueError("`verbose` must be 0, 1, or 2.'")
 
-    def fit(self, cost_function, epochs=1000, batch_size=None, optimizer=SGD(), learning_rate=0.1, momentum=None, verbose=1, live_metrics=None, extension=None):
+    def fit(self, cost_function, epochs=1000, optimizer=SGD(), learning_rate=0.1, momentum=None, batch_size=None, verbose=1, live_metrics=None, extension=None):
         """
         Trains the model using the provided cost function, optimizer, and other parameters.
 

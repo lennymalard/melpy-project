@@ -379,17 +379,17 @@ class SimpleImputer:
         Raises
         ------
         ValueError
-            If the strategy is not "mean".
+            If the strategy is not one of ("mean").
         TypeError
             If the column data type is not numeric.
         """
         X_copy = np.copy(X)
 
         if strategy != "mean":
-            raise ValueError("invalid value for 'strategy'")
+            raise ValueError("`strategy` must be one of ('mean').")
 
         if X_copy[:, column].dtype == "<U4":
-            raise TypeError("invalid type for 'column'")
+            raise TypeError("`column` must be numeric.")
 
         if np.isnan(missing_values):
             mask = np.isnan(X_copy[:, column].astype(float))
