@@ -1,6 +1,6 @@
 import numpy as np
 from tqdm import tqdm
-from .functions import Linear
+from .layers import Linear
 
 class LinearRegression:
     """

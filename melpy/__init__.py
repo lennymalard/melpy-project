@@ -1,5 +1,5 @@
 from .preprocessing import *
-from .FFNN import Sequential
+from .NeuralNetworks import Sequential
 from .LinearRegression import LinearRegression
-from .functions import *
+from .layers import *
 from .metrics import *

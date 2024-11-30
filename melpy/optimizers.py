@@ -1,4 +1,4 @@
-from .functions import *
+from .layers import *
 import numpy as np
 
 class Optimizer:

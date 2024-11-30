@@ -1,5 +1,6 @@
 import numpy as np
-from .functions import *
+from .layers import *
+from .losses import *
 from .metrics import accuracy
 from .optimizers import *
 from .LiveMetrics import *
@@ -70,9 +71,9 @@ class Sequential:
     val_accuracy_history : list
         History of validation accuracy values for each epoch.
 
-    train_cost_function : melpy.functions.Loss
+    train_cost_function : melpy.losses.Loss
         Cost function used for training.
-    val_cost_function : melpy.functions.Loss
+    val_cost_function : melpy.losses.Loss
         Cost function used for validation.
 
     runtime : float
@@ -91,7 +92,7 @@ class Sequential:
         Executes the backward pass to compute gradients for training layers.
     verbose(verbose : int, epoch : int, epochs : int, start_time : float)
         Displays training and validation metrics based on the specified verbosity level.
-    fit(cost_function : melpy.functions.Loss, epochs : int, batch_size : int, optimizer : melpy.optimizers.Optimizer, learning_rate : float,
+    fit(cost_function : melpy.losses.Loss, epochs : int, batch_size : int, optimizer : melpy.optimizers.Optimizer, learning_rate : float,
         momentum : float, verbose : int, live_metrics : int or melpy.LiveMetrics.LiveMetrics, extension : callable)
         Trains the model using the specified configurations and tracks metrics over epochs.
     predict(X : ndarray)
@@ -104,6 +105,10 @@ class Sequential:
         Loads model weights and biases from a file or dictionary.
     save_histories(name : str)
         Saves the training and validation histories to a file.
+    get_flatten_length()
+        Computes the length of the flattened output from the `Flatten` layer.
+    summary()
+        Prints a summary of the model architecture.
     """
 
     def __init__(self, train_inputs, train_targets, val_inputs=None, val_targets=None):
@@ -172,6 +177,34 @@ class Sequential:
         if self.val_inputs is not None and self.val_targets is not None:
             if not isinstance(val_inputs, np.ndarray) or not isinstance(val_targets, np.ndarray):
                 raise TypeError('`val_inputs` and `val_targets` must be of type numpy.ndarray.')
+
+    def get_flatten_length(self):
+        """
+        Computes the length of the flattened output from the `Flatten` layer.
+
+        This method iterates through the training layers to find the `Flatten` layer and computes the length of its output.
+
+        Returns
+        -------
+        int
+            The length of the flattened output.
+
+        Raises
+        ------
+        ValueError
+            If there is no `Flatten` layer in the training layers.
+        """
+        self.train_layers[0].inputs = self.train_inputs[0].reshape(1, *self.train_inputs[0].shape)
+        for i in range(len(self.train_layers)):
+            if isinstance(self.train_layers[i], Flatten):
+                self.train_layers[i].forward()
+                self.train_layers[0].inputs = self.train_inputs
+                return self.train_layers[i].outputs.shape[1]
+            elif i == len(self.train_layers) - 1:
+                self.train_layers[0].inputs = self.train_inputs
+                raise ValueError("There is no `Flatten` layer.")
+            else:
+                self.train_layers[i + 1].inputs = self.train_layers[i].forward()
 
     def add(self, layer, activation=None):
         """
@@ -313,7 +346,7 @@ class Sequential:
         -------
         None
         """
-        if not isinstance(verbose, int) and verbose is not None:
+        if not isinstance(verbose, int):
             raise TypeError('`verbose` must be of type int.')
         if not isinstance(epochs, int):
             raise TypeError('`epochs` must be of type int.')
@@ -370,9 +403,9 @@ class Sequential:
         elif verbose == 0 or verbose is None:
             return
         else:
-            raise ValueError("`verbose` must be 0, 1, or 2.'")
+            raise ValueError("`verbose` must be 0, 1, or 2.")
 
-    def fit(self, cost_function, epochs=1000, optimizer=SGD(), learning_rate=0.1, momentum=None, batch_size=None, verbose=1, live_metrics=None, extension=None):
+    def fit(self, cost_function, epochs=1000, batch_size=None, optimizer=SGD(), learning_rate=0.1, momentum=None, verbose=1, live_metrics=None, extension=None):
         """
         Trains the model using the provided cost function, optimizer, and other parameters.
 
@@ -383,7 +416,7 @@ class Sequential:
 
         Parameters
         ----------
-        cost_function : melpy.functions.Loss
+        cost_function : melpy.losses.Loss
             The cost function to use for training (e.g., "binary_crossentropy").
         epochs : int, optional
             The number of epochs for training. The default is 1000.
@@ -605,7 +638,7 @@ class Sequential:
 
             plt.show()
         else:
-            raise RuntimeError("the model has not been trained yet.")
+            raise RuntimeError("The model has not been trained yet.")
 
     def save_params(self, name="parameters"):
         """
@@ -651,7 +684,7 @@ class Sequential:
             with open(name + f"_{date_time}" + ".pkl", 'wb') as f:
                 pickle.dump(parameters, f)
             return parameters
-        raise RuntimeError("the model has not been trained yet.")
+        raise RuntimeError("The model has not been trained yet.")
 
     def load_params(self, path="parameters.pkl", parameters=None):
         """
@@ -734,3 +767,18 @@ class Sequential:
             pickle.dump(histories, f)
 
         return histories
+
+    def summary(self):
+        """
+        Prints a summary of the model architecture.
+
+        This method prints the shape of the output for each layer in the model.
+
+        Returns
+        -------
+        None
+        """
+        self.predict(self.train_inputs[0].reshape(1, *self.train_inputs[0].shape))
+        for i in range(len(self.train_layers)):
+            print(f"{type(self.train_layers[i]).__name__}: {self.train_layers[i].outputs.shape}")
+
