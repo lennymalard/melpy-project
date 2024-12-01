@@ -507,6 +507,9 @@ class Sequential:
         elif epochs <= 100:
             update = 1
 
+        loss = 0.0
+        acc = 0.0
+
         tqdm_epochs = False
         tqdm_steps = False
 
@@ -522,6 +525,7 @@ class Sequential:
 
         for epoch in (epoch_bar := tqdm(range(epochs), disable=not tqdm_epochs, file=sys.stdout)):
             epoch_bar.set_description(f"Epoch [{epoch + 1}/{epochs}]")
+            epoch_bar.set_postfix({"loss":loss, "accuracy":acc})
 
             for callback in callbacks:
                 callback.on_iteration_start(self)
@@ -534,6 +538,8 @@ class Sequential:
 
             for step in (step_bar := tqdm(range(steps), disable=not tqdm_steps, file=sys.stdout)):
                 step_bar.set_description(f"Epoch [{epoch + 1}/{epochs}]")
+                step_bar.set_postfix({"loss":loss, "accuracy":acc})
+
                 if self.batch_size is None:
                     self.train_input_batch = self.train_inputs
                     self.train_target_batch = self.train_targets
@@ -562,8 +568,11 @@ class Sequential:
                             self.val_layers[i].weights = self.train_layers[i].weights
                             self.val_layers[i].biases = self.train_layers[i].biases
 
-                train_accumulated_loss += self.cost_function.loss(self.train_target_batch, self.train_output_batch)
-                train_accumulated_accuracy += accuracy(self.train_target_batch, self.train_output_batch)
+                loss = self.cost_function.loss(self.train_target_batch, self.train_output_batch)
+                acc = accuracy(self.train_target_batch, self.train_output_batch)
+
+                train_accumulated_loss += loss
+                train_accumulated_accuracy += acc
 
                 if self.validation:
                     val_accumulated_loss += self.cost_function.loss(self.val_target_batch, self.val_output_batch)
