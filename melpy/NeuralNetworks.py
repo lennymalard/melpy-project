@@ -1,9 +1,10 @@
 import numpy as np
 from .layers import *
 from .losses import *
-from .metrics import accuracy
+from .metrics import *
 from .optimizers import *
 from .callbacks import *
+from .preprocessing import *
 from math import sqrt
 from copy import deepcopy
 import matplotlib.pyplot as plt
@@ -120,15 +121,15 @@ class Sequential:
         train_targets : ndarray
             The target labels or values corresponding to the `train_inputs`.
         val_inputs : ndarray, optional
-            The input data used for validation. Default is `None`.
+            The input data used for validation. Default is 'None'.
         val_targets : ndarray, optional
-            The target labels or values corresponding to the `val_inputs`. Default is `None`.
+            The target labels or values corresponding to the `val_inputs`. Default is 'None'.
 
         Raises
         ------
         TypeError
-            If `train_inputs` and `train_targets` are not of type `numpy.ndarray`.
-            If `val_inputs` and `val_targets` are provided and not of type `numpy.ndarray`.
+            If `train_inputs` and `train_targets` are not of type 'numpy.ndarray'.
+            If `val_inputs` and `val_targets` are provided and not of type 'numpy.ndarray'.
         """
         self.train_inputs = train_inputs
         self.train_input_batch = None
@@ -216,7 +217,7 @@ class Sequential:
         layer : Dense or Convolution2D
             The layer to be added. Must be an instance of Dense or Convolution2D.
         activation : Activation, optional
-            The activation layer to be added. Must be an instance of Activation. Default is `None`.
+            The activation layer to be added. Must be an instance of Activation. Default is 'None'.
 
         Raises
         ------
@@ -281,10 +282,10 @@ class Sequential:
         Raises
         ------
         TypeError
-            If `X` is not of type `numpy.ndarray`.
+            If `X` is not of type 'numpy.ndarray'.
         """
         if not isinstance(X, np.ndarray):
-            raise TypeError('`X` must be of type numpy.ndarray.')
+            raise TypeError("`X` must be of type 'numpy.ndarray'.")
         self.train_layers[0].inputs = X
         for i in range(len(self.train_layers)):
             if i + 1 == len(self.train_layers):
@@ -346,8 +347,8 @@ class Sequential:
         -------
         None
         """
-        if not isinstance(verbose, int):
-            raise TypeError('`verbose` must be of type int.')
+        if not isinstance(verbose, int) and verbose is not None:
+            raise TypeError('`verbose` must be of type int or None.')
         if not isinstance(epochs, int):
             raise TypeError('`epochs` must be of type int.')
         if not isinstance(start_time, float):
@@ -420,6 +421,11 @@ class Sequential:
         -------
         None
         """
+        if not isinstance(cost_function, Loss):
+            raise ValueError("`cost_function` must be of type `melpy.losses.Loss.`")
+        if not isinstance(optimizer, Optimizer):
+            raise ValueError("`optimizer` must be of type `melpy.optimizers.Optimizer.`")
+
         self.__is_compiled__ = True
         self.optimizer = optimizer
         self.cost_function = cost_function
