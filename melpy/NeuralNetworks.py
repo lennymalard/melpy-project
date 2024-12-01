@@ -41,7 +41,7 @@ class Sequential:
     val_target_batch : ndarray
         A batch of validation targets.
     val_outputs : ndarray
-        Final output predictions during the validation phase.
+        Final output predictions during the validation phase (not computed until further improvements).
     val_output_batch : ndarray
         A batch of outputs during validation.
 
@@ -459,7 +459,7 @@ class Sequential:
             - If `epochs` is not of type `int`.
             - If `verbose` is not of type `int` and is not `None`.
         TypeError
-            - If `callbacks` is not a list of callable objects.
+            - If `callbacks` is not a list of melpy.callbacks.Callback objects.
 
         Returns
         -------
@@ -473,8 +473,8 @@ class Sequential:
             raise ValueError("`epochs` must be of type `int`.")
         if not isinstance(verbose, int) and verbose is not None:
             raise ValueError("`verbose` must be of type `int` or `None`.")
-        if not isinstance(callbacks, list) or not all(callable(callback) for callback in callbacks):
-            raise TypeError("`callbacks` must be a list of callable objects.")
+        if not isinstance(callbacks, list) or not all(isinstance(callback, Callback) for callback in callbacks):
+            raise TypeError("`callbacks` must be a list of melpy.callbacks.Callback objects.")
 
         self.__is_trained__ = True
 
