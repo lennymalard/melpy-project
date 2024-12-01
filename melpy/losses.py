@@ -121,7 +121,7 @@ class BinaryCrossEntropy(Loss):
             The binary cross entropy loss.
         """
         e = 1e-10
-        return -(np.sum(targets * np.log(outputs + e) + \
+        return -(np.sum(targets * np.log(outputs + e) +
                         (1-targets) * np.log(1-outputs + e))) / len(targets)
 
     def derivative(self, targets, outputs):

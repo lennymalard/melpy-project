@@ -3,7 +3,7 @@ from .layers import *
 from .losses import *
 from .metrics import accuracy
 from .optimizers import *
-from .LiveMetrics import *
+from .callbacks import *
 from math import sqrt
 from copy import deepcopy
 import matplotlib.pyplot as plt
@@ -71,10 +71,8 @@ class Sequential:
     val_accuracy_history : list
         History of validation accuracy values for each epoch.
 
-    train_cost_function : melpy.losses.Loss
+    cost_function : melpy.losses.Loss
         Cost function used for training.
-    val_cost_function : melpy.losses.Loss
-        Cost function used for validation.
 
     runtime : float
         Total time taken to train the model.
@@ -93,7 +91,7 @@ class Sequential:
     verbose(verbose : int, epoch : int, epochs : int, start_time : float)
         Displays training and validation metrics based on the specified verbosity level.
     fit(cost_function : melpy.losses.Loss, epochs : int, batch_size : int, optimizer : melpy.optimizers.Optimizer, learning_rate : float,
-        momentum : float, verbose : int, live_metrics : int or melpy.LiveMetrics.LiveMetrics, extension : callable)
+        momentum : float, verbose : int, live_metrics : int or melpy.LiveMetrics.LiveMetrics, callbacks : callable)
         Trains the model using the specified configurations and tracks metrics over epochs.
     predict(X : ndarray)
         Generates predictions for the input data `X`.
@@ -146,6 +144,9 @@ class Sequential:
         self.val_outputs = None
         self.val_output_batch = None
 
+        self.batch_size = None
+        self.val_batch_size = None
+
         self.predictions = None
 
         self.train_layers = []
@@ -161,11 +162,11 @@ class Sequential:
         self.train_accuracy_history = []
         self.val_accuracy_history = []
 
-        self.train_cost_function = None
-        self.val_cost_function = None
+        self.cost_function = None
         self.optimizer = None
 
         self.__is_trained__ = False
+        self.__is_compiled__ = False
         self.runtime = 0.0
         self.validation = False
 
@@ -308,7 +309,7 @@ class Sequential:
         -------
         None
         """
-        self.dX = self.train_cost_function.derivative(self.train_target_batch, self.train_output_batch)
+        self.dX = self.cost_function.derivative(self.train_target_batch, self.train_output_batch)
         for layer in reversed(self.train_layers):
             self.dX = layer.backward(self.dX)
 
@@ -358,7 +359,7 @@ class Sequential:
                 if self.validation:
                     print(f"[TRAINING METRICS] train_loss: {np.around(self.train_loss, 5)} · "
                           f"train_accuracy: {np.around(self.train_accuracy, 5)}\n" +
-                          f"[VALIDATION METRICS] val_loss: {np.around(self.val_loss, 5)} · " +
+                          f"[VALIDATION METRICS] val_loss: {np.around(self.val_loss, 5)} · "
                           f"val_accuracy: {np.around(self.val_accuracy, 5)}\n\n")
                 else:
                     print(f"[TRAINING METRICS] train_loss: {np.around(self.train_loss, 5)} | " +
@@ -405,7 +406,26 @@ class Sequential:
         else:
             raise ValueError("`verbose` must be 0, 1, or 2.")
 
-    def fit(self, cost_function, epochs=1000, batch_size=None, optimizer=SGD(), learning_rate=0.1, momentum=None, verbose=1, live_metrics=None, extension=None):
+    def compile(self, cost_function, optimizer=SGD(learning_rate=0.01)):
+        """
+        Compiles the model with the specified cost function and optimizer.
+
+        Parameters
+        ----------
+        cost_function : melpy.losses.Loss
+            The cost function to be used for training.
+        optimizer : melpy.optimizers.Optimizer, optional
+            The optimizer to be used for updating the model parameters. Default is SGD with a learning rate of 0.01.
+
+        Returns
+        -------
+        None
+        """
+        self.__is_compiled__ = True
+        self.optimizer = optimizer
+        self.cost_function = cost_function
+
+    def fit(self, epochs=1000, batch_size=None, verbose=1, callbacks=[]):
         """
         Trains the model using the provided cost function, optimizer, and other parameters.
 
@@ -416,105 +436,71 @@ class Sequential:
 
         Parameters
         ----------
-        cost_function : melpy.losses.Loss
-            The cost function to use for training (e.g., "binary_crossentropy").
         epochs : int, optional
             The number of epochs for training. The default is 1000.
         batch_size : int, optional
             The number of samples per batch. If None, the entire dataset is used for each pass.
-        optimizer : melpy.optimizers, optional
-            The optimizer to use (e.g., SGD, Adam). The default is SGD().
-        learning_rate : float, optional
-            The learning rate for the optimizer. The default is 0.1.
-        momentum : int, optional
-            The momentum to use for the optimizer. The default is `None`.
         verbose : int, optional
             The verbosity level for printing metrics during training. Default is 1.
-        live_metrics : int or melpy.LiveMetrics.LiveMetrics, optional
-            Controls the plotting of live metrics during training. Default is `None`.
-        extension : callable, optional
-            A custom function to extend training functionality. The default is `None`.
+        callbacks : list of callable, optional
+            A list of callback functions to extend training functionality. Each callback should be a callable
+            object that implements the following methods:
+            - `on_loop_start(model)`: Called at the start of the training loop.
+            - `on_iteration_start(model)`: Called at the start of each epoch.
+            - `on_iteration_end(model, figure=None)`: Called at the end of each epoch. If the callback is an instance
+              of `LiveMetrics`, a `figure` parameter should be passed.
+            - `on_loop_end(model)`: Called at the end of the training loop.
+            The default is an empty list.
 
         Raises
         ------
         ValueError
-            If some values are invalid.
+            - If the model has not been compiled before fitting.
+            - If `batch_size` is not of type `int` and is not `None`.
+            - If `epochs` is not of type `int`.
+            - If `verbose` is not of type `int` and is not `None`.
         TypeError
-            If some types are invalid.
+            - If `callbacks` is not a list of callable objects.
 
         Returns
         -------
         None
         """
-        if not isinstance(cost_function, Loss):
-            raise ValueError("`cost_function` must be of type `Loss`.")
-        if not isinstance(optimizer, Optimizer):
-            raise ValueError("`optimizer` must be of type `Optimizer`.")
+        if not self.__is_compiled__:
+            raise ValueError("The model must be compiled before fitting.")
         if not isinstance(batch_size, int) and batch_size is not None:
-            raise ValueError("`batch_size` must be of type `int`.")
+            raise ValueError("`batch_size` must be of type `int` or `None`.")
         if not isinstance(epochs, int):
             raise ValueError("`epochs` must be of type `int`.")
-        if not isinstance(learning_rate, float):
-            raise ValueError("`learning_rate` must be of type `float`.")
-        if not isinstance(momentum, int) and momentum is not None:
-            raise ValueError("`momentum` must be of type `int`.")
         if not isinstance(verbose, int) and verbose is not None:
-            raise ValueError("`verbose` must be of type `int`.")
-        if not isinstance(live_metrics, LiveMetrics) and not isinstance(live_metrics, int) and live_metrics is not None:
-            raise ValueError("`live_metrics` must be of type `LiveMetrics`.")
-
-        if self.validation:
-            self.val_layers = deepcopy(self.train_layers)
-
-        if live_metrics is None:
-            live_metrics = LiveMetrics(type=0)
-        elif live_metrics is not None and isinstance(live_metrics, LiveMetrics) == False:
-            live_metrics = LiveMetrics(type=live_metrics)
-
-        if live_metrics.type not in [-1, 0, 1, 2]:
-            raise ValueError("`type` must be either -1, 0, 1, or 2.")
-
-        if live_metrics.row_select != "full" and live_metrics.row_select != "limited":
-            raise ValueError("`live_metrics.row_select` must be 'full' or 'limited'.")
-
-        if not isinstance(live_metrics.f1, int):
-            raise TypeError("`live_metrics.f1` must be of type int.")
-
-        if not isinstance(live_metrics.f2, int):
-            raise TypeError("`live_metrics.f2` must be of type int.")
+            raise ValueError("`verbose` must be of type `int` or `None`.")
+        if not isinstance(callbacks, list) or not all(callable(callback) for callback in callbacks):
+            raise TypeError("`callbacks` must be a list of callable objects.")
 
         self.__is_trained__ = True
 
         start_time = time.time()
 
-        if batch_size is None:
+        if self.validation:
+            self.val_layers = deepcopy(self.train_layers)
+
+        self.batch_size = batch_size
+
+        if self.batch_size is None:
             steps = 1
-            val_batch_size = 1
         else:
-            steps = self.train_inputs.shape[0] // batch_size
-            if steps * batch_size < self.train_inputs.shape[0]:
+            steps = self.train_inputs.shape[0] // self.batch_size
+            if steps * self.batch_size < self.train_inputs.shape[0]:
                 steps += 1
+            if self.validation:
+                self.val_batch_size = self.val_inputs.shape[0] // steps
 
-        if self.validation:
-            val_batch_size = self.val_inputs.shape[0] // steps
-
-        self.optimizer = optimizer
-        self.optimizer.learning_rate = learning_rate
-        self.optimizer.momentum = momentum
-
-        self.train_cost_function = cost_function
-        if self.validation:
-            self.val_cost_function = deepcopy(self.train_cost_function)
-
-        if live_metrics.type == -1:
+        if epochs > 1000:
             update = 50
-            figure = plt.figure()
-        elif live_metrics.type == 0:
-            update = 1
-            figure = None
-        elif live_metrics.type == 1 or live_metrics.type == 2:
+        elif 1000 >= epochs > 100:
             update = 25
-            figure = plt.figure()
+        elif epochs <= 100:
+            update = 10
 
         tqdm_epochs = False
         tqdm_steps = False
@@ -524,8 +510,16 @@ class Sequential:
         elif verbose is not None and verbose != 0 and verbose != 1:
             tqdm_steps = True
 
+        for callback in callbacks:
+            if isinstance(callback, LiveMetrics):
+                figure = plt.figure()
+            callback.on_loop_start(self)
+
         for epoch in (epoch_bar := tqdm(range(epochs), disable=not tqdm_epochs, file=sys.stdout)):
             epoch_bar.set_description(f"Epoch [{epoch + 1}/{epochs}]")
+
+            for callback in callbacks:
+                callback.on_iteration_start(self)
 
             train_accumulated_loss = 0
             train_accumulated_accuracy = 0
@@ -535,8 +529,7 @@ class Sequential:
 
             for step in (step_bar := tqdm(range(steps), disable=not tqdm_steps, file=sys.stdout)):
                 step_bar.set_description(f"Epoch [{epoch + 1}/{epochs}]")
-
-                if batch_size is None:
+                if self.batch_size is None:
                     self.train_input_batch = self.train_inputs
                     self.train_target_batch = self.train_targets
 
@@ -544,12 +537,14 @@ class Sequential:
                         self.val_input_batch = self.val_inputs
                         self.val_target_batch = self.val_targets
                 else:
-                    self.train_input_batch = self.train_inputs[step * batch_size:(step + 1) * batch_size]
-                    self.train_target_batch = self.train_targets[step * batch_size:(step + 1) * batch_size]
+                    self.train_input_batch = self.train_inputs[step * self.batch_size:(step + 1) * self.batch_size]
+                    self.train_target_batch = self.train_targets[step * self.batch_size:(step + 1) * self.batch_size]
 
                     if self.validation:
-                        self.val_input_batch = self.val_inputs[step * val_batch_size:(step + 1) * val_batch_size]
-                        self.val_target_batch = self.val_targets[step * val_batch_size:(step + 1) * val_batch_size]
+                        self.val_input_batch = self.val_inputs[
+                                               step * self.val_batch_size:(step + 1) * self.val_batch_size]
+                        self.val_target_batch = self.val_targets[
+                                                step * self.val_batch_size:(step + 1) * self.val_batch_size]
 
                 self.forward()
                 self.backward()
@@ -562,11 +557,11 @@ class Sequential:
                             self.val_layers[i].weights = self.train_layers[i].weights
                             self.val_layers[i].biases = self.train_layers[i].biases
 
-                train_accumulated_loss += self.train_cost_function.loss(self.train_target_batch, self.train_output_batch)
+                train_accumulated_loss += self.cost_function.loss(self.train_target_batch, self.train_output_batch)
                 train_accumulated_accuracy += accuracy(self.train_target_batch, self.train_output_batch)
 
                 if self.validation:
-                    val_accumulated_loss += self.val_cost_function.loss(self.val_target_batch, self.val_output_batch)
+                    val_accumulated_loss += self.cost_function.loss(self.val_target_batch, self.val_output_batch)
                     val_accumulated_accuracy += accuracy(self.val_target_batch, self.val_output_batch)
 
             self.train_loss = train_accumulated_loss / steps
@@ -584,19 +579,34 @@ class Sequential:
                     self.val_loss_history.append(self.val_loss)
                     self.val_accuracy_history.append(self.val_accuracy)
 
-            if live_metrics.type != 0:
-                if epoch % update == 0:
-                    live_metrics.run(self, figure)
-
             self.verbose(verbose, epoch, epochs, start_time)
 
-            if callable(extension):
-                extension()
+            for callback in callbacks:
+                if isinstance(callback, LiveMetrics):
+                    if epoch % update == 0 or epoch == 1:
+                        callback.on_iteration_end(self, figure)
+                else:
+                    callback.on_iteration_end(self)
 
-        self.train_outputs = self.predict(self.train_inputs)
+        if self.batch_size is not None:
+            self.train_outputs = self.predict(self.train_inputs[:self.batch_size])
+            if self.validation:
+                self.val_outputs = self.predict(self.val_inputs[:self.val_batch_size])
+                if steps * self.val_batch_size < self.val_inputs.shape[0]:
+                    steps += 1
+            for step in range(1, steps):
+                self.train_outputs = np.concatenate((self.train_outputs, self.predict(
+                    self.train_inputs[step * self.batch_size:(step + 1) * self.batch_size])), axis=0)
+                if self.validation:
+                    self.val_outputs = np.concatenate((self.val_outputs, self.predict(
+                        self.val_inputs[step * self.val_batch_size:(step + 1) * self.val_batch_size])), axis=0)
+        else:
+            self.train_outputs = self.predict(self.train_inputs)
+            if self.validation:
+                self.val_outputs = self.predict(self.val_inputs)
 
-        if self.validation:
-            self.val_outputs = self.predict(self.val_inputs)
+        for callback in callbacks:
+            callback.on_loop_end(self)
 
     def results(self):
         """
@@ -781,4 +791,3 @@ class Sequential:
         self.predict(self.train_inputs[0].reshape(1, *self.train_inputs[0].shape))
         for i in range(len(self.train_layers)):
             print(f"{type(self.train_layers[i]).__name__}: {self.train_layers[i].outputs.shape}")
-

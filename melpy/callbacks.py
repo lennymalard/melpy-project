@@ -1,14 +1,30 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-class LiveMetrics:
+class Callback:
+    def __init__(self):
+        pass
+
+    def on_loop_start(self, model, *args, **kwargs):
+        pass
+
+    def on_loop_end(self, model, *args, **kwargs):
+        pass
+
+    def on_iteration_start(self, model, *args, **kwargs):
+        pass
+
+    def on_iteration_end(self, model, *args, **kwargs):
+        pass
+
+class LiveMetrics(Callback):
     """
     A class for visualizing live metrics during the training of a neural network.
 
     Attributes
     ----------
-    type : int
-        The type of live metrics to display.
+    mode : int
+        The mode of live metrics.
         -1: Display both loss/accuracy evolution and decision boundary.
         0: No live metrics.
         1: Display loss and accuracy evolution.
@@ -27,14 +43,14 @@ class LiveMetrics:
     run(model : melpy.Sequential, figure : matplotlib.figure.Figure)
         Updates the live metrics plot based on the current state of the model.
     """
-    def __init__(self, type=-1, f1=0, f2=1, row_select="limited"):
+    def __init__(self, mode=3, f1=0, f2=1, row_select="limited"):
         """
         Initializes the LiveMetrics object with the specified parameters.
 
         Parameters
         ----------
-        type : int, optional
-            The type of live metrics to display. Default is -1.
+        mode : int, optional
+            The mode of live metrics to display. Default is -1.
         f1 : int, optional
             The index of the first feature to use for plotting the decision boundary. Default is 0.
         f2 : int, optional
@@ -45,17 +61,27 @@ class LiveMetrics:
         Raises
         ------
         ValueError
-            If the `type` parameter is not one of (-1, 0, 1, 2).
+            If the `mode` parameter is not one of (-1, 0, 1, 2).
         """
-        self.type = type
+        self.mode = mode
         self.f1 = f1
         self.f2 = f2
         self.row_select = row_select
 
-        if self.type not in (-1, 0, 1, 2):
-            raise ValueError("`type` must be one of (-1, 0, 1, 2).")
+        if not isinstance(row_select, str):
+            raise ValueError("`row_select` must be a string.")
+        if not isinstance(f1, int):
+            raise ValueError("`f1` must be an integer.")
+        if not isinstance(f2, int):
+            raise ValueError("`f2` must be an integer.")
+        if not isinstance(mode, int):
+            raise ValueError("`mode` must be an integer.")
+        if self.mode not in (1, 2, 3):
+            raise ValueError("`mode` must be one of (1, 2, 3).")
+        if self.row_select not in ("limited", "full"):
+            raise ValueError("`row_select` must be one of ('limited', 'full').")
 
-    def run(self, model, figure):
+    def on_iteration_end(self, model, figure):
         """
         Updates the live metrics plot based on the current state of the model.
 
@@ -75,10 +101,7 @@ class LiveMetrics:
         ValueError
             If the `row_select` parameter is not one of ("limited", "full").
         """
-        if self.row_select not in ("limited", "full"):
-            raise ValueError("`row_select` must be one of ('limited', 'full').")
-
-        if self.type == 1:
+        if self.mode == 1:
             figure.clear()
 
             plt.subplot(1, 2, 1)
@@ -102,7 +125,7 @@ class LiveMetrics:
             figure.canvas.draw()
             figure.canvas.flush_events()
 
-        elif self.type == 2:
+        elif self.mode == 2:
             figure.clear()
 
             plt.subplot(1, 1, 1)
@@ -129,7 +152,7 @@ class LiveMetrics:
             figure.canvas.draw()
             figure.canvas.flush_events()
 
-        elif self.type == -1:
+        elif self.mode == 3:
             figure.clear()
 
             plt.subplot(1, 2, 2)

@@ -526,7 +526,7 @@ class Convolution2D(Layer):
         Calculates the padding for the input.
     explicit_padding()
         Applies explicit padding to the input.
-    get_output_size(input_height, input_width)
+    get_output_size(input_height : int, input_width : int)
         Gets the output size of the convolution.
     forward()
         Computes the forward pass of the convolution layer.

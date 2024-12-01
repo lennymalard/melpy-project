@@ -44,11 +44,18 @@ class SGD(Optimizer):
     update_params(layer : melpy.Layer)
         Updates the parameters of the given layer using SGD.
     """
-    def __init__(self):
+    def __init__(self, learning_rate=0.001, momentum=None):
         """
         Initializes the SGD optimizer.
         """
         super().__init__()
+        self.learning_rate = learning_rate
+        self.momentum = momentum
+
+        if not isinstance(learning_rate, float):
+            raise TypeError("`learning_rate` must be a float")
+        if not isinstance(momentum, float) and momentum is not None:
+            raise TypeError("`momentum` must be a float or None")
 
     def update_params(self, layer):
         """
@@ -104,15 +111,23 @@ class Adam(Optimizer):
     update_params(layer : melpy.Layer)
         Updates the parameters of the given layer using Adam.
     """
-    def __init__(self):
+    def __init__(self, learning_rate=0.001, beta1=0.9, beta2=0.999):
         """
         Initializes the Adam optimizer.
         """
         super().__init__()
-        self.beta1 = 0.9
-        self.beta2 = 0.999
+        self.beta1 = beta1
+        self.beta2 = beta2
+        self.learning_rate = learning_rate
         self.epsilon = 1e-7
         self.step = 1
+
+        if not isinstance(learning_rate, float):
+            raise TypeError("`learning_rate` must be a float")
+        if not isinstance(beta1, float):
+            raise TypeError("`beta1` must be a float")
+        if not isinstance(beta2, float):
+            raise TypeError("`beta2` must be a float")
 
     def update_params(self, layer):
         """
@@ -126,7 +141,7 @@ class Adam(Optimizer):
         Returns
         -------
         layer : melpy.Layer
-            The layer with updated parameters.@
+            The layer with updated parameters.
         """
         if not isinstance(layer, Layer):
             raise TypeError("'layer' must be of type 'Layer'.")
