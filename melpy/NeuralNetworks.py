@@ -593,14 +593,18 @@ class Sequential:
             self.train_outputs = self.predict(self.train_inputs[:self.batch_size])
             if self.validation:
                 self.val_outputs = self.predict(self.val_inputs[:self.val_batch_size])
-                if steps * self.val_batch_size < self.val_inputs.shape[0]:
-                    steps += 1
+
             for step in range(1, steps):
                 self.train_outputs = np.concatenate((self.train_outputs, self.predict(
                     self.train_inputs[step * self.batch_size:(step + 1) * self.batch_size])), axis=0)
                 if self.validation:
                     self.val_outputs = np.concatenate((self.val_outputs, self.predict(
                         self.val_inputs[step * self.val_batch_size:(step + 1) * self.val_batch_size])), axis=0)
+            if self.validation:
+                if steps * self.val_batch_size < self.val_inputs.shape[0]:
+                    steps += 1
+                    self.val_outputs = np.concatenate((self.val_outputs, self.predict(
+                        self.val_inputs[steps * self.val_batch_size:(steps + 1) * self.val_batch_size])), axis=0)
         else:
             self.train_outputs = self.predict(self.train_inputs)
             if self.validation:
