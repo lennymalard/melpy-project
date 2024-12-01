@@ -501,11 +501,11 @@ class Sequential:
                 self.val_batch_size = self.val_inputs.shape[0] // steps
 
         if epochs > 1000:
-            update = 50
-        elif 1000 >= epochs > 100:
             update = 25
-        elif epochs <= 100:
+        elif 1000 >= epochs > 100:
             update = 10
+        elif epochs <= 100:
+            update = 1
 
         tqdm_epochs = False
         tqdm_steps = False
