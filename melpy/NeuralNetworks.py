@@ -285,8 +285,6 @@ class Sequential:
         """
         if not isinstance(X, np.ndarray):
             raise TypeError('`X` must be of type numpy.ndarray.')
-        if X.shape[0] == 0:
-            return X
         self.train_layers[0].inputs = X
         for i in range(len(self.train_layers)):
             if i + 1 == len(self.train_layers):
@@ -591,24 +589,11 @@ class Sequential:
 
         if self.batch_size is not None:
             self.train_outputs = self.predict(self.train_inputs[:self.batch_size])
-            if self.validation:
-                self.val_outputs = self.predict(self.val_inputs[:self.val_batch_size])
-
             for step in range(1, steps):
                 self.train_outputs = np.concatenate((self.train_outputs, self.predict(
                     self.train_inputs[step * self.batch_size:(step + 1) * self.batch_size])), axis=0)
-                if self.validation:
-                    self.val_outputs = np.concatenate((self.val_outputs, self.predict(
-                        self.val_inputs[step * self.val_batch_size:(step + 1) * self.val_batch_size])), axis=0)
-            if self.validation:
-                if steps * self.val_batch_size < self.val_inputs.shape[0]:
-                    steps += 1
-                    self.val_outputs = np.concatenate((self.val_outputs, self.predict(
-                        self.val_inputs[steps * self.val_batch_size:(steps + 1) * self.val_batch_size])), axis=0)
         else:
             self.train_outputs = self.predict(self.train_inputs)
-            if self.validation:
-                self.val_outputs = self.predict(self.val_inputs)
 
         for callback in callbacks:
             callback.on_loop_end(self)
