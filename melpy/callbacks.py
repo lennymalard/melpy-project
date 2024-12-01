@@ -2,19 +2,121 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 class Callback:
+    """
+    A base class for creating custom callbacks to extend the functionality of the training loop.
+
+    Attributes
+    ----------
+    None
+
+    Methods
+    -------
+    on_loop_start(model : Sequential, *args, **kwargs)
+        Called at the start of the training loop.
+    on_loop_end(model : Sequential, *args, **kwargs)
+        Called at the end of the training loop.
+    on_iteration_start(model : Sequential, *args, **kwargs)
+        Called at the start of each epoch.
+    on_iteration_end(model : Sequential, *args, **kwargs)
+        Called at the end of each epoch.
+    """
+
     def __init__(self):
+        """
+        Initializes the Callback object.
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        None
+        """
         pass
 
     def on_loop_start(self, model, *args, **kwargs):
+        """
+        Called at the start of the training loop.
+
+        This method can be overridden to perform actions at the beginning of the training loop.
+
+        Parameters
+        ----------
+        model : Sequential
+            The model being trained.
+        *args
+            Additional positional arguments.
+        **kwargs
+            Additional keyword arguments.
+
+        Returns
+        -------
+        None
+        """
         pass
 
     def on_loop_end(self, model, *args, **kwargs):
+        """
+        Called at the end of the training loop.
+
+        This method can be overridden to perform actions at the end of the training loop.
+
+        Parameters
+        ----------
+        model : Sequential
+            The model being trained.
+        *args
+            Additional positional arguments.
+        **kwargs
+            Additional keyword arguments.
+
+        Returns
+        -------
+        None
+        """
         pass
 
     def on_iteration_start(self, model, *args, **kwargs):
+        """
+        Called at the start of each epoch.
+
+        This method can be overridden to perform actions at the beginning of each epoch.
+
+        Parameters
+        ----------
+        model : Sequential
+            The model being trained.
+        *args
+            Additional positional arguments.
+        **kwargs
+            Additional keyword arguments.
+
+        Returns
+        -------
+        None
+        """
         pass
 
     def on_iteration_end(self, model, *args, **kwargs):
+        """
+        Called at the end of each epoch.
+
+        This method can be overridden to perform actions at the end of each epoch.
+
+        Parameters
+        ----------
+        model : Sequential
+            The model being trained.
+        *args
+            Additional positional arguments.
+        **kwargs
+            Additional keyword arguments.
+
+        Returns
+        -------
+        None
+        """
         pass
 
 class LiveMetrics(Callback):
@@ -25,10 +127,9 @@ class LiveMetrics(Callback):
     ----------
     mode : int
         The mode of live metrics.
-        -1: Display both loss/accuracy evolution and decision boundary.
-        0: No live metrics.
         1: Display loss and accuracy evolution.
         2: Display decision boundary.
+        3: Display both loss/accuracy evolution and decision boundary.
     f1 : int
         The index of the first feature to use for plotting the decision boundary.
     f2 : int
@@ -40,9 +141,10 @@ class LiveMetrics(Callback):
 
     Methods
     -------
-    run(model : melpy.Sequential, figure : matplotlib.figure.Figure)
+    on_iteration_end(model : Sequential, figure : matplotlib.figure.Figure)
         Updates the live metrics plot based on the current state of the model.
     """
+
     def __init__(self, mode=3, f1=0, f2=1, row_select="limited"):
         """
         Initializes the LiveMetrics object with the specified parameters.
@@ -50,18 +152,25 @@ class LiveMetrics(Callback):
         Parameters
         ----------
         mode : int, optional
-            The mode of live metrics to display. Default is -1.
+            The mode of live metrics to display. Default is 3.
+            1: Display loss and accuracy evolution.
+            2: Display decision boundary.
+            3: Display both loss/accuracy evolution and decision boundary.
         f1 : int, optional
             The index of the first feature to use for plotting the decision boundary. Default is 0.
         f2 : int, optional
             The index of the second feature to use for plotting the decision boundary. Default is 1.
         row_select : str, optional
             Determines whether to use a limited or full set of rows for plotting. Default is "limited".
+            "limited": Use a limited number of rows.
+            "full": Use the full set of rows.
 
         Raises
         ------
         ValueError
-            If the `mode` parameter is not one of (-1, 0, 1, 2).
+            - If the `mode` parameter is not one of (1, 2, 3).
+            - If the `row_select` parameter is not one of ("limited", "full").
+            - If the `f1` or `f2` parameters are not integers.
         """
         self.mode = mode
         self.f1 = f1
