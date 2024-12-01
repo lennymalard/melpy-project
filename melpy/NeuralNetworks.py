@@ -285,7 +285,8 @@ class Sequential:
         """
         if not isinstance(X, np.ndarray):
             raise TypeError('`X` must be of type numpy.ndarray.')
-
+        if X.shape[0] == 0:
+            return np.array([])
         self.train_layers[0].inputs = X
         for i in range(len(self.train_layers)):
             if i + 1 == len(self.train_layers):
