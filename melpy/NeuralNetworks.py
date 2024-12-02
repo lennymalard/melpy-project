@@ -499,6 +499,12 @@ class Sequential:
                 steps += 1
             if self.validation:
                 self.val_batch_size = self.val_inputs.shape[0] // steps
+                if self.val_batch_size <= 0:
+                    raise ValueError(
+                        f"Validation batch size must be at least 1. (currently {self.val_batch_size}). "
+                        f"Ensure validation input size is greater than {steps} or increase training batch size to \
+                        {self.train_inputs.shape[0] // self.val_inputs.shape[0]}."
+                    )
 
         if epochs > 1000:
             update = 25
