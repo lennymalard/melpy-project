@@ -689,14 +689,17 @@ class Convolution2D(Layer):
         """
         self.dY = dX
 
+        flipped_filters = self.weights[:, :, ::-1, ::-1]
+        flipped_filters_cols = flipped_filters.reshape(self.out_channels, -1)
+
         self.dY_reshaped = self.dY.reshape(self.dY.shape[0] * self.dY.shape[1], self.dY.shape[2] * self.dY.shape[3])
         self.dY_reshaped = np.array(np.vsplit(self.dY_reshaped, self.inputs.shape[0]))
         self.dY_reshaped = np.concatenate(self.dY_reshaped, axis=-1)
 
-        self.dX_cols = self.filter_cols.T @ self.dY_reshaped
+        self.dX_cols = flipped_filters_cols.T @ self.dY_reshaped
         self.dW_cols = self.dY_reshaped @ self.input_cols.T
 
-        self.dX_padded = col2im(self.input_cols, self.input_padded.shape, self.kernel_size, self.stride)
+        self.dX_padded = col2im(self.dX_cols, self.input_padded.shape, self.kernel_size, self.stride)
 
         if self.padding == "same":
             (pad_top, pad_bottom, pad_left, pad_right) = self.calculate_padding()
