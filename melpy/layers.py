@@ -13,9 +13,9 @@ class Layer:
     outputs : ndarray
         Output data.
     dX : ndarray
-        Partial derivative of input with respect to loss.
+        Partial derivative of loss with respect to input.
     dY : ndarray
-        Partial derivative of output with respect to loss.
+        Partial derivative of loss with respect to output.
 
     Methods
     -------
@@ -64,12 +64,12 @@ class Layer:
         Parameters
         ----------
         dX : ndarray
-            Partial derivative of output data (dY -> dX) with respect to loss.
+            Partial derivative of loss with respect to output data.
 
         Returns
         -------
         ndarray
-            Partial derivative of input data with respect to loss.
+            Partial derivative of loss with respect to input data.
         """
         pass
 
@@ -94,13 +94,13 @@ class Dense(Layer):
     outputs : ndarray
         Output data.
     dX : ndarray
-        Partial derivative of input with respect to loss.
+        Partial derivative of loss with respect to input.
     dY : ndarray
-        Partial derivative of output with respect to loss.
+        Partial derivative of loss with respect to output.
     dW : ndarray
-        Partial derivative of weight with respect to loss.
+        Partial derivative of loss with respect to weight.
     dB : ndarray
-        Partial derivative of bias with respect to loss.
+        Partial derivative of loss with respect to bias.
     weights : ndarray
         Weights of the dense layer.
     biases : ndarray
@@ -202,12 +202,12 @@ class Dense(Layer):
         Parameters
         ----------
         dX : ndarray
-            Partial derivative of output data (dY -> dX) with respect to loss.
+            Partial derivative of loss with respect to output data.
 
         Returns
         -------
         ndarray
-            Partial derivative of input data with respect to loss.
+            Partial derivative of loss with respect to input data.
         """
         self.dY = dX
         self.dW = np.dot(self.inputs.T, self.dY)
@@ -227,9 +227,9 @@ class ReLU(Layer, Activation):
     outputs : ndarray
         Output data.
     dX : ndarray
-        Partial derivative of input with respect to loss.
+        Partial derivative of loss with respect to input.
     dY : ndarray
-        Partial derivative of output with respect to loss.
+        Partial derivative of loss with respect to output.
 
     Methods
     -------
@@ -278,12 +278,12 @@ class ReLU(Layer, Activation):
         Parameters
         ----------
         dX : ndarray
-            Partial derivative of output data (dY -> dX) with respect to loss.
+            Partial derivative of loss with respect to output data.
 
         Returns
         -------
         ndarray
-            Partial derivative of input data with respect to loss.
+            Partial derivative of loss with respect to input data.
         """
         self.dY = dX
         self.dX = self.dY * self.derivative()
@@ -300,9 +300,9 @@ class LeakyReLU(Layer, Activation):
     outputs : ndarray
         Output data.
     dX : ndarray
-        Partial derivative of input with respect to loss.
+        Partial derivative of loss with respect to input.
     dY : ndarray
-        Partial derivative of output with respect to loss.
+        Partial derivative of loss with respect to output.
 
     Methods
     -------
@@ -351,12 +351,12 @@ class LeakyReLU(Layer, Activation):
         Parameters
         ----------
         dX : ndarray
-            Partial derivative of output data (dY -> dX) with respect to loss.
+            Partial derivative of loss with respect to output data.
 
         Returns
         -------
         ndarray
-            Partial derivative of input data with respect to loss.
+            Partial derivative of loss with respect to input data.
         """
         self.dY = dX
         self.dX = self.dY * self.derivative()
@@ -373,9 +373,9 @@ class Sigmoid(Layer, Activation):
     outputs : ndarray
         Output data.
     dX : ndarray
-        Partial derivative of input with respect to loss.
+        Partial derivative of loss with respect to input.
     dY : ndarray
-        Partial derivative of output with respect to loss.
+        Partial derivative of loss with respect to output.
 
     Methods
     -------
@@ -422,12 +422,12 @@ class Sigmoid(Layer, Activation):
         Parameters
         ----------
         dX : ndarray
-            Partial derivative of output data (dY -> dX) with respect to loss.
+            Partial derivative of loss with respect to output data.
 
         Returns
         -------
         ndarray
-            Partial derivative of input data with respect to loss.
+            Partial derivative of loss with respect to input data.
         """
         self.dY = dX
         self.dX = self.dY * self.derivative()
@@ -444,9 +444,9 @@ class Softmax(Layer, Activation):
     outputs : ndarray
         Output data.
     dX : ndarray
-        Partial derivative of input with respect to loss.
+        Partial derivative of loss with respect to input.
     dY : ndarray
-        Partial derivative of output with respect to loss.
+        Partial derivative of loss with respect to output.
 
     Methods
     -------
@@ -482,12 +482,12 @@ class Softmax(Layer, Activation):
         Parameters
         ----------
         dX : ndarray
-            Partial derivative of output data (dY -> dX) data with respect to loss.
+            Partial derivative of loss with respect to output data.
 
         Returns
         -------
         ndarray
-            Partial derivative of input data with respect to loss.
+            Partial derivative of loss with respect to input data.
         """
         self.dY = dX
         self.dX = np.empty_like(dX)
@@ -689,12 +689,12 @@ class Convolution2D(Layer):
         Parameters
         ----------
         dX : ndarray
-            Partial derivative of output data (dY -> dX) with respect to loss.
+            Partial derivative of loss with respect to output data.
 
         Returns
         -------
         ndarray
-            Partial derivative of input data with respect to loss.
+            Partial derivative of loss with respect to input data.
         """
         self.dY = dX
 
@@ -798,12 +798,12 @@ class Pooling2D(Layer):
         Parameters
         ----------
         dX : ndarray
-            Partial derivative of output data (dY -> dX) with respect to loss.
+            Partial derivative of loss with respect to output data.
 
         Returns
         -------
         ndarray
-            Partial derivative of input data with respect to loss.
+            Partial derivative of loss with respect to input data.
         """
         self.dY = dX
         self.dX = np.zeros_like(self.inputs)
@@ -860,12 +860,12 @@ class Flatten(Layer):
         Parameters
         ----------
         dX : ndarray
-            Partial derivative of output data (dY -> dX) with respect to loss.
+            Partial derivative of loss with respect to output data.
 
         Returns
         -------
         ndarray
-            Partial derivative of input data with respect to loss.
+            Partial derivative of loss with respect to input data.
         """
         self.dY = dX
         self.dX = self.dY.reshape(self.inputs.shape)
@@ -935,12 +935,12 @@ class Dropout(Layer):
         Parameters
         ----------
         dX : ndarray
-            Partial derivative of output data (dY -> dX) with respect to loss.
+            Partial derivative of loss with respect to output data.
 
         Returns
         -------
         ndarray
-            Partial derivative of input data with respect to loss.
+            Partial derivative of loss with respect to input data.
         """
         if self.training:
             self.dX = dX * self.mask * 1.0 / (1.0 - self.p)
