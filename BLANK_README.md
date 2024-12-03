@@ -11,10 +11,10 @@
 <br />
 <div align="center">
   <a href="https://github.com/lennymalard/melpy-project">
-    <img src="images/logo.png" alt="Logo" width="200" height="110">
+    <img src="images/blank1-1.png" alt="Logo" width="371" height="168">
   </a>
 
-<h3 align="center">Melpy</h3>
+<h3 align="center" style="font-size: 25px;"> </h3>
 
   <p align="center">
     Melpy is a python library I created with the aim of gaining a fundamental understanding of how artificial neural networks work.
@@ -86,14 +86,14 @@ First a python file, today melpy is a full-fledged library imitating today's bes
 
 ### Prerequisites
 
-Melpy requires an up-to-date python environment. You can download the latest version with the conda environment by following this link : [anaconda.org](https://www.anaconda.com/download).
+Melpy requires an up-to-date python environment. I recommend conda, which is dedicated to the scientific use of python : [anaconda.org](https://www.anaconda.com/download).
 
 All other prerequisites will be installed automatically during library installation.
 
 
 ### Installation
 
-Run the following prompt :
+Run the following prompt in your environment terminal:
    ```sh
    pip3 install melpy
    ```
@@ -106,7 +106,17 @@ Run the following prompt :
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
+Before we can start creating our model, we need some data to train. Let's take a look at a classic case: the iris dataset. It consists of three classes labelled Setosa, Versiocolor and Virginica, which we'll classify using the following data: Sepal Length, Sepal Width, Petal Length and Petal Width.
+
+```python
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+
+iris_dataset = load_iris()
+
+X_train, X_test, y_train, y_test = train_test_split(
+        iris_dataset['data'], iris_dataset['target'], test_size=0.25, random_state=0)
+```
 
 _For more examples, please refer to the [Documentation](https://example.com)_
 

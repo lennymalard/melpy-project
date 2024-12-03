@@ -533,7 +533,7 @@ class Convolution2D(Layer):
     backward(dX : ndarray)
         Computes the backward pass of the convolution layer.
     """
-    def __init__(self, in_channels, out_channels, kernel_size, padding="valid", stride=1):
+    def __init__(self, in_channels, out_channels, kernel_size, padding="valid", stride=1, use_bias=True):
         """
         Initializes the Convolution2D layer.
 
@@ -565,14 +565,21 @@ class Convolution2D(Layer):
             sqrt(6 / (in_channels + out_channels)),
             (out_channels, in_channels, kernel_size, kernel_size)
         )
-        self.biases = None
         self.dW = np.zeros_like(self.weights)
-        self.dB = None
+        self.weight_momentums = np.zeros_like(self.weights)
+        self.weight_cache = np.zeros_like(self.weights)
+        if use_bias is True:
+            self.biases = np.zeros(shape=(1, out_channels, 1, 1))
+            self.dB = np.zeros_like(self.biases)
+            self.bias_momentums = np.zeros_like(self.biases)
+            self.bias_cache = np.zeros_like(self.biases)
+        else:
+            self.biases = None
         self.padding = padding
         self.kernel_size = kernel_size
         self.stride = stride
-        self.weight_momentums = np.zeros_like(self.weights)
-        self.weight_cache = np.zeros_like(self.weights)
+
+
 
         if not isinstance(padding, str):
             raise TypeError("`padding` must be a string.")
@@ -671,6 +678,8 @@ class Convolution2D(Layer):
             (self.input_padded.shape[0], self.out_channels, output_height, output_width)
         )
 
+        self.outputs += self.biases
+
         return self.outputs
 
     def backward(self, dX):
@@ -708,6 +717,7 @@ class Convolution2D(Layer):
             self.dX = self.dX_padded
 
         self.dW = self.dW_cols.reshape((self.dW_cols.shape[0], self.in_channels, self.kernel_size, self.kernel_size))
+        self.dB = np.sum(self.dY, axis=(0, 2, 3), keepdims=True)
 
         return self.dX
 
