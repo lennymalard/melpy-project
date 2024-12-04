@@ -11,7 +11,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/lennymalard/melpy-project">
-    <img src="images/blank1-1.png" alt="Logo" width="auto" height="auto">
+    <img src="images/blank1-1.png" alt="Logo" width="371" height="168">
   </a>
 
 <h3 align="center" style="font-size: 25px;"> Crafting Deep Learning from the Ground Up </h3>
