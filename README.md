@@ -61,21 +61,17 @@
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
-The project was born in 2022, while I was still in high school. I was taking an online course in machine learning, but found myself frustrated at not understanding how all of these algorithms worked. So I decided to implement them myself in order to understand them perfectly.
+The project started in 2022 when I was still in high school. While taking an online machine learning course, I got frustrated with not fully understanding how the algorithms worked. To solve this, I decided to implement them myself to gain a deeper and clearer understanding.
 
-First a python file, today melpy is a full-fledged library imitating today's best. You'll find tools for pre-processing data, as well as classes for training architectures such as FNN and CNN.
-
+What started as a simple Python script has become Melpy, a deep learning library built entirely from scratch using NumPy. Melpy is inspired by the best tools available and makes it easy to create and train models like FNNs and CNNs. It also includes tools for data preprocessing and data visualization, making it a complete solution for deep learning.
+ 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
 
 ### Built With
 
  [![Numpy][Numpy.org]][numpy-url] [![Matplotlib][Matplotlib.org]][Matplotlib-url] [![tqdm][tqdm.github.io]][tqdm-url]
  
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
 
 <!-- GETTING STARTED -->
 ## Getting Started
@@ -84,12 +80,12 @@ First a python file, today melpy is a full-fledged library imitating today's bes
 
 Melpy requires an up-to-date python environment. I recommend [conda](https://www.anaconda.com/download), which is dedicated to the scientific use of python.
 
-All other prerequisites will be installed automatically during library installation.
+All other dependencies will be installed automatically during the library installation process.
 
 
 ### Installation
 
-Melpy is available on PyPI as melpy. Run the following prompt in your environment terminal to install it:
+Melpy is available on PyPI as melpy. Run the following command to install it in your environment:
    ```sh
    pip3 install melpy --upgrade
    ```
@@ -97,14 +93,12 @@ Melpy is available on PyPI as melpy. Run the following prompt in your environmen
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
-
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-To help you understand how to use Melpy, I'd like you to work with me on a mini-project so that you can get an overview of all the possible things you can do, as well as the possible errors you might encounter and their solutions.
+To demonstrate Melpy’s capabilities, let’s work through a mini-project together. We’ll classify the Iris dataset, a classic example in machine learning. The dataset contains three classes: Setosa, Versicolor, and Virginica, described by the following features: Sepal Length, Sepal Width, Petal Length, and Petal Width.
 
-Before we start creating a model, we need some data to train. Let's take a look at a classic case: the iris dataset. It consists of three classes labelled Setosa, Versiocolor and Virginica, which we'll classify using the following data: Sepal Length, Sepal Width, Petal Length and Petal Width.
+First, let’s load the data and split it into training and test sets:
 
 ```python
 from sklearn.datasets import load_iris
@@ -115,7 +109,7 @@ iris_dataset = load_iris()
 X_train, X_test, y_train, y_test = train_test_split(
         iris_dataset['data'], iris_dataset['target'], test_size=0.25, random_state=0)
 ```
-Let's take a look at these data.
+Next, visualize the data to identify any patterns:
 ```python
 import matplotlib.pyplot as plt
 
@@ -125,18 +119,21 @@ plt.show()
 ```
 <br>
 <div align="center">
- <img src="images/iris.png" alt="Logo" width="600" height="460">
+ <img src="images/iris.png" alt="Logo" width="auto" height="auto">
  <p >
   <em>Figure 1</em>
  </p>
 </div>
 
-As we can see in Figure 1, there's a correlation between iris species, petal length and petal width. Do you see the decision boundaries ? We will try to reproduce them using our model, as you will see later.
+As we can see in Figure 1, there is a clear correlation between species and features like Sepal Length and Sepal Width.
 <br>
 <br>
-We now need to pre-process the data. FNNs only accept data close to zero. This is why we're going to use a tool present in melpy.preprocessing: StandardScaler. 
 
-The Standard Scaler is a pre-processing technique which consists of removing the mean from a data set and dividing by its variance. You can find out more about data scaling here: [Feature Scaling](https://en.wikipedia.org/wiki/Feature_scaling).
+### Preprocessing
+
+FNNs require input data to be scaled close to zero. It is why we are now going to use StandardScaler from melpy.preprocessing :
+
+<em>The Standard Scaler is a pre-processing technique which consists of removing the mean from a data set and dividing by its variance. You can find out more about data scaling here: [Feature Scaling](https://en.wikipedia.org/wiki/Feature_scaling).</em>
 
 ```python
 from melpy.preprocessing import StandardScaler
@@ -146,10 +143,10 @@ X_train = sc.transform(X_train) # Scales data
 X_test = sc.transform(X_test) # Scaled with the same mean and variance than X_train
 ```
 
-This is how we pre-processed the inputs. Concerning the outputs, we need to encode them with another pre-processing technique called One-hot encoding, accessible from melpy.preprocessing as OneHotEncoder. 
+Next, we encode the target labels using OneHotEncoder, also from melpy.preprocessing:
 
-One-hot encoding is a method of representing categorical data as binary vectors. Each unique category is assigned a unique vector where one element is set to 1 (hot) and all others are 0.
-You can find out more about data encoding here : [One-hot](https://en.wikipedia.org/wiki/One-hot).
+<em>One-hot encoding is a method of representing categorical data as binary vectors. Each unique category is assigned a unique vector where one element is set to 1 (hot) and all others are 0.
+You can find out more about data encoding here : [One-hot](https://en.wikipedia.org/wiki/One-hot).</em>
 
 ```python
 from melpy.preprocessing import OneHotEncoder
@@ -159,11 +156,19 @@ X_train = ohe.transform(X_train) # Encodes data
 X_test = ohe.transform(X_test) # Encodes with the same encoding than y_train
 ```
 
-Now that we've pre-processed our data, we can create our model. To do this, we first need to identify the problem in order to build a suitable model. 
+### Model Creation
 
-We want to classify three classes identified by tabular data, which implies the use of [fully connected layers](https://en.wikipedia.org/wiki/Multilayer_perceptron), a [softmax](https://en.wikipedia.org/wiki/Softmax_function) [activation function](https://fr.wikipedia.org/wiki/Fonction_d%27activation) and a categorical [cost function](https://en.wikipedia.org/wiki/Loss_function). You may ask why ? The short answer is that fully connected layers ensure that all features are considered when learning the relationships within the data, the softmax activation function converts the output into probabilities that sum to 1 for multi-class classification, and the categorical cost function (which is [categorical cross-entropy](https://en.wikipedia.org/wiki/Cross-entropy) in our case) measures the difference between the predicted probabilities and the true class labels, providing an effective way to optimize the model during training. If you want a more in depth explaination on how Neural Networks work, I recommend you to watch the [3Blue1Brown](https://youtu.be/aircAruvnKk?si=QMDAzU8ThgQ_nmTt)'s series of videos, which gives a good insight into the subject.
+We’re tackling a multi-class classification problem using tabular data, which requires:
+*	[Fuly Connected Layers](https://en.wikipedia.org/wiki/Multilayer_perceptron) (Dense) for feature extraction.
+*	[Softmax](https://en.wikipedia.org/wiki/Softmax_function) [Activation](https://fr.wikipedia.org/wiki/Fonction_d%27activation) to convert outputs into probabilities.
+*	[Categorical Cross-Entropy](https://en.wikipedia.org/wiki/Cross-entropy) as the cost function for optimization.
 
-Now that we know all this, we can build our model. To do this, we will use Sequential, available from melpy.NeuralNetworks. It's a class that lets you create and train architectures in the form of stacks of layers.
+If you begin in deep learning, I highly recommend [3Blue1Brown](https://youtu.be/aircAruvnKk?si=QMDAzU8ThgQ_nmTt)'s excellent video series on Deep Learning, so you understand the usage of these functions.
+
+
+Now, let’s build the model using Melpy’s Sequential class:
+
+<em>Sequential models are neural networks where layers are stacked in a linear order. Data flows through them one by one in sequence.</em>
 
 ```python
 import melpy.NeuralNetworks as nn
@@ -175,9 +180,18 @@ model.add(nn.Dense(6, y_train.shape[1]), nn.Softmax())
 
 model.compile(cost_function=nn.CategoricalCrossEntropy(), optimizer=nn.SGD(learning_rate=0.01))
 ```
-Here we have indicated the training data and the validation data (The test set and validation set are usually separate, but here we simplify by using the test set as the validation set.). Next, we create the architecture, which here is a hidden layer composed of 6 neurons activated by the [ReLU](https://en.wikipedia.org/wiki/Rectifier_(neural_networks)) function. Finally, we define the cost function ([Categorical Cross-Entropy](https://en.wikipedia.org/wiki/Cross-entropy)) and the optimization method to be used (in this case, Batch [Gradient Descent](https://en.wikipedia.org/wiki/Gradient_descent), more commonly known as Stochastic [Gradient Descent](https://en.wikipedia.org/wiki/Gradient_descent)).
 
-We then display the structure of our network with the summary method.
+We define:
+* The training inputs and the training outputs
+* The validation inputs and the validation outputs
+* A hidden layer with 6 neurons and [ReLU](https://en.wikipedia.org/wiki/Rectifier_(neural_networks)) [activation](https://fr.wikipedia.org/wiki/Fonction_d%27activation).
+* A [Softmax](https://en.wikipedia.org/wiki/Softmax_function) output layer for classification.
+* [Categorical Cross-Entropy](https://en.wikipedia.org/wiki/Cross-entropy) for loss calculation.
+* [Stochastic Gradient Descent (SGD)](https://en.wikipedia.org/wiki/Stochastic_gradient_descent) for optimization.
+
+### Model Summary
+
+We can view the model structure with:
 
 ```python
 model.summary()
@@ -190,30 +204,45 @@ Dense: (1, 3)
 Softmax: (1, 3)
 ```
 
-Note that we indicate the number of input features and the number of output classes.
+### Training the Model
 
-At this point, all we need to do is train the model using the fit method and show the evolution of our metrics.
+Finally, we train the model with 5000 epochs and observe the results with verbose and LiveMetrics :
+
 ```python
-model.fit(epochs=5000, verbose = 1)
+model.fit(epochs=5000, verbose = 1, callbacks=[nn.LiveMetrics()])
 model.results()
 ```
 <div align="center">
- <img src="images/history.png" alt="Logo" width="600" height="460">
+ <img src="images/livemetrics.png" alt="Logo" width="auto" height="auto">
  <p >
   <em>Figure 2</em>
  </p>
 </div>
 
-We performed forward propagation and backward propagation 5000 times to optimize our model. We can see from the verbose that we've achieved an accuracy of 98% for both datasets, which is already very good! We could in fact achieve a score of 100% using another architecture coupled with another optimization method such as Adam (Adaptive Momentum), but I will leave you the pleasure of experimenting on your own :) .
+```sh
+Epoch [5000/5000]: 100%|██████████| 5000/5000 [00:03<00:00, 1543.94it/s, loss=0.0389, accuracy=0.988]
 
-If you wish, you can now save your neural network parameters and metrics history to a file.
+-------------------------------------------------------------------
+| [TRAINING METRICS] train_loss: 0.03893 · train_accuracy: 0.9881 |
+-------------------------------------------------------------------
+| [VALIDATION METRICS] val_loss: 0.06848 · val_accuracy: 0.98246  |
+-------------------------------------------------------------------
+```
+
+Our model achieves 98% accuracy on both training and test datasets, whish is good! With further optimization you could potentially reach 100%. Feel free to experiment!
+
+If you look closely, you’ll notice that the plot on the right closely resembles Figure 1. It’s actually the model’s inputs colored by the outputs, allowing us to visually assess whether the model is well trained.
+
+### Save Your Work
+
+Save your trained parameters and metrics for future use:
 
 ```python
 model.save_params("iris_parameters")
 model.save_histories("iris_metrics")
 ```
 
-These two files are reusable. The first using the load_params(path) method and the second using the [pickle](https://docs.python.org/3/library/pickle.html) library.
+You can reload the parameters with load_params(path) and the metrics using the [pickle](https://docs.python.org/3/library/pickle.html) library.
 
 
 _For more examples, please refer to the [Documentation](https://example.com)_
@@ -225,10 +254,8 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 <!-- ROADMAP -->
 ## Roadmap
 
-- [ ] Feature 1
-- [ ] Feature 2
-- [ ] Feature 3
-    - [ ] Nested Feature
+I plan to speed up computations using Numba or JAX and to implement additional deep learning architectures, as well as more traditional machine learning algorithms.
+
 
 See the [open issues](https://github.com/github_username/repo_name/issues) for a full list of proposed features (and known issues).
 
@@ -272,20 +299,9 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 <!-- CONTACT -->
 ## Contact
 
-Your Name - [@twitter_handle](https://twitter.com/twitter_handle) - email@email_client.com
+Lenny Malard - lennymalard@gmail.com or [linkedin](https://www.linkedin.com/in/lennymalard/)
 
-Project Link: [https://github.com/github_username/repo_name](https://github.com/github_username/repo_name)
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
-
-<!-- ACKNOWLEDGMENTS -->
-## Acknowledgments
-
-* []()
-* []()
-* []()
+Project Link: [https://github.com/lennymalard/melpy-project](https://github.com/lennymalard/melpy-project")
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -312,4 +328,5 @@ Project Link: [https://github.com/github_username/repo_name](https://github.com/
 [Matplotlib.org]: https://img.shields.io/badge/matplotlib-orange?style=for-the-badge&logo=matplotlib&labelColor=blue&color=blue&link=https%3A%2F%2Fmatplotlib.org%2F
 [tqdm-url]: https://tqdm.github.io
 [tqdm.github.io]: https://img.shields.io/badge/tqdm-orange?style=for-the-badge&logo=tqdm&labelColor=blue&color=blue&link=https%3A%2F%2Ftqdm.github.io%2F
+
 
