@@ -257,7 +257,7 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 I plan to speed up computations using Numba or JAX and to implement additional deep learning architectures, as well as more traditional machine learning algorithms.
 
 
-See the [open issues](https://github.com/github_username/repo_name/issues) for a full list of proposed features (and known issues).
+See the [open issues](https://github.com/lennymalard/melpy-project/issues) for a full list of proposed features (and known issues).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -306,9 +306,9 @@ Project Link: [https://github.com/lennymalard/melpy-project](https://github.com/
 [forks-shield]: https://img.shields.io/github/forks/lennymalard/melpy-project.svg?style=for-the-badge
 [forks-url]: https://github.com/lennymalard/melpy-project/network/members
 [stars-shield]: https://img.shields.io/github/stars/lennymalard/melpy-project.svg?style=for-the-badge
-[stars-url]: https://github.comlennymalard/melpy-project/stargazers
+[stars-url]: https://github.com/lennymalard/melpy-project/stargazers
 [issues-shield]: https://img.shields.io/github/issues/lennymalard/melpy-project.svg?style=for-the-badge
-[issues-url]: https://github.com/lennymalard/melpy-project/issues
+[issues-url]: https://github.com/lennymalard/melpy-project/issues/
 [license-shield]: https://img.shields.io/github/license/lennymalard/melpy-project.svg?style=for-the-badge
 [license-url]: https://github.com/lennymalard/melpy-project/blob/main/LICENSE
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555

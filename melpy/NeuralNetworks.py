@@ -72,28 +72,31 @@ class Sequential:
     val_accuracy_history : list
         History of validation accuracy values for each epoch.
 
-    cost_function : melpy.losses.Loss
+    cost_function : Loss
         Cost function used for training.
 
     runtime : float
         Total time taken to train the model.
 
-    optimizer : melpy.optimizers.Optimizer
+    optimizer : Optimizer
         Optimizer instance used to update model parameters.
     validation : bool
         Indicates whether a validation dataset is used.
 
     Methods
     -------
+    add(layer : layer, activation : Activation)
+        Adds a new layer to the model.
     forward()
         Performs the forward pass for both training and validation layers.
     backward()
         Executes the backward pass to compute gradients for training layers.
     verbose(verbose : int, epoch : int, epochs : int, start_time : float)
         Displays training and validation metrics based on the specified verbosity level.
-    fit(cost_function : melpy.losses.Loss, epochs : int, batch_size : int, optimizer : melpy.optimizers.Optimizer, learning_rate : float,
-        momentum : float, verbose : int, live_metrics : int or melpy.LiveMetrics.LiveMetrics, callbacks : callable)
-        Trains the model using the specified configurations and tracks metrics over epochs.
+    compile(cost_function : Loss, optimizer : Optimizer)
+        Compiles the model with the specified cost function and optimizer.
+    fit(epochs : int, batch_size : int, verbose : int, callbacks : list)
+        Trains the model using the provided cost function, optimizer, and other parameters.
     predict(X : ndarray)
         Generates predictions for the input data `X`.
     results()
@@ -128,8 +131,8 @@ class Sequential:
         Raises
         ------
         TypeError
-            If `train_inputs` and `train_targets` are not of type 'numpy.ndarray'.
-            If `val_inputs` and `val_targets` are provided and not of type 'numpy.ndarray'.
+            If `train_inputs` and `train_targets` are not of type 'ndarray'.
+            If `val_inputs` and `val_targets` are provided and not of type 'ndarray'.
         """
         self.train_inputs = train_inputs
         self.train_input_batch = None
@@ -175,10 +178,10 @@ class Sequential:
             self.validation = True
 
         if not isinstance(train_inputs, np.ndarray) or not isinstance(train_targets, np.ndarray):
-            raise TypeError('`train_inputs` and `train_targets` must be of type numpy.ndarray.')
+            raise TypeError('`train_inputs` and `train_targets` must be of type ndarray.')
         if self.val_inputs is not None and self.val_targets is not None:
             if not isinstance(val_inputs, np.ndarray) or not isinstance(val_targets, np.ndarray):
-                raise TypeError('`val_inputs` and `val_targets` must be of type numpy.ndarray.')
+                raise TypeError('`val_inputs` and `val_targets` must be of type ndarray.')
 
     def get_flatten_length(self):
         """
@@ -282,10 +285,10 @@ class Sequential:
         Raises
         ------
         TypeError
-            If `X` is not of type 'numpy.ndarray'.
+            If `X` is not of type 'ndarray'.
         """
         if not isinstance(X, np.ndarray):
-            raise TypeError("`X` must be of type 'numpy.ndarray'.")
+            raise TypeError("`X` must be of type 'ndarray'.")
         self.train_layers[0].inputs = X
         for i in range(len(self.train_layers)):
             if i + 1 == len(self.train_layers):
@@ -412,19 +415,25 @@ class Sequential:
 
         Parameters
         ----------
-        cost_function : melpy.losses.Loss
+        cost_function : Loss
             The cost function to be used for training.
-        optimizer : melpy.optimizers.Optimizer, optional
+        optimizer : Optimizer, optional
             The optimizer to be used for updating the model parameters. Default is SGD with a learning rate of 0.01.
+
+        Raises
+        ------
+        ValueError
+            If `cost_function` is not an instance of Loss.
+            If `optimizer` is not an instance of Optimizer.
 
         Returns
         -------
         None
         """
         if not isinstance(cost_function, Loss):
-            raise ValueError("`cost_function` must be of type `melpy.losses.Loss.`")
+            raise ValueError("`cost_function` must be of type `Loss`.")
         if not isinstance(optimizer, Optimizer):
-            raise ValueError("`optimizer` must be of type `melpy.optimizers.Optimizer.`")
+            raise ValueError("`optimizer` must be of type `Optimizer`.")
 
         self.__is_compiled__ = True
         self.optimizer = optimizer
@@ -447,7 +456,7 @@ class Sequential:
             The number of samples per batch. If None, the entire dataset is used for each pass.
         verbose : int, optional
             The verbosity level for printing metrics during training. Default is 1.
-        callbacks : list of callable, optional
+        callbacks : list of Callback, optional
             A list of callback functions to extend training functionality. Each callback should be a callable
             object that implements the following methods:
             - `on_loop_start(model)`: Called at the start of the training loop.
@@ -465,7 +474,7 @@ class Sequential:
             - If `epochs` is not of type `int`.
             - If `verbose` is not of type `int` and is not `None`.
         TypeError
-            - If `callbacks` is not a list of melpy.callbacks.Callback objects.
+            - If `callbacks` is not a list of Callback objects.
 
         Returns
         -------
@@ -480,7 +489,7 @@ class Sequential:
         if not isinstance(verbose, int) and verbose is not None:
             raise ValueError("`verbose` must be of type `int` or `None`.")
         if not isinstance(callbacks, list) or not all(isinstance(callback, Callback) for callback in callbacks):
-            raise TypeError("`callbacks` must be a list of melpy.callbacks.Callback objects.")
+            raise TypeError("`callbacks` must be a list of Callback objects.")
 
         self.__is_trained__ = True
 
@@ -502,7 +511,7 @@ class Sequential:
                 if self.val_batch_size <= 0:
                     raise ValueError(
                         f"Validation batch size must be at least 1. (currently {self.val_batch_size}). "
-                        f"Ensure validation input size is greater than {steps} or increase training batch size to " 
+                        f"Ensure validation input size is greater than {steps} or increase training batch size to "
                         f"{self.train_inputs.shape[0] // self.val_inputs.shape[0]}."
                     )
 
@@ -531,7 +540,7 @@ class Sequential:
 
         for epoch in (epoch_bar := tqdm(range(epochs), disable=not tqdm_epochs, file=sys.stdout)):
             epoch_bar.set_description(f"Epoch [{epoch + 1}/{epochs}]")
-            epoch_bar.set_postfix({"loss":loss, "accuracy":acc})
+            epoch_bar.set_postfix({"loss": loss, "accuracy": acc})
 
             for callback in callbacks:
                 callback.on_iteration_start(self)
@@ -544,7 +553,7 @@ class Sequential:
 
             for step in (step_bar := tqdm(range(steps), disable=not tqdm_steps, file=sys.stdout)):
                 step_bar.set_description(f"Epoch [{epoch + 1}/{epochs}]")
-                step_bar.set_postfix({"loss":loss, "accuracy":acc})
+                step_bar.set_postfix({"loss": loss, "accuracy": acc})
 
                 if self.batch_size is None:
                     self.train_input_batch = self.train_inputs

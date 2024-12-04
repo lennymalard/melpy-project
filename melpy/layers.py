@@ -519,6 +519,12 @@ class Convolution2D(Layer):
         Momentum for weights.
     weight_cache : ndarray
         Cache for weights.
+    biases : ndarray
+        Biases of the convolution layer.
+    bias_momentums : ndarray
+        Momentum for biases.
+    bias_cache : ndarray
+        Cache for biases.
 
     Methods
     -------
@@ -579,8 +585,6 @@ class Convolution2D(Layer):
         self.kernel_size = kernel_size
         self.stride = stride
 
-
-
         if not isinstance(padding, str):
             raise TypeError("`padding` must be a string.")
         if self.padding not in ("valid", "same"):
@@ -628,8 +632,7 @@ class Convolution2D(Layer):
             Padded input data.
         """
         pad_top, pad_bottom, pad_left, pad_right = self.calculate_padding()
-        return np.pad(self.inputs, ((0, 0), (0, 0), (pad_top, pad_bottom),
-                                    (pad_left, pad_right)), mode='constant')
+        return np.pad(self.inputs, ((0, 0), (0, 0), (pad_top, pad_bottom), (pad_left, pad_right)), mode='constant')
 
     def get_output_size(self, input_height, input_width):
         """
@@ -1009,3 +1012,4 @@ class Linear:
         self.biases -= self.dB * lr
         self.dW *= np.zeros(self.dW.shape, dtype=np.float64)
         self.dB *= np.zeros(self.dB.shape, dtype=np.float64)
+
