@@ -258,11 +258,15 @@ class Sequential:
             if i + 1 == len(self.train_layers):
                 self.train_output_batch = self.train_layers[i].forward()
             else:
+                if isinstance(self.train_layers[i], Dropout):
+                    self.train_layers[i].training = True
                 self.train_layers[i + 1].inputs = self.train_layers[i].forward()
             if self.validation:
                 if i + 1 == len(self.val_layers):
                     self.val_output_batch = self.val_layers[i].forward()
                 else:
+                    if isinstance(self.train_layers[i], Dropout):
+                        self.train_layers[i].training = True
                     self.val_layers[i + 1].inputs = self.val_layers[i].forward()
 
     def predict(self, X):
@@ -295,6 +299,7 @@ class Sequential:
         self.train_layers[0].inputs = X
         for i in range(len(self.train_layers)):
             if isinstance(self.train_layers[i], Dropout):
+                print("yes")
                 self.train_layers[i].training = False
             if i + 1 == len(self.train_layers):
                 self.predictions = self.train_layers[i].forward()
