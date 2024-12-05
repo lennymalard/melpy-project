@@ -272,6 +272,9 @@ class Sequential:
         This method runs a forward pass with the provided input `X` and returns
         the predicted output based on the current state of the trained network.
 
+        Be careful, you might encounter an error if the number of dimensions of `X`
+        doesn't match the number of dimensions of `self.train_inputs`.
+
         Parameters
         ----------
         X : ndarray
@@ -291,11 +294,9 @@ class Sequential:
             raise TypeError("`X` must be of type 'ndarray'.")
         self.train_layers[0].inputs = X
         for i in range(len(self.train_layers)):
+            if isinstance(self.train_layers[i], Dropout):
+                self.train_layers[i].training = False
             if i + 1 == len(self.train_layers):
-                if isinstance(self.train_layers[i], Dropout) and \
-                        isinstance(self.val_layers[i], Dropout):
-                    self.val_layers[i].training = False
-                    self.train_layers[i].training = False
                 self.predictions = self.train_layers[i].forward()
                 return self.predictions
             self.train_layers[i + 1].inputs = self.train_layers[i].forward()
