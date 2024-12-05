@@ -96,7 +96,7 @@ Melpy is available on PyPI as melpy. Run the following command to install it in 
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-To demonstrate Melpy’s capabilities, let’s work through a mini-project together. We’ll classify the Iris dataset, a classic example in machine learning. The dataset contains three classes: Setosa, Versicolor, and Virginica, described by the following features: Sepal Length, Sepal Width, Petal Length, and Petal Width.
+To demonstrate Melpy’s capabilities, let’s work through a mini-project together. We will classify the Iris dataset, a classic example in machine learning. The dataset contains three classes: Setosa, Versicolor, and Virginica, described by the following features: Sepal Length, Sepal Width, Petal Length, and Petal Width.
 
 First, let’s load the data and split it into training and test sets:
 
@@ -230,7 +230,7 @@ Epoch [5000/5000]: 100%|██████████| 5000/5000 [00:03<00:00, 
 
 Our model achieves 98% accuracy on both training and test datasets, which is good! With further optimization you could potentially reach 100%. Feel free to experiment!
 
-If you look closely, you’ll notice that the plot on the right closely resembles Figure 1. It’s actually the model’s inputs colored by the outputs, allowing us to visually assess whether the model is well trained.
+If you look closely, you will notice that the plot on the right closely resembles Figure 1. It’s actually the model’s inputs colored by the outputs, allowing us to visually assess whether the model is well trained.
 
 ### Save Your Work
 
