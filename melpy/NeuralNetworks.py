@@ -299,7 +299,6 @@ class Sequential:
         self.train_layers[0].inputs = X
         for i in range(len(self.train_layers)):
             if isinstance(self.train_layers[i], Dropout):
-                print("yes")
                 self.train_layers[i].training = False
             if i + 1 == len(self.train_layers):
                 self.predictions = self.train_layers[i].forward()
