@@ -14,7 +14,7 @@ class Optimizer:
 
     Methods
     -------
-    update_params(layer : melpy.Layer)
+    update_params(layer : Layer)
         Updates the parameters of the given layer.
     """
     def __init__(self):
@@ -30,7 +30,7 @@ class Optimizer:
 
         Parameters
         ----------
-        layer : melpy.Layer
+        layer : Layer
             The layer whose parameters are to be updated.
         """
         pass
@@ -41,7 +41,7 @@ class SGD(Optimizer):
 
     Methods
     -------
-    update_params(layer : melpy.Layer)
+    update_params(layer : Layer)
         Updates the parameters of the given layer using SGD.
     """
     def __init__(self, learning_rate=0.001, momentum=None):
@@ -63,12 +63,12 @@ class SGD(Optimizer):
 
         Parameters
         ----------
-        layer : melpy.Layer
+        layer : Layer
             The layer whose parameters are to be updated.
 
         Returns
         -------
-        layer : melpy.Layer
+        layer : Layer
             The layer with updated parameters.
         """
         if not isinstance(layer, Layer):
@@ -108,7 +108,7 @@ class Adam(Optimizer):
 
     Methods
     -------
-    update_params(layer : melpy.Layer)
+    update_params(layer : Layer)
         Updates the parameters of the given layer using Adam.
     """
     def __init__(self, learning_rate=0.001, beta1=0.9, beta2=0.999):
@@ -135,12 +135,12 @@ class Adam(Optimizer):
 
         Parameters
         ----------
-        layer : melpy.Layer
+        layer : Layer
             The layer whose parameters are to be updated.
 
         Returns
         -------
-        layer : melpy.Layer
+        layer : Layer
             The layer with updated parameters.
         """
         if not isinstance(layer, Layer):

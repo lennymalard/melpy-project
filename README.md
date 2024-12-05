@@ -163,9 +163,6 @@ We’re tackling a multi-class classification problem using tabular data, which 
 *	[Softmax](https://en.wikipedia.org/wiki/Softmax_function) [Activation](https://fr.wikipedia.org/wiki/Fonction_d%27activation) to convert outputs into probabilities.
 *	[Categorical Cross-Entropy](https://en.wikipedia.org/wiki/Cross-entropy) as the cost function for optimization.
 
-If you begin in deep learning, I highly recommend [3Blue1Brown](https://youtu.be/aircAruvnKk?si=QMDAzU8ThgQ_nmTt)'s excellent video series on Deep Learning, so you understand the usage of these functions.
-
-
 Now, let’s build the model using Melpy’s Sequential class:
 
 <em>Sequential models are neural networks where layers are stacked in a linear order. Data flows through them one by one in sequence.</em>
@@ -189,6 +186,8 @@ We define:
 * [Categorical Cross-Entropy](https://en.wikipedia.org/wiki/Cross-entropy) for loss calculation.
 * [Stochastic Gradient Descent (SGD)](https://en.wikipedia.org/wiki/Stochastic_gradient_descent) for optimization.
 
+<em>These functions together form what we call an architecture. If you’re new to deep learning, I highly recommend [3Blue1Brown](https://youtu.be/aircAruvnKk?si=QMDAzU8ThgQ_nmTt)'s excellent video series on the topic. It provides a clear explanation of how and why these functions are used.</em>
+
 ### Model Summary
 
 We can view the model structure with:
@@ -199,7 +198,7 @@ model.summary()
 
 ```sh
 Dense: (1, 6)
-LeakyReLU: (1, 6)
+ReLU: (1, 6)
 Dense: (1, 3)
 Softmax: (1, 3)
 ```
@@ -229,7 +228,7 @@ Epoch [5000/5000]: 100%|██████████| 5000/5000 [00:03<00:00, 
 -------------------------------------------------------------------
 ```
 
-Our model achieves 98% accuracy on both training and test datasets, whish is good! With further optimization you could potentially reach 100%. Feel free to experiment!
+Our model achieves 98% accuracy on both training and test datasets, which is good! With further optimization you could potentially reach 100%. Feel free to experiment!
 
 If you look closely, you’ll notice that the plot on the right closely resembles Figure 1. It’s actually the model’s inputs colored by the outputs, allowing us to visually assess whether the model is well trained.
 
