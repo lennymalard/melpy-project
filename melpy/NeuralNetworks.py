@@ -265,8 +265,6 @@ class Sequential:
                 if i + 1 == len(self.val_layers):
                     self.val_output_batch = self.val_layers[i].forward()
                 else:
-                    if isinstance(self.train_layers[i], Dropout):
-                        self.train_layers[i].training = True
                     self.val_layers[i + 1].inputs = self.val_layers[i].forward()
 
     def predict(self, X):

@@ -141,7 +141,7 @@ class LiveMetrics(Callback):
 
     Methods
     -------
-    on_iteration_end(model : Sequential, figure : matplotlib.figure.Figure)
+    on_iteration_end(model : Sequential, figure : Figure)
         Updates the live metrics plot based on the current state of the model.
     """
 
@@ -202,7 +202,7 @@ class LiveMetrics(Callback):
         ----------
         model : Sequential
             The model whose metrics are to be visualized.
-        figure : matplotlib.figure.Figure
+        figure : Figure
             The figure object to update with the live metrics plot.
 
         Raises
