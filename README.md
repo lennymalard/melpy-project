@@ -139,8 +139,8 @@ FNNs require input data to be scaled close to zero. It is why we are now going t
 from melpy.preprocessing import StandardScaler
 
 sc = StandardScaler()
-X_train = sc.transform(X_train) # Scales data
-X_test = sc.transform(X_test) # Scaled with the same mean and variance than X_train
+X_train = sc.transform(X_train)
+X_test = sc.transform(X_test) 
 ```
 
 Next, we encode the target labels using OneHotEncoder, also from melpy.preprocessing:
@@ -152,8 +152,8 @@ You can find out more about data encoding here: [One-hot](https://en.wikipedia.o
 from melpy.preprocessing import OneHotEncoder
 
 ohe = OneHotEncoder()
-y_train = ohe.transform(y_train) # Encodes data
-y_test = ohe.transform(y_test) # Encodes with the same encoding than y_train
+y_train = ohe.transform(y_train) 
+y_test = ohe.transform(y_test) 
 ```
 
 ### Model Creation
