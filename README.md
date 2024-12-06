@@ -131,7 +131,7 @@ As we can see in Figure 1, there is a clear correlation between species and feat
 
 ### Preprocessing
 
-FNNs require input data to be scaled close to zero. It is why we are now going to use StandardScaler from melpy.preprocessing :
+FNNs require input data to be scaled close to zero. It is why we are now going to use StandardScaler from melpy.preprocessing:
 
 <em>The Standard Scaler is a pre-processing technique which consists of removing the mean from a data set and dividing by its variance. You can find out more about data scaling here: [Feature Scaling](https://en.wikipedia.org/wiki/Feature_scaling).</em>
 
@@ -139,27 +139,27 @@ FNNs require input data to be scaled close to zero. It is why we are now going t
 from melpy.preprocessing import StandardScaler
 
 sc = StandardScaler()
-y_train = sc.transform(y_train) # Scales data
-y_test = sc.transform(y_test) # Scaled with the same mean and variance than X_train
+X_train = sc.transform(X_train) # Scales data
+X_test = sc.transform(X_test) # Scaled with the same mean and variance than X_train
 ```
 
 Next, we encode the target labels using OneHotEncoder, also from melpy.preprocessing:
 
 <em>One-hot encoding is a method of representing categorical data as binary vectors. Each unique category is assigned a unique vector where one element is set to 1 (hot) and all others are 0.
-You can find out more about data encoding here : [One-hot](https://en.wikipedia.org/wiki/One-hot).</em>
+You can find out more about data encoding here: [One-hot](https://en.wikipedia.org/wiki/One-hot).</em>
 
 ```python
 from melpy.preprocessing import OneHotEncoder
 
 ohe = OneHotEncoder()
-X_train = ohe.transform(X_train) # Encodes data
-X_test = ohe.transform(X_test) # Encodes with the same encoding than y_train
+y_train = ohe.transform(y_train) # Encodes data
+y_test = ohe.transform(y_test) # Encodes with the same encoding than y_train
 ```
 
 ### Model Creation
 
 We’re tackling a multi-class classification problem using tabular data, which requires:
-*	[Fuly Connected Layers](https://en.wikipedia.org/wiki/Multilayer_perceptron) (Dense) for feature extraction.
+*	[Fully Connected Layers](https://en.wikipedia.org/wiki/Multilayer_perceptron) (Dense) for feature extraction.
 *	[Softmax](https://en.wikipedia.org/wiki/Softmax_function) [Activation](https://fr.wikipedia.org/wiki/Fonction_d%27activation) to convert outputs into probabilities.
 *	[Categorical Cross-Entropy](https://en.wikipedia.org/wiki/Cross-entropy) as the cost function for optimization.
 
@@ -205,7 +205,7 @@ Softmax: (1, 3)
 
 ### Training the Model
 
-Finally, we train the model with 5000 epochs and observe the results with verbose and LiveMetrics :
+Finally, we train the model with 5000 epochs and observe the results with verbose and LiveMetrics:
 
 ```python
 model.fit(epochs=5000, verbose = 1, callbacks=[nn.LiveMetrics()])
@@ -230,7 +230,7 @@ Epoch [5000/5000]: 100%|██████████| 5000/5000 [00:03<00:00, 
 
 Our model achieves 98% accuracy on both training and test datasets, which is good! With further optimization you could potentially reach 100%. Feel free to experiment!
 
-If you look closely, you will notice that the plot on the right closely resembles Figure 1. It’s actually the model’s inputs colored by the outputs, allowing us to visually assess whether the model is well trained.
+If you look closely, you will notice that the plot on the right closely resembles Figure 1. It’s actually the model’s inputs colored by the predictions, allowing us to visually assess whether the model is well trained.
 
 ### Save Your Work
 
