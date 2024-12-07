@@ -49,11 +49,22 @@
       </ul>
     </li>
     <li><a href="#usage">Usage</a></li>
+      <ul>
+        <li><a href="#preprocessing">Preprocessing</a></li>
+        <li><a href="#model-creation">Model Creation</a></li>
+        <li><a href="#model-summary">Model Summary</a></li>
+        <li><a href="#training-the-model">Training the Model</a></li>
+        <li><a href="#save-your-work">Save your Work</a></li>
+      </ul>
+    <li><a href="#errors">Errors</a></li>
+       <ul>
+        <li><a href="#shape-errors">Shape Errors</a></li>
+      </ul>
     <li><a href="#roadmap">Roadmap</a></li>
     <li><a href="#contributing">Contributing</a></li>
     <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
-    <li><a href="#acknowledgments">Acknowledgments</a></li>
+
   </ol>
 </details>
 
@@ -244,11 +255,40 @@ model.save_histories("iris_metrics")
 You can reload the parameters with load_params(path) and the metrics using the [pickle](https://docs.python.org/3/library/pickle.html) library.
 
 
-_For more examples, please refer to the [Documentation](https://example.com)_
+_For more examples, please refer to the [Examples](https://github.com/lennymalard/melpy-project/tree/main/examples)_
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+## Errors
 
+In this section, we’ll explore together where to look to identify errors that are not raised by the library.
+
+First of all, I recommend clearing your console to avoid overlapping old and new variables, as many errors can stem from this.
+
+### Shape Errors 
+Most of the errors you encounter will likely be related to the shape of your arrays.
+
+The most common errors typically arise from how the number of neurons is defined in Convolution2D and Dense layers.
+
+Dense:
+```python
+model.add(nn.Dense(X_train.shape[1], 7), nn.LeakyReLU()) 
+model.add(nn.Dense(6, y_train.shape[1]), nn.Softmax())
+```
+```sh
+ValueError: shapes (1,7) and (6,2) not aligned: 7 (dim 1) != 6 (dim 0)
+```
+Convolution2D:
+```python
+model.add(nn.Convolution2D(in_channels=1, out_channels=32, kernel_size=2, padding="same"), nn.LeakyReLU())
+model.add(nn.Convolution2D(in_channels=12, out_channels=64, kernel_size=2, padding="same"), nn.LeakyReLU())
+```
+```sh
+ValueError: matmul: Input operand 1 has a mismatch in its core dimension 0, with gufunc signature (n?,k),(k,m?)->(n?,m?) (size 128 is different from 48)
+```
+To resolve this, ensure that the n_in and n_out (in_channels and out_channels for Convolution2D) values match exactly for a layer and the one that follows it.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- ROADMAP -->
 ## Roadmap

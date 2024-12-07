@@ -63,6 +63,7 @@ model.train_layers= [nn.Dense(X_train.shape[1], 12),
                     nn.Sigmoid()]
 
 model.compile(cost_function=nn.BinaryCrossEntropy(), optimizer=nn.Adam(learning_rate=0.01))
+
 # %% Training
 model.fit(epochs=10000, verbose = 1, callbacks = [nn.LiveMetrics(mode=3, f1=0, f2=2)])
 model.results()

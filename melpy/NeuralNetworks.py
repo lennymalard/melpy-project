@@ -294,6 +294,8 @@ class Sequential:
         """
         if not isinstance(X, np.ndarray):
             raise TypeError("`X` must be of type 'ndarray'.")
+        if X.ndim != self.train_inputs.ndim:
+            raise TypeError("`X`must have the same number of dimensions as `self.train_inputs`.")
         self.train_layers[0].inputs = X
         for i in range(len(self.train_layers)):
             if isinstance(self.train_layers[i], Dropout):
