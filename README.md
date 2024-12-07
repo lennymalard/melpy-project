@@ -261,7 +261,7 @@ _For more examples, please refer to the [Examples](https://github.com/lennymalar
 
 ## Errors
 
-In this section, we’ll explore together where to look to identify errors that are not raised by the library.
+In this section, we will explore together where to look to identify errors that are not raised by the library.
 
 First of all, I recommend clearing your console to avoid overlapping old and new variables, as many errors can stem from this.
 
