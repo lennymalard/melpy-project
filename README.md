@@ -80,8 +80,7 @@ What started as a simple Python script has become Melpy, a deep learning library
 
 ### Built With
 
- [![Numpy][Numpy.org]][numpy-url] [![Matplotlib][Matplotlib.org]][Matplotlib-url] [![tqdm][tqdm.github.io]][tqdm-url]
- 
+ [![Numpy][Numpy.org]][numpy-url] [![Matplotlib][Matplotlib.org]][Matplotlib-url] [![tqdm][tqdm.github.io]][tqdm-url] [![H5PY][docs.h5py.org]][h5py-url]
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- GETTING STARTED -->
@@ -193,9 +192,7 @@ We define:
 * The training inputs and the training outputs
 * The validation inputs and the validation outputs
 * A hidden layer with 6 neurons and [ReLU](https://en.wikipedia.org/wiki/Rectifier_(neural_networks)) [activation](https://fr.wikipedia.org/wiki/Fonction_d%27activation).
-* A [Softmax](https://en.wikipedia.org/wiki/Softmax_function) output layer for classification.
-* [Categorical Cross-Entropy](https://en.wikipedia.org/wiki/Cross-entropy) for loss calculation.
-* [Stochastic Gradient Descent (SGD)](https://en.wikipedia.org/wiki/Stochastic_gradient_descent) for optimization.
+* The other requierements specified earlier.
 
 <em>These functions together form what we call an architecture. If you are new to deep learning, I highly recommend [3Blue1Brown](https://youtu.be/aircAruvnKk?si=QMDAzU8ThgQ_nmTt)'s excellent video series on the topic. It provides a clear explanation of how and why these functions are used.</em>
 
@@ -252,7 +249,7 @@ model.save_params("iris_parameters")
 model.save_histories("iris_metrics")
 ```
 
-You can reload the parameters with load_params(path) and the metrics using the [pickle](https://docs.python.org/3/library/pickle.html) library.
+You can reload the parameters with load_params(path) and the metrics using the [pickle](https://docs.python.org/3/library/pickle.html) library or the [h5py](https://docs.h5py.org/en/stable/) library depending on the file extension.
 
 
 _For more examples, please refer to the [Examples](https://github.com/lennymalard/melpy-project/tree/main/examples)_
@@ -354,10 +351,13 @@ Project Link: [https://github.com/lennymalard/melpy-project](https://github.com/
 [linkedin-url]: https://www.linkedin.com/in/lennymalard
 [product-screenshot]: images/screenshot.png
 [Numpy-url]: https://numpy.org/
-[Numpy.org]:https://img.shields.io/badge/numpy-red?style=for-the-badge&logo=numpy&labelColor=blue&color=blue
+[Numpy.org]:https://img.shields.io/badge/numpy-red?style=for-the-badge&labelColor=blue&color=blue
 [Matplotlib-url]: https://matplotlib.org
-[Matplotlib.org]: https://img.shields.io/badge/matplotlib-orange?style=for-the-badge&logo=matplotlib&labelColor=blue&color=blue&link=https%3A%2F%2Fmatplotlib.org%2F
+[Matplotlib.org]: https://img.shields.io/badge/matplotlib-orange?style=for-the-badge&labelColor=blue&color=blue&link=https%3A%2F%2Fmatplotlib.org%2F
 [tqdm-url]: https://tqdm.github.io
-[tqdm.github.io]: https://img.shields.io/badge/tqdm-orange?style=for-the-badge&logo=tqdm&labelColor=blue&color=blue&link=https%3A%2F%2Ftqdm.github.io%2F
+[tqdm.github.io]: https://img.shields.io/badge/tqdm-orange?style=for-the-badge&labelColor=blue&color=blue&link=https%3A%2F%2Ftqdm.github.io%2F
+[h5py-url]: https://docs.h5py.org/en/stable/
+[docs.h5py.org]: https://img.shields.io/badge/H5PY-blue?style=for-the-badge&color=blue
+
 
 
