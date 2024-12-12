@@ -197,7 +197,7 @@ We define:
 * [Categorical Cross-Entropy](https://en.wikipedia.org/wiki/Cross-entropy) for loss calculation.
 * [Stochastic Gradient Descent (SGD)](https://en.wikipedia.org/wiki/Stochastic_gradient_descent) for optimization.
 
-<em>These functions together form what we call an architecture. If you’re new to deep learning, I highly recommend [3Blue1Brown](https://youtu.be/aircAruvnKk?si=QMDAzU8ThgQ_nmTt)'s excellent video series on the topic. It provides a clear explanation of how and why these functions are used.</em>
+<em>These functions together form what we call an architecture. If you are new to deep learning, I highly recommend [3Blue1Brown](https://youtu.be/aircAruvnKk?si=QMDAzU8ThgQ_nmTt)'s excellent video series on the topic. It provides a clear explanation of how and why these functions are used.</em>
 
 ### Model Summary
 

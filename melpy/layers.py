@@ -566,16 +566,12 @@ class Convolution2D(Layer):
         super().__init__()
         self.in_channels = in_channels
         self.out_channels = out_channels
-        self.weights = np.random.uniform(
-            -sqrt(6 / (in_channels + out_channels)),
-            sqrt(6 / (in_channels + out_channels)),
-            (out_channels, in_channels, kernel_size, kernel_size)
-        )
+        self.weights = np.random.randn(out_channels, in_channels, kernel_size, kernel_size) * np.sqrt(2.0 / in_channels)
         self.dW = np.zeros_like(self.weights)
         self.weight_momentums = np.zeros_like(self.weights)
         self.weight_cache = np.zeros_like(self.weights)
         if use_bias is True:
-            self.biases = np.zeros(shape=(1, out_channels, 1, 1))
+            self.biases = np.zeros(shape=(1, out_channels, 1, 1)).astype(np.float64)
             self.dB = np.zeros_like(self.biases)
             self.bias_momentums = np.zeros_like(self.biases)
             self.bias_cache = np.zeros_like(self.biases)
@@ -671,11 +667,11 @@ class Convolution2D(Layer):
         self.input_padded = self.explicit_padding()
 
         self.input_cols = im2col(self.input_padded, self.kernel_size, self.stride)
-        self.filter_cols = self.weights.reshape(self.out_channels, -1)
+        self.filter_rows = self.weights.reshape(self.out_channels, -1)
 
         output_height, output_width = self.get_output_size(self.inputs.shape[2], self.inputs.shape[3])
 
-        self.output_cols = self.filter_cols @ self.input_cols
+        self.output_cols = self.filter_rows @ self.input_cols
 
         self.outputs = np.array(np.hsplit(self.output_cols, self.inputs.shape[0])).reshape(
             (self.input_padded.shape[0], self.out_channels, output_height, output_width)

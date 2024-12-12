@@ -30,14 +30,14 @@ def get_indices(image_shape, window_shape, stride):
 
     increment = stride * np.repeat(np.arange(output_height), output_width)
 
-    i = level1.reshape(-1, 1) + increment.reshape(1, -1)  # indices i
+    i = level1.reshape(-1, 1) + increment.reshape(1, -1)
 
     slide1 = np.tile(np.arange(window_shape), window_shape * image_shape[1])
     increment = stride * np.tile(np.arange(output_width), output_height)
 
-    j = slide1.reshape(-1, 1) + increment.reshape(1, -1)  # indices j
+    j = slide1.reshape(-1, 1) + increment.reshape(1, -1)
 
-    k = np.repeat(np.arange(image_shape[1]), window_shape * window_shape).reshape(-1, 1)  # indices canaux
+    k = np.repeat(np.arange(image_shape[1]), window_shape * window_shape).reshape(-1, 1)
     return k, i, j
 
 def im2col(images, window_shape, stride):
