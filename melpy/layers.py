@@ -667,17 +667,18 @@ class Convolution2D(Layer):
         self.input_padded = self.explicit_padding()
 
         self.input_cols = im2col(self.input_padded, self.kernel_size, self.stride)
-        self.filter_rows = self.weights.reshape(self.out_channels, -1)
+        self.filter_cols = self.weights.reshape(self.out_channels, -1)
 
         output_height, output_width = self.get_output_size(self.inputs.shape[2], self.inputs.shape[3])
 
-        self.output_cols = self.filter_rows @ self.input_cols
+        self.output_cols = self.filter_cols @ self.input_cols
 
         self.outputs = np.array(np.hsplit(self.output_cols, self.inputs.shape[0])).reshape(
             (self.input_padded.shape[0], self.out_channels, output_height, output_width)
         )
 
-        self.outputs += self.biases
+        if self.biases is not None:
+            self.outputs += self.biases
 
         return self.outputs
 
@@ -716,7 +717,9 @@ class Convolution2D(Layer):
             self.dX = self.dX_padded
 
         self.dW = self.dW_cols.reshape((self.dW_cols.shape[0], self.in_channels, self.kernel_size, self.kernel_size))
-        self.dB = np.sum(self.dY, axis=(0, 2, 3), keepdims=True)
+
+        if self.biases is not None:
+            self.dB = np.sum(self.dY, axis=(0, 2, 3), keepdims=True)
 
         return self.dX
 

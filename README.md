@@ -189,8 +189,8 @@ model.compile(cost_function=nn.CategoricalCrossEntropy(), optimizer=nn.SGD(learn
 ```
 
 We define:
-* The training inputs and the training outputs
-* The validation inputs and the validation outputs
+* The training inputs and the training targets.
+* The validation inputs and the validation targets.
 * A hidden layer with 6 neurons and [ReLU](https://en.wikipedia.org/wiki/Rectifier_(neural_networks)) [activation](https://fr.wikipedia.org/wiki/Fonction_d%27activation).
 * The other requierements specified earlier.
 

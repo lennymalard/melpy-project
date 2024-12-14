@@ -59,7 +59,7 @@ model.compile(optimizer= nn.Adam(learning_rate = 1e-3), cost_function=nn.Categor
 model.summary()
 
 # %% Training
-model.fit(epochs=5, batch_size=256, verbose=2)
+model.fit(epochs=15, batch_size=256, verbose=2)
 model.results()
 
 # %% Save

@@ -154,10 +154,10 @@ class Adam(Optimizer):
 
             if layer.biases is not None:
                 layer.bias_momentums = self.beta1 * layer.bias_momentums + (1 - self.beta1) * layer.dB
-                bias_momentums_corrected = layer.bias_momentums / (1 - self.beta1 ** self.step)
+                bias_momentums_corrected = layer.bias_momentums / (1 - self.beta1**self.step)
 
-                layer.bias_cache = self.beta2 * layer.bias_cache + (1 - self.beta2) * layer.dB ** 2
-                bias_cache_corrected = layer.bias_cache / (1 - self.beta2 ** self.step)
+                layer.bias_cache = self.beta2 * layer.bias_cache + (1 - self.beta2) * layer.dB**2
+                bias_cache_corrected = layer.bias_cache / (1 - self.beta2**self.step)
 
             weights = - self.learning_rate * weight_momentums_corrected / (np.sqrt(weight_cache_corrected) + self.epsilon)
             layer.weights += weights
