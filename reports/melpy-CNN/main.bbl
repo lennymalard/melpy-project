@@ -1,0 +1,53 @@
+\begin{thebibliography}{10}
+
+\bibitem{MaxPoolingImage2}
+{\em digitalocean.com}.
+\newblock Image d'exemple de Max Pooling sur une image.
+
+\bibitem{MNIST}
+Léon Bottou and Chhavi Yadav.
+\newblock Cold case: the lost mnist digits.
+\newblock 2019.
+
+\bibitem{im2col}
+Kumar Chellapilla, Sidd Puri, and Patrice Simard.
+\newblock High performance convolutional neural networks for document
+  processing.
+\newblock 2006.
+
+\bibitem{CIFAR10}
+Alex Krizhevsky, Vinod Nair, and Geoffrey Hinton.
+\newblock The cifar-10 dataset.
+\newblock 2009.
+
+\bibitem{AlexNet}
+Alex Krizhevsky, Ilya Sutskever, and Geoffrey~E. Hinton.
+\newblock Imagenet classification with deep convolutional neural networks.
+\newblock 2012.
+
+\bibitem{YannLeCunCNNs}
+Yann LeCun, Leon Bottou, Yoshua Bengio, and Patrick Haffner.
+\newblock Gradientbased learning applied to document recognition.
+\newblock 1998.
+
+\bibitem{ApplicationsOfCNNs}
+Sinisa Mihajlovic, Dragan~Vojo Ivetic, and Ivana Berković.
+\newblock Applications of convolutional neural networks.
+\newblock 2020.
+
+\bibitem{im2colImages}
+Ferdinand Mom.
+\newblock {\em hackmd.io}.
+\newblock Images d'illustrations pour la méthode Im2Col.
+
+\bibitem{GradientDescent}
+Sebastian Ruder.
+\newblock An overview of gradient descent optimization algorithms.
+\newblock 2017.
+
+\bibitem{NumPyEfficiency}
+Stéfan van~der Walt, Gael Varoquaux, and S.~Chris Colbert.
+\newblock The numpy array: a structure for efficient numerical computation.
+\newblock 2011.
+
+\end{thebibliography}

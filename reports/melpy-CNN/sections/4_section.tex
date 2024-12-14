@@ -1,0 +1,103 @@
+{\color{gray}\hrule}
+\begin{center}
+\section{Expérimentations}
+\textbf{Dans cette section, nous verrons les expérimentations éffectuées et discuterons de leurs résulats.}
+\bigskip
+\end{center}
+{\color{gray}\hrule}
+\begin{multicols}{2}
+
+Pour évaluer la justesse et l’efficacité de l’implémentation, il a fallu entraîner 
+des architectures, ajuster leurs hyperparamètres, puis comparer les résultats obtenus avec 
+ceux de Keras sur les mêmes architectures. \\
+
+Le jeu de données MNIST a été choisi pour le premier test. Composé de 
+60 000 images de chiffres manuscrits (de 0 à 9), il est l’un des jeux de données 
+les plus connus pour les tâches de classification d’images. Chaque image mesure 
+28x28 pixels et est en niveaux de gris. Ce jeu de données est particulièrement
+populaire car il est simple à traiter et offre une grande qualité et quantité 
+d’exemples, ce qui en fait une référence pour les premières expérimentations en 
+apprentissage profond. \\
+
+Cependant, afin d’augmenter la complexité des expérimentations, le jeu de données CIFAR-10\cite{CIFAR10} a également 
+été utilisé. Il contient 60 000 images réparties en 10 classes (avions, voitures, oiseaux, chats, cerfs, 
+chiens, grenouilles, chevaux, bateaux et camions). Les images sont des photographies sous échantillonnées, qui mesurent 32x32 pixels et qui sont en couleur 
+(format RGB), ce qui les rend plus complexes à traiter que celles de MNIST. La diversité des classes et le manque de corrélation 
+entre elles ajoutent également de la complexité à ce jeu de données. En ce qui concerne la qualité de ces dernières,
+elle est comparable à celle de MNIST.
+
+\subsection{Méthode}
+
+Le protocole expérimental est le suivant :  \\
+
+
+\textbf{Pré-traitement des données} Les données sont pré-traitées 
+pour être compatibles avec les modèles.\\
+
+\textbf{Création et évaluation d’architectures avec Melpy} Des architectures sont créées 
+et entraînées avec différents hyperparamètres pour identifier celle qui offre 
+la meilleure généralisation.\\
+
+\textbf{Création et entraînement des architectures avec Keras} L'architecture
+sélectionnée est ensuite entraînée avec Keras de manière similaire.
+
+\textbf{Visualisation et interprétation des prédictions} On analyse les prédictions. 
+
+\textbf{Comparaison des métriques finales} On compare les métriques finales d'une bibliothèque
+avec celles de l'autres.
+
+\subsection{Résultats et discussion}
+
+\subsubsection{Pré-traitement des données}
+
+Afin d’éviter des problèmes tels que \textit{Dead ReLU}, l’explosion des gradients 
+ou encore la disparition des gradients, il est nécessaire de mettre les images à l’échelle.\\
+
+Pour ce faire, nous commençons par normaliser les données, en les mettant sur une 
+échelle allant de 0 à 1, puis nous les standardisons.\\
+
+Enfin, les étiquettes doivent être encodées. Pour cela, nous utilisons l’encodeur One-Hot.\\
+
+\subsubsection{Sélection du modèle}
+
+\textbf{MNIST} \\
+
+L'architecture sélectionnée pour MNIST est la suivante : \\
+
+\includegraphics[width=\columnwidth]{images/mnist_nn.png}
+\captionof{figure}{Réseau de neurones sélectionné pour MNIST}
+\hfill\break
+
+Comme illustré dans la Figure 10, le réseau de neurones commence par une couche de convolution qui 
+génère 32 cartes de caractéristiques, suivie d’une couche de pooling qui réduit leur taille de moitié.
+Ensuite, une seconde couche de convolution produit 64 cartes de caractéristiques, ensuite aplaties pour alimenter 
+un MLP composé de deux couches cachées : la première avec 128 neurones et la seconde avec 64 neurones. \\
+
+Les couches cachées utilisent la fonction d’activation Leaky ReLU, tandis que la sortie 
+applique une fonction Softmax. Pour optimiser l'architecture, l’algorithme Adaptive Momentum (Adam) a été utilisé pour minimiser 
+la fonction de coût d’entropie croisée catégorielle (Categorical Cross-Entropy). \\
+
+\textbf{CIFAR-10} \\
+
+L'architecture sélectionnée pour CIFAR-10 est la suivante : \\
+
+\includegraphics[width=\columnwidth]{images/cifar10_nn.png}
+\captionof{figure}{Réseau de neurones sélectionné pour CIFAR-10}
+\hfill\break
+
+Comme illustré dans la Figure 11, le réseau de neurones se compose de deux couches de 
+convolution et ne comporte aucune couche de pooling. Cette absence de pooling
+s’explique par les expérimentations qui montrent qu’il est préférable de conserver 
+les informations d’entrée intactes pour ce jeu de données. En effet, les photographies 
+étant très petites, réduire leur taille risquerait d'écraser des caractéristiques importantes déjà 
+difficiles à détecter. Les cartes de caractéristiques sont ensuite applaties pour alimenter
+un MLP composé d'une couche caché de 128 neurones. \\
+
+La couche cachée utilise la fonction d’activation Leaky ReLU, 
+tandis que la sortie est activée par la fonction Softmax. Pour optimiser l'architecture
+on utilise l'algorithme Adaptive Momentum afin de minimiser la fonction de côut 
+d'entropie croisée catégorielle. \\
+
+\subsubsection{Comparaison des résultats}
+
+\end{multicols}
