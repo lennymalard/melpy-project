@@ -1,13 +1,13 @@
 # Fdb version 4
-["bibtex main"] 1734198394.4535 "main.aux" "main.bbl" "main" 1734198420.39391 0
+["bibtex main"] 1734198922.79634 "main.aux" "main.bbl" "main" 1734199720.82462 0
   "./references.bib" 1734174787.08736 3389 76060c92eacb0a4e796b2d6ec0ac50b6 ""
   "/Users/lenny/Library/Application Support/MiKTeX/texmfs/install/bibtex/bst/bibtex/plain.bst" 1733568571.37365 20613 bd3fbfa9f64872b81ac57a0dd2ed855f ""
-  "main.aux" 1734198419.59554 6014 b88f79420f0ef906a632de7aa2e00465 "pdflatex"
+  "main.aux" 1734199720.1 6014 119d8b3a808ab789b983ef963a064bc8 "pdflatex"
   (generated)
   "main.bbl"
   "main.blg"
   (rewritten before read)
-["pdflatex"] 1734198418.27648 "/Users/lenny/Documents/DEV/git/melpy-project/reports/melpy-CNN/main.tex" "main.pdf" "main" 1734198420.39411 0
+["pdflatex"] 1734199718.82113 "/Users/lenny/Documents/DEV/git/melpy-project/reports/melpy-CNN/main.tex" "main.pdf" "main" 1734199720.82482 0
   "/Users/lenny/Documents/DEV/git/melpy-project/reports/melpy-CNN/main.tex" 1734196071.58224 2881 d33dc9b358c54a6b37e77828480c7ed4 ""
   "/Users/lenny/Library/Application Support/MiKTeX/texmfs/data/fonts/map/pdftex/pdftex.map" 1734195543.26268 25678 aa7c8fd3909e804e7d85441c21595406 ""
   "/Users/lenny/Library/Application Support/MiKTeX/texmfs/data/miktex/data/le/pdftex/pdflatex.fmt" 1733568164.72096 8771705 86704b0780585ac2639291254113eb6a ""
@@ -141,14 +141,14 @@
   "images/lenet5.jpeg" 1733590678.92597 37125 7c3be9d830ea34c3c45249a9ea48a327 ""
   "images/maxpooling2.png" 1733690445.02889 192209 069bedf4e3a564b0a347e683ed575f27 ""
   "images/mnist_nn.png" 1734193076.27417 71491 a90dc0b691279ff6793892e6106a1a9d ""
-  "main.aux" 1734198419.59554 6014 b88f79420f0ef906a632de7aa2e00465 "pdflatex"
-  "main.bbl" 1734198394.6783 1480 82b2feb7ca2dbdf0f66137cae8962379 "bibtex main"
-  "main.out" 1734198419.59692 3063 0feb2c348f38c8f0a5c761694073a898 "pdflatex"
+  "main.aux" 1734199720.1 6014 119d8b3a808ab789b983ef963a064bc8 "pdflatex"
+  "main.bbl" 1734198923.02623 1480 82b2feb7ca2dbdf0f66137cae8962379 "bibtex main"
+  "main.out" 1734199720.10137 3063 0feb2c348f38c8f0a5c761694073a898 "pdflatex"
   "main.tex" 1734196071.58224 2881 d33dc9b358c54a6b37e77828480c7ed4 ""
-  "main.toc" 1734198419.59734 1798 a7e2812dd8beb754ed6636d59a462f06 "pdflatex"
+  "main.toc" 1734199720.1018 1798 687b60d5a22a1d0c3babab3de70f81c1 "pdflatex"
   "sections/1_intro.tex" 1734174875.89169 1409 ec8e27495533451ebcc45f35de356e66 ""
   "sections/2_section.tex" 1734181359.53175 9740 d049b5aa02a7d2d2e68a7341ec22e133 ""
-  "sections/3_section.tex" 1734198417.6926 21736 f8546f825e1a32070fe81f621975ccd9 ""
+  "sections/3_section.tex" 1734199718.37133 18348 8a8584620614c69d592e7b07569a03d2 ""
   "sections/4_section.tex" 1734194338.51049 5162 04983399ce1c6b985542fe3a4552b829 ""
   "sections/5_conclusion.tex" 1733568489.56886 128 2b0b0d53a78c8b1bdf48a4cc39e9a07f ""
   (generated)

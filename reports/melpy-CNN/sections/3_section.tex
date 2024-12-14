@@ -252,8 +252,8 @@ Les images d’entrée sont d’abord paddées via \texttt{self.explicit\_paddin
 puis converties en colonnes avec \texttt{im2col()}. Les poids de la couche sont également aplatis en une 
 matrice pour pouvoir effectuer un produit matriciel avec les colonnes d’images. Les dimensions de sortie sont 
 calculées avec \texttt{self.ge\_output\_size()}, et la convolution est réalisée en multipliant les colonnes des images 
-par les filtres aplatis. Les résultats sont réassemblés en images de sortie, ajustés si des biais sont 
-présents, puis retournés comme résultat final de la couche.\\
+par les filtres aplatis. Les résultats sont réassemblés en images, ajustés si des biais sont 
+présents, puis retournés comme résultats finaux de la couche pour être propagés en avant.\\
 
 Voici maintenant le code de la propagation arrière : \\
 
@@ -288,12 +288,14 @@ def backward(self, dX):
 \end{lstlisting}
 \hfill\break
 
-Les gradients reçus (\texttt{dX}) sont d’abord stockés dans \texttt{self.dY}, tandis qu’un tableau nul pour les gradients 
-d’entrée est initialisé. Les gradients et les entrées sont convertis en colonnes (via \texttt{im2col()}) et 
-réorganisés pour correspondre aux dimensions nécessaires. Un masque binaire est ensuite créé pour identifier les maxima 
-des fenêtres de pooling, assurant que seuls les gradients liés aux maxima sont propagés. Ces gradients 
-modifiés sont réassemblés en colonnes, puis reconvertis dans leur forme d’origine avec \texttt{col2im()}. 
-Enfin, les gradients reconstitués sont retournés pour les propager dans les couches précédentes.\\
+Les gradients de sortie \texttt{dX} sont assignés à \texttt{dY}, et les filtres sont 
+retournés de \ang{180} puis aplatis en colonnes pour les calculs. Les gradients \texttt{dY} 
+sont convertis en colonnes, et les gradients des entrées \texttt{dX} sont calculés 
+via un produit matriciel entre les colonnes des filtres retournés et \texttt{dY}. 
+Les gradients des poids \texttt{dW} sont quant à eux obtenus par multiplication entre \texttt{dY} et 
+les colonnes d’entrée transposées. Les gradients des biais \texttt{dB}, si présents, sont calculés par une somme. 
+Les gradients d’entrée sont reconstitués avec \texttt{col2im()} et ajustés pour retirer le padding si nécessaire. 
+Finalement, les gradients \texttt{dX} sont retournés pour poursuivre la propagation arrière. \\
 
 L'ensemble du code lié aux couches de Convolution se trouvent dans le repo de Melpy, à l'adresse suivante : \url{https://github.com/lennymalard/melpy-project/blob/main/melpy/layers.py}
 
@@ -323,38 +325,13 @@ def forward(self):
 \end{lstlisting}
 \hfill\break
 
-Dans la ligne 2, les dimensions de hauteur de sortie \texttt{output\_height} sont 
-calculées en fonction des dimensions d’entrée, de la taille de la fenêtre de pooling 
-\texttt{pool\_size}, et du \texttt{stride}. \\
-
-Dans la ligne 3, la même formule est appliquée pour calculer les dimensions de largeur de sortie 
-\texttt{output\_width}, cette fois sur l’axe horizontal. \\
-
-Dans la ligne 5, \texttt{output\_shape} est défini comme 
-un tuple contenant les dimensions du lot, du nombre de canaux, 
-et des dimensions calculées pour la hauteur et la largeur de sortie. Cela facilite 
-la reconstruction des résultats après le traitement. \\
-
-Dans la ligne 7, la méthode \texttt{im2col()} est utilisée pour transformer 
-les entrées en colonnes de matrices, où chaque colonne correspond à une fenêtre de 
-pooling. Cela permettra de simplifier les calculs de pooling. \\
-
-Dans la ligne 8, les colonnes générées sont organisées par canal et par 
-échantillon en utilisant deux appels imbriqués de \texttt{np.hsplit()}. 
-Cela restructure les colonnes pour préparer l’opération de pooling. \\
-
-Dans la ligne 10, l’opération \texttt{np.max()} est appliquée le long de 
-l’axe des colonnes pour extraire les maxima de chaque fenêtre de pooling. Ces maxima 
-représentent les valeurs de sortie du pooling pour chaque fenêtre. \\
-
-Dans la ligne 11, les valeurs maximales obtenues \texttt{self.maxima} sont 
-réorganisées en une matrice aplatie par canal grâce à \texttt{reshape()}. \\
-
-Dans la ligne 13, la méthode \texttt{col2im()} est utilisée pour reconstruire les 
-sorties \texttt{self.outputs} à partir des valeurs maximales. La reconstruction 
-respecte les dimensions de sortie spécifiées par \texttt{output\_shape}. \\
-
-Enfin, dans la ligne 15, les sorties calculées \texttt{self.outputs} sont retournées. \\
+Les dimensions de sortie sont d’abord calculées, en fonction des dimensions d’entrée, 
+de la taille de la fenêtre de pooling, et du $stride$. Les entrées sont ensuite 
+transformées en colonnes à l’aide de \texttt{im2col()}. Les colonnes sont restructurées pour 
+correspondre aux canaux et échantillons, puis l’opération \texttt{np.max()}
+extrait les maxima de chaque fenêtre. Ces valeurs maximales sont réorganisées et 
+reconstruites en utilisant \texttt{col2im()} pour former les sorties finales.
+Ces sorties sont finalement retournées pour poursuivre la propagation avant.\\
 
 Voici maintenant le code de la propagation arrière : \\
 
@@ -381,45 +358,14 @@ def backward(self, dX):
 \end{lstlisting}
 \hfill\break
 
-Dans la ligne 2, les gradients reçus depuis la couche suivante, 
-\texttt{dX}, sont assignés à \texttt{self.dY} pour être utilisés dans les calculs de 
-propagation arrière. \\
-
-Dans la ligne 3, un tableau nul de même forme que les entrées originales \texttt{self.inputs} est initialisé 
-pour \texttt{self.dX}. Ce tableau accueillera les gradients des entrées calculés lors de cette étape. \\
-
-Dans la ligne 5, les gradients \texttt{self.dY} sont transformés en colonnes à l’aide de la méthode \texttt{im2col()} 
-avec une taille de fenêtre et un $stride$ égaux à 1. Cela a pour effet d'applatir 
-\texttt{self.dY} dans des dimensions appropriées pour les calculs à venir. \\
-
-Dans la ligne 6, ces colonnes de gradients sont réorganisées en utilisant des appels imbriqués de \texttt{np.hsplit()} et une 
-transposition via \texttt{transpose()}. Cela restructure les gradients pour les aligner avec la disposition 
-des entrées sur les dimensions batch, canal et fenêtre. \\
-
-Dans la ligne 8, les entrées d’origine \texttt{self.inputs} sont transformées en colonnes à l’aide de \texttt{im2col()} 
-avec la taille et le $stride$ du pooling. Ces colonnes contiennent les éléments correspondants aux fenêtres utilisées 
-lors de la propagation avant. \\
-
-Dans la ligne 9, les colonnes des entrées sont également réorganisées à l’aide de \texttt{np.hsplit()} et \texttt{transpose()} 
-pour s’assurer qu’elles ont la même structure que les colonnes de gradients. \\
-
-Dans la ligne 11, les sorties obtenues lors de la propagation avant \texttt{self.outputs} sont également converties en colonnes 
-avec \texttt{im2col()} et restructurées de manière similaire aux étapes précédentes pour correspondre aux autres matrices. \\
-
-Dans la ligne 13, un masque binaire \texttt{self.mask} est créé en comparant chaque élément des colonnes
-des entrées \texttt{self.input\_cols\_reshaped} avec les colonnes des sorties \texttt{self.output\_cols\_reshaped}. 
-Ce masque identifie les indices des maxima calculés lors de la propagation avant. \\
-
-Dans la ligne 15, les gradients de sortie \texttt{self.dY\_cols\_reshaped} sont multipliés par le masque \texttt{self.mask}. Cela garantit que seuls 
-les emplacements correspondant aux maxima contribuent aux gradients des entrées. \\
-
-Dans la ligne 16, les colonnes des gradients résultants \texttt{self.dX\_cols} sont concaténées pour reformer une 
-représentation plate des gradients d’entrée. \\
-
-Dans la ligne 17, \texttt{col2im()} est utilisé pour reconstruire \texttt{self.dX} à partir des colonnes calculées, en respectant 
-les dimensions d’entrée originales \texttt{self.inputs.shape}. Cela restitue les gradients à l'emplacement de leur contribution respective. \\
-
-Enfin, dans la ligne 19, les gradients des entrées \texttt{self.dX} sont retournés pour continuer la propagation des gradients, dans les couches précédentes. \\
+Les gradients reçus \texttt{dX} sont sauvegardés dans \texttt{self.dY}, puis 
+transformés en colonnes avec \texttt{im2col()}. Les entrées 
+originales et les sorties de la propagation avant sont également converties en colonnes et 
+restructurées. Un masque binaire identifiant les maxima des fenêtres de pooling est créé 
+pour ne transmettre que les gradients associés à ces maxima. Les gradients modifiés sont 
+réassemblés en une forme plate, puis reconstruits avec \texttt{col2im()} pour correspondre 
+aux dimensions originales. Enfin, les gradients des entrées reconstitués \texttt{self.dX}
+sont retournés pour continuer la propagation arrière. \\
 
 L'ensemble du code lié aux couches de Pooling se trouvent dans le repo de Melpy, à l'adresse suivante : \url{https://github.com/lennymalard/melpy-project/blob/main/melpy/layers.py}
 
