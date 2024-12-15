@@ -121,7 +121,7 @@ class Dense(Layer):
     backward(dX : ndarray)
         Computes the backward pass of the dense layer.
     """
-    def __init__(self, n_in, n_out, weight_initializer="he_normal"):
+    def __init__(self, n_in, n_out, weight_initializer="he_uniform"):
         """
         Initializes the Dense layer.
 
@@ -133,7 +133,7 @@ class Dense(Layer):
             Number of output features.
         weight_initializer : str, optional
             Weight initialization method ('he_normal', 'glorot_normal', 'he_uniform', 'glorot_uniform').
-            Default is 'he_normal'.
+            Default is 'he_uniform'.
 
         Raises
         ------
@@ -539,7 +539,7 @@ class Convolution2D(Layer):
     backward(dX : ndarray)
         Computes the backward pass of the convolution layer.
     """
-    def __init__(self, in_channels, out_channels, kernel_size, padding="valid", stride=1, weight_initializer="glorot_normal", use_bias=True):
+    def __init__(self, in_channels, out_channels, kernel_size, padding="valid", stride=1, weight_initializer="he_uniform", use_bias=True):
         """
         Initializes the Convolution2D layer.
 
@@ -555,6 +555,9 @@ class Convolution2D(Layer):
             Padding type ('valid' or 'same'). Default is 'valid'.
         stride : int, optional
             Stride of the convolution. Default is 1.
+        weight_initializer : str, optional
+            Weight initialization method ('he_normal', 'glorot_normal', 'he_uniform', 'glorot_uniform').
+            Default is 'he_uniform'.
 
         Raises
         ------
@@ -573,10 +576,12 @@ class Convolution2D(Layer):
             ----------
             weight_init : str
                 Weight initialization method.
-            n_in : int
-                Number of input features.
-            n_out : int
-                Number of output features.
+            in_channels : int
+                Number of input channels.
+            out_channels : int
+                Number of output channels.
+            kernel_size : int
+                Size of the convolution kernel.
 
             Returns
             -------
