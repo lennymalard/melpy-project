@@ -162,14 +162,14 @@ class Dense(Layer):
             """
             if weight_init == "he_normal":
                 weights = np.random.randn(n_in, n_out) * np.sqrt(2.0 / n_in)
-            elif weight_init == "glorot_uniform":
-                limit = np.sqrt(6 / (n_in + n_out))
-                weights = np.random.uniform(-limit, limit, (n_in, n_out))
             elif weight_init == "he_uniform":
                 limit = np.sqrt(6 / n_in)
                 weights = np.random.uniform(-limit, limit, (n_in, n_out))
             elif weight_init == "glorot_normal":
                 weights = np.random.randn(n_in, n_out) * np.sqrt(2.0 / (n_in + n_out))
+            elif weight_init == "glorot_uniform":
+                limit = np.sqrt(6 / (n_in + n_out))
+                weights = np.random.uniform(-limit, limit, (n_in, n_out))
             else:
                 raise ValueError("`weight_init` must be either 'he_uniform', 'he_normal', 'glorot_uniform' or 'glorot_normal'.")
             return weights
@@ -539,7 +539,7 @@ class Convolution2D(Layer):
     backward(dX : ndarray)
         Computes the backward pass of the convolution layer.
     """
-    def __init__(self, in_channels, out_channels, kernel_size, padding="valid", stride=1, use_bias=True):
+    def __init__(self, in_channels, out_channels, kernel_size, padding="valid", stride=1, weight_initializer="glorot_normal", use_bias=True):
         """
         Initializes the Convolution2D layer.
 
@@ -564,9 +564,42 @@ class Convolution2D(Layer):
             If `padding` is not 'valid' or 'same'.
         """
         super().__init__()
+
+        def initialize_weights(weight_init, in_channels, out_channels, kernel_size):
+            """
+            Initializes the weights based on the specified method.
+
+            Parameters
+            ----------
+            weight_init : str
+                Weight initialization method.
+            n_in : int
+                Number of input features.
+            n_out : int
+                Number of output features.
+
+            Returns
+            -------
+            ndarray
+                Initialized weights.
+            """
+            if weight_init == "he_normal":
+                weights = np.random.randn(out_channels, in_channels, kernel_size, kernel_size) * np.sqrt(2.0 / (in_channels * kernel_size**2))
+            elif weight_init == "he_uniform":
+                limit = np.sqrt(6 / (in_channels * kernel_size**2))
+                weights = np.random.uniform(-limit, limit, (out_channels, in_channels, kernel_size, kernel_size))
+            elif weight_init == "glorot_normal":
+                weights = np.random.randn(out_channels, in_channels, kernel_size, kernel_size) * np.sqrt(2.0 / (in_channels * kernel_size**2 + out_channels * kernel_size**2))
+            elif weight_init == "glorot_uniform":
+                limit = np.sqrt(6 / (in_channels * kernel_size**2 + out_channels * kernel_size**2))
+                weights = np.random.uniform(-limit, limit, (out_channels, in_channels, kernel_size, kernel_size))
+            else:
+                raise ValueError("`weight_init` must be either 'he_uniform', 'he_normal', 'glorot_uniform' or 'glorot_normal'.")
+            return weights
+
         self.in_channels = in_channels
         self.out_channels = out_channels
-        self.weights = np.random.randn(out_channels, in_channels, kernel_size, kernel_size) * np.sqrt(2.0 / in_channels)
+        self.weights = initialize_weights(weight_initializer, in_channels, out_channels, kernel_size)
         self.dW = np.zeros_like(self.weights)
         self.weight_momentums = np.zeros_like(self.weights)
         self.weight_cache = np.zeros_like(self.weights)
