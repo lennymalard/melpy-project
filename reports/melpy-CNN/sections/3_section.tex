@@ -251,7 +251,7 @@ def forward(self):
 Les images d’entrée sont d’abord paddées via \texttt{self.explicit\_padding()} pour ajuster leurs dimensions, 
 puis converties en colonnes avec \texttt{im2col()}. Les poids de la couche sont également aplatis en une 
 matrice pour pouvoir effectuer un produit matriciel avec les colonnes d’images. Les dimensions de sortie sont 
-calculées avec \texttt{self.ge\_output\_size()}, et la convolution est réalisée en multipliant les colonnes des images 
+calculées avec \texttt{self.get\_output\_size()}, et la convolution est réalisée en multipliant les colonnes des images 
 par les filtres aplatis. Les résultats sont réassemblés en images, ajustés si des biais sont 
 présents, puis retournés comme résultats finaux de la couche pour être propagés en avant.\\
 
@@ -364,7 +364,7 @@ originales et les sorties de la propagation avant sont également converties en 
 restructurées. Un masque binaire identifiant les maxima des fenêtres de pooling est créé 
 pour ne transmettre que les gradients associés à ces maxima. Les gradients modifiés sont 
 réassemblés en une forme plate, puis reconstruits avec \texttt{col2im()} pour correspondre 
-aux dimensions originales. Enfin, les gradients des entrées reconstitués \texttt{self.dX}
+aux dimensions des entrées. Enfin, les gradients des entrées reconstitués \texttt{self.dX}
 sont retournés pour continuer la propagation arrière. \\
 
 L'ensemble du code lié aux couches de Pooling se trouvent dans le repo de Melpy, à l'adresse suivante : \url{https://github.com/lennymalard/melpy-project/blob/main/melpy/layers.py}

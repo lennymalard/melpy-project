@@ -466,11 +466,11 @@ class Sequential:
         callbacks : list of Callback, optional
             A list of callback functions to extend training functionality. Each callback should be a callable
             object that implements the following methods:
-            - `on_loop_start(model)`: Called at the start of the training loop.
-            - `on_iteration_start(model)`: Called at the start of each epoch.
-            - `on_iteration_end(model, figure=None)`: Called at the end of each epoch. If the callback is an instance
+            - `on_train_start(model)`: Called at the start of the training loop.
+            - `on_epoch_start(model)`: Called at the start of each epoch.
+            - `on_epoch_end(model)`: Called at the end of each epoch. If the callback is an instance
               of `LiveMetrics`, a `figure` parameter should be passed.
-            - `on_loop_end(model)`: Called at the end of the training loop.
+            - `on_train_end(model)`: Called at the end of the training loop.
             The default is an empty list.
 
         Raises
@@ -543,14 +543,14 @@ class Sequential:
         for callback in callbacks:
             if isinstance(callback, LiveMetrics):
                 figure = plt.figure()
-            callback.on_loop_start(self)
+            callback.on_train_start(self)
 
         for epoch in (epoch_bar := tqdm(range(epochs), disable=not tqdm_epochs, file=sys.stdout)):
             epoch_bar.set_description(f"Epoch [{epoch + 1}/{epochs}]")
             epoch_bar.set_postfix({"loss": loss, "accuracy": acc})
 
             for callback in callbacks:
-                callback.on_iteration_start(self)
+                callback.on_epoch_start(self)
 
             train_accumulated_loss = 0
             train_accumulated_accuracy = 0
@@ -620,9 +620,9 @@ class Sequential:
             for callback in callbacks:
                 if isinstance(callback, LiveMetrics):
                     if epoch % update == 0 or epoch == 1:
-                        callback.on_iteration_end(self, figure)
+                        callback.on_epoch_end(self, figure)
                 else:
-                    callback.on_iteration_end(self)
+                    callback.on_epoch_end(self)
 
         if self.batch_size is not None:
             self.train_outputs = self.predict(self.train_inputs[:self.batch_size])
@@ -633,7 +633,7 @@ class Sequential:
             self.train_outputs = self.predict(self.train_inputs)
 
         for callback in callbacks:
-            callback.on_loop_end(self)
+            callback.on_train_end(self)
 
     def results(self):
         """

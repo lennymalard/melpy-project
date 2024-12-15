@@ -98,6 +98,64 @@ tandis que la sortie est activée par la fonction Softmax. Pour optimiser l'arch
 on utilise l'algorithme Adaptive Momentum afin de minimiser la fonction de côut 
 d'entropie croisée catégorielle. \\
 
+Le choix a été fait sur les 6 entrainements suivants : \\
+
+\scalebox{0.5}{
+\begin{tabular}{l|c c c c c c c|}
+    \cline{2-8}
+                                   & Paramètres           & Profondeur                   & $e$       &$t/e$        & Lot     & $\gamma$             & $t$              \\
+    \hline
+    \multicolumn{1}{|l|}{$1$}      & 4 128 376            & $4C_{w}+2D_{w,b} = 6$        & 20            & 09min 50sec & 128     & $5^{-5}$             &03h 16min 59sec           \\
+    \multicolumn{1}{|l|}{$2$}      & 2 107 146            & $2C_{w}+2D_{w,b} = 4$        & 20            & 15min 25sec & 128     & $1^{-5}$             &05h 48min 14sec           \\
+    \multicolumn{1}{|l|}{$3$}      & 2 107 146            & $2C_{w}+2D_{w,b} = 4$        & 35            & 16min 07sec & 128     & $5^{-5}$             &09h 07min 21sec           \\
+    \multicolumn{1}{|l|}{$4$}      & 2 107 146            & $2C_{w}+2D_{w,b} = 4$        & 50            & 08min 08sec & 256     & $5^{-5}$             &06h 50min 36sec          \\
+    \multicolumn{1}{|l|}{$5$}      & 2 117 863            & $2C_{w}+2D_{w,b} = 4$        & 100           & 10min 30sec & 128     & $5^{-5}$             &17h 26min 00sec           \\
+    \multicolumn{1}{|l|}{$6$}      & 2 107 242            & $2C_{w,b}+2D_{w,b} = 4$      & 50            & 12min 13sec & 64      & $5^{-6}$             &07h 08min 29sec           \\
+    \hline
+\end{tabular}}
+\captionof{table}{Entrainements éffectués sur CIFAR-10 avec Melpy} \\
+
+{\scriptsize
+$Param\grave{e}tres$ étant le nombre de paramètres dans l'architecture\\
+
+$Profondeur$ étant la prodondeur de l'architecture avec $C$ une couche de convolution, D une couche entièrement connectée, $w$ l'utilisation de poids et $b$ l'utilisation de biais \\
+
+$e$ étant le nombre d'époques passés pour entrainer l'architecture \\
+
+$Lot$ étant le nombre d'entrées entrainées sur une passe avant et arrière \\
+
+$\gamma$ étant le taux d'apprentissage utilisé dans l'algorithme d'optimisation \\
+
+$t$ étant le temps qu'il a fallu pour entrainer l'architecture \\
+
+$t/e$ étant le temps passé en moyenne pour une époque \\
+} \\
+
+\includegraphics[width=\columnwidth]{images/cifar_10_losses.png}
+\captionof{figure}{Les coûts calculés à la fin de chaque époque}
+\hfill\break
+
+\includegraphics[width=\columnwidth]{images/cifar_10_accuracies.png}
+\captionof{figure}{La précision des modèles calculées à la fin de chaque époque}
+\hfill\break
+
+Comme le montrent les Figures 12 et 13, les modèles 3, 6 et 4 se démarquent comme 
+les plus performants. Parmi eux, c'est bien le modèle 6 qui a été retenu. Ce choix repose sur un 
+compromis entre la qualité de sa généralisation, son temps d’entraînement réduit et 
+son efficacité avec un faible nombre d’époques. Avec une petite taille de lot et un 
+temps d’apprentissage relativement court, tout en ayant un nombre de paramètres 
+légèrement supérieur, le modèle 6 offre un bon juste milieu entre les modèles. \\
+
+On peut néanmoins noter les observations suivantes à partir de l'ensemble des entrainements :  
+\begin{itemize}
+    \item \textbf{Taille des lots} : Elle a un impact significatif sur le temps de calcul par époque ainsi que sur le nombre d’itérations nécessaires pour atteindre la convergence.  
+    \item \textbf{Capacité de généralisation} : La taille des lots influence également la capacité du modèle à bien généraliser sur des données non vues.  
+    \item \textbf{Nombre de paramètres} : Un modèle avec un grand nombre de paramètres peut rendre l’apprentissage plus instable et difficile, comme en témoignent les expériences présentées et mes observations lors 
+    d'entrainements ayant subis les problèmes d'explosion ou disparition de gradients.
+\end{itemize}
+
+
+
 \subsubsection{Comparaison des résultats}
 
 \end{multicols}

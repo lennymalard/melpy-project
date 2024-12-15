@@ -35,7 +35,7 @@ class Callback:
         """
         pass
 
-    def on_loop_start(self, model, *args, **kwargs):
+    def on_train_start(self, model, *args, **kwargs):
         """
         Called at the start of the training loop.
 
@@ -56,7 +56,7 @@ class Callback:
         """
         pass
 
-    def on_loop_end(self, model, *args, **kwargs):
+    def on_train_end(self, model, *args, **kwargs):
         """
         Called at the end of the training loop.
 
@@ -77,7 +77,7 @@ class Callback:
         """
         pass
 
-    def on_iteration_start(self, model, *args, **kwargs):
+    def on_epoch_start(self, model, *args, **kwargs):
         """
         Called at the start of each epoch.
 
@@ -98,7 +98,7 @@ class Callback:
         """
         pass
 
-    def on_iteration_end(self, model, *args, **kwargs):
+    def on_epoch_end(self, model, *args, **kwargs):
         """
         Called at the end of each epoch.
 
@@ -190,7 +190,7 @@ class LiveMetrics(Callback):
         if self.row_select not in ("limited", "full"):
             raise ValueError("`row_select` must be one of ('limited', 'full').")
 
-    def on_iteration_end(self, model, figure):
+    def on_epoch_end(self, model, figure):
         """
         Updates the live metrics plot based on the current state of the model.
 
