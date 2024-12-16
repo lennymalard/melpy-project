@@ -143,69 +143,71 @@ class BinaryCrossEntropy(Loss):
         e = 1e-10
         return -(targets / outputs - (1 - targets + e) / (1 - outputs + e)) / len(outputs)
 
-class CategoricalCrossEntropy(Loss):
+
+class CategoricalCrossEntropy:
     """
-    A class to perform categorical cross entropy loss.
+    A class to compute categorical cross-entropy loss and its derivative.
 
     Methods
     -------
     loss(targets : ndarray, outputs : ndarray)
-        Computes the categorical cross entropy loss.
+        Computes the categorical cross-entropy loss.
     derivative(targets : ndarray, outputs : ndarray)
-        Computes the categorical cross entropy derivative.
+        Computes the categorical cross-entropy derivative.
     """
+
     def __init__(self):
         """
         Initializes the CategoricalCrossEntropy class.
         """
-        super().__init__()
+        pass
 
     def loss(self, targets, outputs):
         """
-        Computes the categorical cross entropy loss.
+        Computes the categorical cross-entropy loss.
 
         Parameters
         ----------
         targets : ndarray
-            Target data.
+            Target data. Can be one-hot encoded or integer labels.
         outputs : ndarray
-            Output data.
+            Output probabilities (e.g., softmax predictions).
 
         Returns
         -------
         float
-            The categorical cross entropy loss.
+            The categorical cross-entropy loss.
         """
-        targets_clipped = np.clip(outputs, 1e-7, 1 - 1e-7)
+        outputs_clipped = np.clip(outputs, 1e-7, 1 - 1e-7)
+
         if len(targets.shape) == 1:
-            correct_confidences = targets_clipped[
-            range(len(outputs)),
-            targets
+            correct_confidences = outputs_clipped[
+                range(len(outputs)), targets
             ]
         elif len(targets.shape) == 2:
-            correct_confidences = np.sum(
-            targets_clipped*targets,
-            axis=1
-            )
+            correct_confidences = np.sum(outputs_clipped * targets, axis=1)
+
         negative_log_likelihoods = -np.log(correct_confidences)
+
         return np.mean(negative_log_likelihoods)
 
     def derivative(self, targets, outputs):
         """
-        Computes the categorical cross entropy derivative.
+        Computes the categorical cross-entropy derivative.
 
         Parameters
         ----------
         targets : ndarray
-            Target data.
+            Target data. Can be one-hot encoded or integer labels.
         outputs : ndarray
-            Output data.
+            Output probabilities (e.g., softmax predictions).
 
         Returns
         -------
         ndarray
-            The categorical cross entropy derivative.
+            Gradient of the loss with respect to outputs.
         """
         if len(targets.shape) == 1:
-            targets = np.eye(len(outputs[0]))[targets]
-        return ((-targets + 1e-5) / (outputs + 1e-5)) / len(outputs)
+            targets = np.eye(outputs.shape[1])[targets]
+
+        return (outputs - targets) / len(outputs)

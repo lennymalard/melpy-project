@@ -44,7 +44,10 @@ sélectionnée est ensuite entraînée avec Keras de manière similaire.
 \textbf{Visualisation et interprétation des prédictions} On analyse les prédictions. 
 
 \textbf{Comparaison des métriques finales} On compare les métriques finales d'une bibliothèque
-avec celles de l'autres.
+avec celles de l'autres. \\
+
+L’entraînement a été réalisé en utilisant un processeur Intel i5-12600K et 32 Go de RAM.
+
 
 \subsection{Résultats et discussion}
 
@@ -91,7 +94,7 @@ s’explique par les expérimentations qui montrent qu’il est préférable de 
 les informations d’entrée intactes pour ce jeu de données. En effet, les photographies 
 étant très petites, réduire leur taille risquerait d'écraser des caractéristiques importantes déjà 
 difficiles à détecter. Les cartes de caractéristiques sont ensuite applaties pour alimenter
-un MLP composé d'une couche caché de 128 neurones. \\
+un MLP composé d'une couche cachée de 128 neurones. \\
 
 La couche cachée utilise la fonction d’activation Leaky ReLU, 
 tandis que la sortie est activée par la fonction Softmax. Pour optimiser l'architecture
@@ -100,10 +103,10 @@ d'entropie croisée catégorielle. \\
 
 Le choix a été fait sur les 6 entrainements suivants : \\
 
-\scalebox{0.5}{
+\scalebox{0.515}{
 \begin{tabular}{l|c c c c c c c|}
     \cline{2-8}
-                                   & Paramètres           & Profondeur                   & $e$       &$t/e$        & Lot     & $\gamma$             & $t$              \\
+                                   & $P$           & $D$                   & $e$       &$t/e$        & Lot     & $\gamma$             & $t$              \\
     \hline
     \multicolumn{1}{|l|}{$1$}      & 4 128 376            & $4C_{w}+2D_{w,b} = 6$        & 20            & 09min 50sec & 128     & $5^{-5}$             &03h 16min 59sec           \\
     \multicolumn{1}{|l|}{$2$}      & 2 107 146            & $2C_{w}+2D_{w,b} = 4$        & 20            & 15min 25sec & 128     & $1^{-5}$             &05h 48min 14sec           \\
@@ -116,9 +119,9 @@ Le choix a été fait sur les 6 entrainements suivants : \\
 \captionof{table}{Entrainements éffectués sur CIFAR-10 avec Melpy} \\
 
 {\scriptsize
-$Param\grave{e}tres$ étant le nombre de paramètres dans l'architecture\\
+$P$ étant le nombre de paramètres dans l'architecture\\
 
-$Profondeur$ étant la prodondeur de l'architecture avec $C$ une couche de convolution, D une couche entièrement connectée, $w$ l'utilisation de poids et $b$ l'utilisation de biais \\
+$D$ étant la prodondeur de l'architecture avec $C$ une couche de convolution, D une couche entièrement connectée, $w$ l'utilisation de poids et $b$ l'utilisation de biais \\
 
 $e$ étant le nombre d'époques passés pour entrainer l'architecture \\
 

@@ -48,8 +48,8 @@ Cependant, pour simplifier les calculs, nous éffectuerons des opérations de cr
 \begin{align}
     y[m,n] &= x[m,n] \star h[m,n]\\
     &=\sum^{\infty }_{j=-\infty}\sum^{\infty }_{i=-\infty}x[i,j]h[m+i,n+j]\\
-    &= \sum^{\infty }_{j=-\infty}\sum^{\infty }_{i=-\infty}x[i,j] rot_{\ang{180}}[h][m-i,n-j] \\
-    &= x[m,n] * rot_{\ang{180}} \big[h[m,n] \big]
+    &= \sum^{\infty }_{j=-\infty}\sum^{\infty }_{i=-\infty}x[i,j] rot_{\ang{180}}\big[h[m-i,n-j]\big] \\
+    &= x[m,n] * rot_{\ang{180}} \big[h[m,n]\big] 
 \end{align}
 
 Pour nos calculs, nous posons les termes suivant : \\
@@ -169,7 +169,7 @@ la taille de la fenêtre (\textit{poolsize}). Le \textit{stride} détermine
 le nombre de pixels à sauter entre chaque position de la fenêtre.
 
 Cette dernière de taille \textit{poolsize} parcourt les pixels en lignes 
-et colonnes, avec un pas de valeur \textit{stride}, pour produire une nouvelle 
+et en colonnes, avec un pas de valeur \textit{stride}, pour produire une nouvelle 
 image de taille $\lfloor \frac{Taille \ d’entr \acute{e}e - Poolsize}{Stride} + 1 \rfloor$. 
 À chaque déplacement, elle sélectionne la valeur maximale de la fenêtre 
 analysée, constituant un nouveau pixel de la sortie.\\

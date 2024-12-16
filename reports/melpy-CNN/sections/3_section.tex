@@ -288,14 +288,14 @@ def backward(self, dX):
 \end{lstlisting}
 \hfill\break
 
-Les gradients de sortie \texttt{dX} sont assignés à \texttt{dY}, et les filtres sont 
-retournés de \ang{180} puis aplatis en colonnes pour les calculs. Les gradients \texttt{dY} 
-sont convertis en colonnes, et les gradients des entrées \texttt{dX} sont calculés 
-via un produit matriciel entre les colonnes des filtres retournés et \texttt{dY}. 
-Les gradients des poids \texttt{dW} sont quant à eux obtenus par multiplication entre \texttt{dY} et 
-les colonnes d’entrée transposées. Les gradients des biais \texttt{dB}, si présents, sont calculés par une somme. 
+Les gradients de sortie \texttt{dX} sont assignés à \texttt{self.dY}, et les filtres sont 
+retournés de \ang{180} puis aplatis en colonnes pour les calculs. Les gradients \texttt{self.dY} 
+sont convertis en colonnes, et les gradients des entrées \texttt{self.dX} sont calculés 
+via un produit matriciel entre les colonnes des filtres retournés et $dY$. 
+Les gradients des poids \texttt{self.dW} sont quant à eux obtenus par multiplication entre $dY$ et 
+les colonnes d’entrée transposées. Les gradients des biais \texttt{self.dB}, si présents, sont calculés par une somme. 
 Les gradients d’entrée sont reconstitués avec \texttt{col2im()} et ajustés pour retirer le padding si nécessaire. 
-Finalement, les gradients \texttt{dX} sont retournés pour poursuivre la propagation arrière. \\
+Finalement, les gradients \texttt{self.dX} sont retournés pour poursuivre la propagation arrière. \\
 
 L'ensemble du code lié aux couches de Convolution se trouvent dans le repo de Melpy, à l'adresse suivante : \url{https://github.com/lennymalard/melpy-project/blob/main/melpy/layers.py}
 
