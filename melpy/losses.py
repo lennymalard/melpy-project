@@ -144,7 +144,7 @@ class BinaryCrossEntropy(Loss):
         return -(targets / outputs - (1 - targets + e) / (1 - outputs + e)) / len(outputs)
 
 
-class CategoricalCrossEntropy:
+class CategoricalCrossEntropy(Loss):
     """
     A class to compute categorical cross-entropy loss and its derivative.
 
@@ -160,7 +160,7 @@ class CategoricalCrossEntropy:
         """
         Initializes the CategoricalCrossEntropy class.
         """
-        pass
+        super().__init__()
 
     def loss(self, targets, outputs):
         """
