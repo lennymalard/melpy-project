@@ -722,19 +722,45 @@ class Sequential:
 
         if self.__is_trained__:
             date_time = datetime.now().strftime("%m_%d_%Y-%H_%M_%S")
-            parameters = {"weights": None, "biases": None}
+            parameters = {"weights": None, "biases": None, "weight_momentums": None, "bias_momentums": None, "weight_cache": None, "bias_cache": None}
+
             weights = []
             biases = []
+
+            weight_momentums = []
+            bias_momentums = []
+
+            weight_cache = []
+            bias_cache = []
+
             for layer in self.train_layers:
                 if isinstance(layer, Dense) or isinstance(layer, Convolution2D):
                     weights.append(layer.weights)
                     biases.append(layer.biases)
+
+                    weight_momentums.append(layer.weight_momentums)
+                    bias_momentums.append(layer.bias_momentums)
+
+                    weight_cache.append(layer.weight_cache)
+                    bias_cache.append(layer.bias_cache)
                 else:
                     weights.append(np.array(0.0))
                     biases.append(np.array(0.0))
 
+                    weight_momentums.append(np.array(0.0))
+                    bias_momentums.append(np.array(0.0))
+
+                    weight_cache.append(np.array(0.0))
+                    bias_cache.append(np.array(0.0))
+
             parameters["weights"] = weights
             parameters["biases"] = biases
+
+            parameters["weight_momentums"] = weight_momentums
+            parameters["bias_momentums"] = bias_momentums
+
+            parameters["weight_cache"] = weight_cache
+            parameters["bias_cache"] = bias_cache
 
             if extension == "pkl":
                 with open(name + f"_{date_time}.pkl", 'wb') as f:
@@ -744,9 +770,22 @@ class Sequential:
                 with h5py.File(name + f"_{date_time}.h5", 'w') as f:
                     weights_group = f.create_group("weights", track_order=True)
                     biases_group = f.create_group("biases", track_order=True)
+
+                    weight_momentums_group = f.create_group("weight_momentums", track_order=True)
+                    bias_momentums_group = f.create_group("bias_momentums", track_order=True)
+
+                    weight_cache_group = f.create_group("weight_cache", track_order=True)
+                    bias_cache_group = f.create_group("bias_cache", track_order=True)
+
                     for i in range(len(self.train_layers)):
                         weights_group.create_dataset(f"layer{i}", data=weights[i])
                         biases_group.create_dataset(f"layer{i}", data=biases[i])
+
+                        weight_momentums_group.create_dataset(f"layer{i}", data=weight_momentums[i])
+                        bias_momentums_group.create_dataset(f"layer{i}", data=bias_momentums[i])
+
+                        weight_cache_group.create_dataset(f"layer{i}", data=weight_cache[i])
+                        bias_cache_group.create_dataset(f"layer{i}", data=bias_cache[i])
 
             return parameters
         raise RuntimeError("The model has not been trained yet.")
@@ -800,14 +839,33 @@ class Sequential:
                     self.train_layers[i].weights = parameters["weights"][i]
                     self.train_layers[i].biases = parameters["biases"][i]
 
+                    self.train_layers[i].weight_momentums = parameters["weight_momentums"][i]
+                    self.train_layers[i].bias_momentums = parameters["bias_momentums"][i]
+
+                    self.train_layers[i].weight_cache = parameters["weight_cache"][i]
+                    self.train_layers[i].bias_cache = parameters["bias_cache"][i]
+
         elif extension == ".h5" and parameters is None:
             with h5py.File(path, 'r') as f:
                 weights = f["weights"]
                 biases = f["biases"]
+
+                weight_momentums = f["weight_momentums"]
+                bias_momentums = f["bias_momentums"]
+
+                weight_cache = f["weight_cache"]
+                bias_cache = f["bias_cache"]
+
                 for i in range(len(self.train_layers)):
                     if isinstance(self.train_layers[i], Dense) or isinstance(self.train_layers[i], Convolution2D):
                         self.train_layers[i].weights = weights[f"layer{i}"].astype(np.float64)[:]
                         self.train_layers[i].biases = biases[f"layer{i}"].astype(np.float64)[:]
+
+                        self.train_layers[i].weight_momentums = weight_momentums[f"layer{i}"].astype(np.float64)[:]
+                        self.train_layers[i].bias_momentums = bias_momentums[f"layer{i}"].astype(np.float64)
+
+                        self.train_layers[i].weight_cache = weight_cache[f"layer{i}"].astype(np.float64)[:]
+                        self.train_layers[i].bias_cache = bias_cache[f"layer{i}"].astype(np.float64)
         else:
             raise TypeError("`parameters` must be a dictionary")
 
