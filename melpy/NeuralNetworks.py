@@ -862,10 +862,10 @@ class Sequential:
                         self.train_layers[i].biases = biases[f"layer{i}"].astype(np.float64)[:]
 
                         self.train_layers[i].weight_momentums = weight_momentums[f"layer{i}"].astype(np.float64)[:]
-                        self.train_layers[i].bias_momentums = bias_momentums[f"layer{i}"].astype(np.float64)
+                        self.train_layers[i].bias_momentums = bias_momentums[f"layer{i}"].astype(np.float64)[:]
 
                         self.train_layers[i].weight_cache = weight_cache[f"layer{i}"].astype(np.float64)[:]
-                        self.train_layers[i].bias_cache = bias_cache[f"layer{i}"].astype(np.float64)
+                        self.train_layers[i].bias_cache = bias_cache[f"layer{i}"].astype(np.float64)[:]
         else:
             raise TypeError("`parameters` must be a dictionary")
 

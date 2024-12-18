@@ -46,7 +46,9 @@ sélectionnée est ensuite entraînée avec Keras de manière similaire.
 \textbf{Comparaison des métriques finales} On compare les métriques finales d'une bibliothèque
 avec celles de l'autres. \\
 
-L’entraînement a été réalisé en utilisant un processeur Intel i5-12600K et 32 Go de RAM.
+L’entraînement a été réalisé en utilisant un processeur Intel i5-12600K et 32 Go de RAM. Il
+est également important de noter que les temps de calculs ont pu être influencés par des processus 
+externes indésirables.
 
 
 \subsection{Résultats et discussion}
@@ -72,13 +74,66 @@ L'architecture sélectionnée pour MNIST est la suivante : \\
 \hfill\break
 
 Comme illustré dans la Figure 10, le réseau de neurones commence par une couche de convolution qui 
-génère 32 cartes de caractéristiques, suivie d’une couche de pooling qui réduit leur taille de moitié.
-Ensuite, une seconde couche de convolution produit 64 cartes de caractéristiques, ensuite aplaties pour alimenter 
-un MLP composé de deux couches cachées : la première avec 128 neurones et la seconde avec 64 neurones. \\
+génère 16 cartes de caractéristiques, suivie d’une couche de pooling (non représentée ici) qui réduit leur taille de moitié.
+Ensuite, une seconde couche de convolution produit 32 cartes de caractéristiques, ensuite aplaties pour alimenter 
+un MLP composé d'une couche cachée composée de 128 neurones. \\
 
-Les couches cachées utilisent la fonction d’activation Leaky ReLU, tandis que la sortie 
+La couche cachée utilise la fonction d’activation Leaky ReLU, tandis que la sortie 
 applique une fonction Softmax. Pour optimiser l'architecture, l’algorithme Adaptive Momentum (Adam) a été utilisé pour minimiser 
 la fonction de coût d’entropie croisée catégorielle (Categorical Cross-Entropy). \\
+
+Le choix a été fait sur les 4 entrainements suivants : \\
+
+\scalebox{0.55}{
+\begin{tabular}{l|c c c c c c c|}
+    \cline{2-8}
+                                   & $P$                  & $D$                          & $e$           &$t/e$              & Lot     & $\gamma$             & $t$              \\
+    \hline
+    \multicolumn{1}{|l|}{$1$}      & 15 840               & $1C_{w, b}+2D_{w,b} = 3$     & 15            & 32sec             & 256     & $1^{-4}$             &08min 01sec           \\             
+    \multicolumn{1}{|l|}{$1$}      & 201 226              & $1C_{w, b}+2D_{w,b} = 3$     & 15            & 02min 23sec       & 256     & $1^{-4}$             &35min 58sec           \\ 
+    \multicolumn{1}{|l|}{$1$}      & 806 394              & $2C_{w, b}+2D_{w,b} = 4$     & 15            & 01min 53sec       & 256     & $1^{-4}$             &28min 22sec           \\ 
+    \multicolumn{1}{|l|}{$1$}      & 1 623 192            & $2C_{w, b}+4D_{w,b} = 4$     & 7            & 03min 18sec        & 256     & $1^{-4}$             &23min 10sec           \\ 
+
+    \hline
+\end{tabular}}
+\captionof{table}{Entrainements éffectués sur MNIST avec Melpy} \\
+
+{\scriptsize
+$P$ étant le nombre de paramètres dans l'architecture\\
+
+$D$ étant la prodondeur de l'architecture avec $C$ une couche de convolution, D une couche entièrement connectée, $w$ l'utilisation de poids et $b$ l'utilisation de biais \\
+
+$e$ étant le nombre d'époques passés pour entrainer l'architecture \\
+
+$Lot$ étant le nombre d'entrées entrainées sur une passe avant et arrière \\
+
+$\gamma$ étant le taux d'apprentissage utilisé dans l'algorithme d'optimisation \\
+
+$t$ étant le temps qu'il a fallu pour entrainer l'architecture \\
+
+$t/e$ étant le temps passé en moyenne sur une époque \\
+} \\
+\textit{La taille des lots et le taux d’apprentissage restent ici inchangés, car ils se sont révélés significativement plus stables 
+que d'autres configurations testées, n'apportant pas d’informations pertinentes sur les modèles.} \\
+
+
+\includegraphics[width=\columnwidth]{images/mnist_losses.png}
+\captionof{figure}{Les coûts calculés à la fin de chaque époque}
+\hfill\break
+
+\includegraphics[width=\columnwidth]{images/mnist_accuracies.png}
+\captionof{figure}{La précision des modèles calculées à la fin de chaque époque}
+\hfill\break
+
+Comme le montrent les Figures 11 et 12, ce sont les modèles 3 et 4 qui se distinguent du groupe. 
+Cependant, le modèle 3 est finalement retenu. En effet, il est plus rapide que le modèle 4 tout en 
+produisant des résultats équivalents. Les deux modèles atteignent une précision de plus de 98\% 
+en une seule époque sur le jeu de données d’entraînement et montrent une excellente capacité de généralisation. \\
+
+Cette série d’entraînements montre que les réseaux de neurones plus complexes convergent plus 
+rapidement. Cependant, la profondeur de l’architecture peut entraîner un coût temporel significativement 
+plus élevé. Il est donc essentiel de trouver un équilibre entre la quantité de couches cachées et le 
+nombre de neurones qu’elles contiennent. \\
 
 \textbf{CIFAR-10} \\
 
