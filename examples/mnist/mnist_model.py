@@ -55,7 +55,7 @@ model.add(nn.Dense(128,64), nn.LeakyReLU())
 model.add(nn.Dense(64,10), nn.LeakyReLU())
 model.add(nn.Dense(10, 10, weight_initializer="glorot_normal"), nn.Softmax())
 
-model.compile(optimizer= nn.Adam(learning_rate = 1e-3), cost_function=nn.CategoricalCrossEntropy())
+model.compile(optimizer= nn.Adam(learning_rate = 1e-4), cost_function=nn.CategoricalCrossEntropy())
 model.summary()
 
 # %% Training

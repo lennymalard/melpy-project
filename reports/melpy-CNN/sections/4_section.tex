@@ -82,18 +82,18 @@ La couche cachée utilise la fonction d’activation Leaky ReLU, tandis que la s
 applique une fonction Softmax. Pour optimiser l'architecture, l’algorithme Adaptive Momentum (Adam) a été utilisé pour minimiser 
 la fonction de coût d’entropie croisée catégorielle (Categorical Cross-Entropy). \\
 
-Le choix a été fait sur les 4 entrainements suivants : \\
+Le choix a été fait sur les 5 entrainements suivants : \\
 
 \scalebox{0.55}{
 \begin{tabular}{l|c c c c c c c|}
     \cline{2-8}
-                                   & $P$                  & $D$                          & $e$           &$t/e$              & Lot     & $\gamma$             & $t$              \\
+                                   & $P$                  & $\Delta$                          & $e$           &$t/e$              & Lot     & $\gamma$             & $t$              \\
     \hline
     \multicolumn{1}{|l|}{$1$}      & 15 840               & $1C_{w, b}+2D_{w,b} = 3$     & 15            & 32sec             & 256     & $1^{-4}$             &08min 01sec           \\             
-    \multicolumn{1}{|l|}{$1$}      & 201 226              & $1C_{w, b}+2D_{w,b} = 3$     & 15            & 02min 23sec       & 256     & $1^{-4}$             &35min 58sec           \\ 
-    \multicolumn{1}{|l|}{$1$}      & 806 394              & $2C_{w, b}+2D_{w,b} = 4$     & 15            & 01min 53sec       & 256     & $1^{-4}$             &28min 22sec           \\ 
-    \multicolumn{1}{|l|}{$1$}      & 1 623 192            & $2C_{w, b}+4D_{w,b} = 4$     & 7            & 03min 18sec        & 256     & $1^{-4}$             &23min 10sec           \\ 
-
+    \multicolumn{1}{|l|}{$2$}      & 201 226              & $1C_{w, b}+2D_{w,b} = 3$     & 15            & 02min 23sec       & 256     & $1^{-4}$             &35min 58sec           \\ 
+    \multicolumn{1}{|l|}{$3$}      & 806 394              & $2C_{w, b}+2D_{w,b} = 4$     & 15            & 01min 53sec       & 256     & $1^{-4}$             &28min 22sec           \\ 
+    \multicolumn{1}{|l|}{$4$}      & 1 624 842            & $2C_{w, b}+4D_{w,b} = 6$     & 10            & 04min 42sec       & 256     & $1^{-4}$             &47min 03sec \\
+    \multicolumn{1}{|l|}{$5$}      & 1 615 466            & $2C_{w, b}+2D_{w,b} = 4$     & 10            & 04min 40sec       & 256     & $1^{-4}$             &46min 49sec  \\
     \hline
 \end{tabular}}
 \captionof{table}{Entrainements éffectués sur MNIST avec Melpy} \\
@@ -101,7 +101,7 @@ Le choix a été fait sur les 4 entrainements suivants : \\
 {\scriptsize
 $P$ étant le nombre de paramètres dans l'architecture\\
 
-$D$ étant la prodondeur de l'architecture avec $C$ une couche de convolution, D une couche entièrement connectée, $w$ l'utilisation de poids et $b$ l'utilisation de biais \\
+$\Delta$ étant la prodondeur de l'architecture avec $C$ une couche de convolution, D une couche entièrement connectée, $w$ l'utilisation de poids et $b$ l'utilisation de biais \\
 
 $e$ étant le nombre d'époques passés pour entrainer l'architecture \\
 
@@ -125,15 +125,17 @@ que d'autres configurations testées, n'apportant pas d’informations pertinent
 \captionof{figure}{La précision des modèles calculées à la fin de chaque époque}
 \hfill\break
 
-Comme le montrent les Figures 11 et 12, ce sont les modèles 3 et 4 qui se distinguent du groupe. 
-Cependant, le modèle 3 est finalement retenu. En effet, il est plus rapide que le modèle 4 tout en 
-produisant des résultats équivalents. Les deux modèles atteignent une précision de plus de 98\% 
-en une seule époque sur le jeu de données d’entraînement et montrent une excellente capacité de généralisation. \\
+Comme l’illustrent les Figures 11 et 12, les modèles 3, 4 et 5 présentent des performances similaires en termes de 
+métriques finales. Cependant, le modèle 3 est sélectionné en raison de sa rapidité d’exécution sur une 
+époque (voir Table 2). \\
 
-Cette série d’entraînements montre que les réseaux de neurones plus complexes convergent plus 
-rapidement. Cependant, la profondeur de l’architecture peut entraîner un coût temporel significativement 
-plus élevé. Il est donc essentiel de trouver un équilibre entre la quantité de couches cachées et le 
-nombre de neurones qu’elles contiennent. \\
+On peut cependant noter les observations suivantes à partir de l’ensemble des entraînements :
+\begin{itemize}
+\item \textbf{Nombre de paramètres} : Le nombre de paramètres influence significativement le temps nécessaire pour réaliser une époque.
+\item \textbf{Complexité du modèle} : Les modèles plus complexes tendent à mieux détecter les motifs. Cependant, cette complexité devient moins efficace 
+lorsque le nombre de neurones ou la profondeur de l’architecture devient excessif.
+\end{itemize} 
+\hfill\break
 
 \textbf{CIFAR-10} \\
 
@@ -143,13 +145,14 @@ L'architecture sélectionnée pour CIFAR-10 est la suivante : \\
 \captionof{figure}{Réseau de neurones sélectionné pour CIFAR-10}
 \hfill\break
 
-Comme illustré dans la Figure 11, le réseau de neurones se compose de deux couches de 
-convolution et ne comporte aucune couche de pooling. Cette absence de pooling
-s’explique par les expérimentations qui montrent qu’il est préférable de conserver 
-les informations d’entrée intactes pour ce jeu de données. En effet, les photographies 
-étant très petites, réduire leur taille risquerait d'écraser des caractéristiques importantes déjà 
-difficiles à détecter. Les cartes de caractéristiques sont ensuite applaties pour alimenter
-un MLP composé d'une couche cachée de 128 neurones. \\
+
+À REFAIRE
+
+Comme illustré dans la Figure 13, le réseau de neurones se compose de deux couches de 
+convolution et de deux couches de pooling qui réduisent de moitié la taille des cartes de caractéristiques. 
+Les cartes de caractéristiques sont ensuite applaties pour alimenter un MLP composé d'une couche cachée de 128 neurones. \\
+
+À REFAIRE
 
 La couche cachée utilise la fonction d’activation Leaky ReLU, 
 tandis que la sortie est activée par la fonction Softmax. Pour optimiser l'architecture
@@ -161,14 +164,16 @@ Le choix a été fait sur les 6 entrainements suivants : \\
 \scalebox{0.515}{
 \begin{tabular}{l|c c c c c c c|}
     \cline{2-8}
-                                   & $P$           & $D$                   & $e$       &$t/e$        & Lot     & $\gamma$             & $t$              \\
+                                   & $P$                  & $\Delta$                          & $e$           &$t/e$        & Lot     & $\gamma$             & $t$              \\
     \hline
     \multicolumn{1}{|l|}{$1$}      & 4 128 376            & $4C_{w}+2D_{w,b} = 6$        & 20            & 09min 50sec & 128     & $5^{-5}$             &03h 16min 59sec           \\
-    \multicolumn{1}{|l|}{$2$}      & 2 107 146            & $2C_{w}+2D_{w,b} = 4$        & 20            & 15min 25sec & 128     & $1^{-5}$             &05h 48min 14sec           \\
-    \multicolumn{1}{|l|}{$3$}      & 2 107 146            & $2C_{w}+2D_{w,b} = 4$        & 35            & 16min 07sec & 128     & $5^{-5}$             &09h 07min 21sec           \\
-    \multicolumn{1}{|l|}{$4$}      & 2 107 146            & $2C_{w}+2D_{w,b} = 4$        & 50            & 08min 08sec & 256     & $5^{-5}$             &06h 50min 36sec          \\
-    \multicolumn{1}{|l|}{$5$}      & 2 117 863            & $2C_{w}+2D_{w,b} = 4$        & 100           & 10min 30sec & 128     & $5^{-5}$             &17h 26min 00sec           \\
-    \multicolumn{1}{|l|}{$6$}      & 2 107 242            & $2C_{w,b}+2D_{w,b} = 4$      & 50            & 12min 13sec & 64      & $5^{-6}$             &07h 08min 29sec           \\
+    \multicolumn{1}{|l|}{$2$}      & 2 107 146            & $2C_{w}+2D_{w,b} = 4$        & 20            & 17min 24sec & 128     & $1^{-5}$             &05h 48min 14sec           \\
+    \multicolumn{1}{|l|}{$3$}      & 2 107 146            & $2C_{w}+2D_{w,b} = 4$        & 35            & 15min 38sec & 128     & $5^{-5}$             &09h 07min 21sec           \\
+    \multicolumn{1}{|l|}{$4$}      & 2 107 146            & $2C_{w}+2D_{w,b} = 4$        & 50            & 08min 12sec & 256     & $5^{-5}$             &06h 50min 36sec          \\
+    \multicolumn{1}{|l|}{$5$}      & 2 117 863            & $2C_{w}+2D_{w,b} = 4$        & 100           & 10min 27sec & 128     & $5^{-5}$             &17h 26min 00sec           \\
+    \multicolumn{1}{|l|}{$6$}      & 2 107 242            & $2C_{w,b}+2D_{w,b} = 4$      & 50            & 08min 34sec & 64      & $5^{-6}$             &07h 08min 29sec           \\
+    \multicolumn{1}{|l|}{$7$}      & 5 441 122            & $2C_{w,b}+5D_{w,b} = 7$      & 50            & 05min 53sec & 64      & $5^{-5}$             &04h 54min 52sec           \\
+    \multicolumn{1}{|l|}{$8$}      & 8 408 442            & $2C_{w,b}+5D_{w,b} = 7$      & 50            & 10min 26sec & 64      & $5^{-5}$             &08h 42min 17sec           \\
     \hline
 \end{tabular}}
 \captionof{table}{Entrainements éffectués sur CIFAR-10 avec Melpy} \\
@@ -176,7 +181,7 @@ Le choix a été fait sur les 6 entrainements suivants : \\
 {\scriptsize
 $P$ étant le nombre de paramètres dans l'architecture\\
 
-$D$ étant la prodondeur de l'architecture avec $C$ une couche de convolution, D une couche entièrement connectée, $w$ l'utilisation de poids et $b$ l'utilisation de biais \\
+$\Delta$ étant la prodondeur de l'architecture avec $C$ une couche de convolution, D une couche entièrement connectée, $w$ l'utilisation de poids et $b$ l'utilisation de biais \\
 
 $e$ étant le nombre d'époques passés pour entrainer l'architecture \\
 
@@ -197,12 +202,10 @@ $t/e$ étant le temps passé en moyenne sur une époque \\
 \captionof{figure}{La précision des modèles calculées à la fin de chaque époque}
 \hfill\break
 
-Comme le montrent les Figures 12 et 13, les modèles 3, 6 et 4 se démarquent comme 
-les plus performants. Parmi eux, c'est bien le modèle 6 qui a été retenu. Ce choix repose sur un 
+Comme le montrent les Figures 12 et 13, les modèles 6, 7 et 8 se démarquent comme 
+les plus performants. Parmi eux, c'est bien le modèle 7 qui a été retenu. Ce choix repose sur un 
 compromis entre la qualité de sa généralisation, son temps d’entraînement réduit et 
-son efficacité sur un faible nombre d’époques. Avec une petite taille de lot et un 
-temps d’apprentissage relativement court, tout en ayant un nombre de paramètres 
-légèrement supérieur, le modèle 6 offre un bon juste milieu entre les modèles. \\
+son efficacité sur un faible nombre d’époques. \\
 
 On peut néanmoins noter les observations suivantes à partir de l'ensemble des entrainements :  
 \begin{itemize}
@@ -211,7 +214,7 @@ On peut néanmoins noter les observations suivantes à partir de l'ensemble des 
     \item \textbf{Nombre de paramètres} : Un modèle avec un grand nombre de paramètres peut rendre l’apprentissage plus instable et difficile, comme en témoignent les expériences présentées et mes observations lors 
     d'entrainements ayant subis les problèmes d'explosion ou disparition de gradients.
 \end{itemize}
-
+\hfill\break
 
 
 \subsubsection{Comparaison des résultats}

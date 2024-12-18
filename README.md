@@ -95,7 +95,7 @@ All other dependencies will be installed automatically during the library instal
 
 ### Installation
 
-Melpy is available on PyPI as melpy. Run the following command to install it in your environment:
+Melpy is available on PyPI as melpy. Run the following command to install it in your environment :
    ```sh
    pip3 install melpy --upgrade
    ```
@@ -106,9 +106,9 @@ Melpy is available on PyPI as melpy. Run the following command to install it in 
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-To demonstrate Melpy’s capabilities, let’s work through a mini-project together. We will classify the Iris dataset, a classic example in machine learning. The dataset contains three classes: Setosa, Versicolor, and Virginica, described by the following features: Sepal Length, Sepal Width, Petal Length, and Petal Width.
+To demonstrate Melpy’s capabilities, let’s work through a mini-project together. We will classify the Iris dataset, a classic example in machine learning. The dataset contains three classes : Setosa, Versicolor, and Virginica, described by the following features : Sepal Length, Sepal Width, Petal Length, and Petal Width.
 
-First, let’s load the data and split it into training and test sets:
+First, let’s load the data and split it into training and test sets :
 
 ```python
 from sklearn.datasets import load_iris
@@ -119,7 +119,7 @@ iris_dataset = load_iris()
 X_train, X_test, y_train, y_test = train_test_split(
         iris_dataset['data'], iris_dataset['target'], test_size=0.25, random_state=0)
 ```
-Next, visualize the data to identify any patterns:
+Next, visualize the data to identify any patterns :
 ```python
 import matplotlib.pyplot as plt
 
@@ -141,9 +141,9 @@ As we can see in Figure 1, there is a clear correlation between species and feat
 
 ### Preprocessing
 
-FNNs require input data to be scaled close to zero. It is why we are now going to use StandardScaler from melpy.preprocessing:
+FNNs require input data to be scaled close to zero. It is why we are now going to use StandardScaler from melpy.preprocessing :
 
-<em>The Standard Scaler is a pre-processing technique which consists of removing the mean from a data set and dividing by its variance. You can find out more about data scaling here: [Feature Scaling](https://en.wikipedia.org/wiki/Feature_scaling).</em>
+<em>The Standard Scaler is a pre-processing technique which consists of removing the mean from a data set and dividing by its variance. You can find out more about data scaling here : [Feature Scaling](https://en.wikipedia.org/wiki/Feature_scaling).</em>
 
 ```python
 from melpy.preprocessing import StandardScaler
@@ -153,10 +153,10 @@ X_train = sc.transform(X_train)
 X_test = sc.transform(X_test) 
 ```
 
-Next, we encode the target labels using OneHotEncoder, also from melpy.preprocessing:
+Next, we encode the target labels using OneHotEncoder, also from melpy.preprocessing :
 
 <em>One-hot encoding is a method of representing categorical data as binary vectors. Each unique category is assigned a unique vector where one element is set to 1 (hot) and all others are 0.
-You can find out more about data encoding here: [One-hot](https://en.wikipedia.org/wiki/One-hot).</em>
+You can find out more about data encoding here : [One-hot](https://en.wikipedia.org/wiki/One-hot).</em>
 
 ```python
 from melpy.preprocessing import OneHotEncoder
@@ -168,12 +168,12 @@ y_test = ohe.transform(y_test)
 
 ### Model Creation
 
-We’re tackling a multi-class classification problem using tabular data, which requires:
+We’re tackling a multi-class classification problem using tabular data, which requires :
 *	[Fully Connected Layers](https://en.wikipedia.org/wiki/Multilayer_perceptron) (Dense) for feature extraction.
 *	[Softmax](https://en.wikipedia.org/wiki/Softmax_function) [Activation](https://fr.wikipedia.org/wiki/Fonction_d%27activation) to convert outputs into probabilities.
 *	[Categorical Cross-Entropy](https://en.wikipedia.org/wiki/Cross-entropy) as the cost function for optimization.
 
-Now, let’s build the model using Melpy’s Sequential class:
+Now, let’s build the model using Melpy’s Sequential class :
 
 <em>Sequential models are neural networks where layers are stacked in a linear order. Data flows through them one by one in sequence.</em>
 
@@ -188,7 +188,7 @@ model.add(nn.Dense(6, y_train.shape[1]), nn.Softmax())
 model.compile(cost_function=nn.CategoricalCrossEntropy(), optimizer=nn.SGD(learning_rate=0.01))
 ```
 
-We define:
+We define :
 * The training inputs and the training targets.
 * The validation inputs and the validation targets.
 * A hidden layer with 6 neurons and [ReLU](https://en.wikipedia.org/wiki/Rectifier_(neural_networks)) [activation](https://fr.wikipedia.org/wiki/Fonction_d%27activation).
@@ -198,7 +198,7 @@ We define:
 
 ### Model Summary
 
-We can view the model structure with:
+We can view the model structure with :
 
 ```python
 model.summary()
@@ -213,7 +213,7 @@ Softmax: (1, 3)
 
 ### Training the Model
 
-Finally, we train the model with 5000 epochs and observe the results with verbose and LiveMetrics:
+Finally, we train the model with 5000 epochs and observe the results with verbose and LiveMetrics :
 
 ```python
 model.fit(epochs=5000, verbose = 1, callbacks=[nn.LiveMetrics()])
@@ -242,7 +242,7 @@ If you look closely, you will notice that the plot on the right closely resemble
 
 ### Save Your Work
 
-Save your trained parameters and metrics for future use:
+Save your trained parameters and metrics for future use :
 
 ```python
 model.save_params("iris_parameters")
@@ -267,7 +267,7 @@ Most of the errors you encounter will likely be related to the shape of your arr
 
 The most common errors typically arise from how the number of neurons is defined in Convolution2D and Dense layers.
 
-Dense:
+Dense :
 ```python
 model.add(nn.Dense(X_train.shape[1], 7), nn.LeakyReLU()) 
 model.add(nn.Dense(6, y_train.shape[1]), nn.Softmax())
@@ -275,7 +275,7 @@ model.add(nn.Dense(6, y_train.shape[1]), nn.Softmax())
 ```sh
 ValueError: shapes (1,7) and (6,2) not aligned: 7 (dim 1) != 6 (dim 0)
 ```
-Convolution2D:
+Convolution2D :
 ```python
 model.add(nn.Convolution2D(in_channels=1, out_channels=32, kernel_size=2, padding="same"), nn.LeakyReLU())
 model.add(nn.Convolution2D(in_channels=12, out_channels=64, kernel_size=2, padding="same"), nn.LeakyReLU())
