@@ -1,0 +1,63 @@
+This is BibTeX, Version 0.99d
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: main.aux
+Reallocating 'name_of_file' (item size: 1) to 6 items.
+The style file: plain.bst
+Reallocating 'name_of_file' (item size: 1) to 11 items.
+Database file #1: references.bib
+Warning--to sort, need author or key in MaxPoolingImage2
+Warning--empty author in MaxPoolingImage2
+Warning--empty title in MaxPoolingImage2
+Warning--empty year in MaxPoolingImage2
+Warning--empty journal in MNIST
+Warning--empty journal in im2col
+Warning--empty journal in CIFAR10
+Warning--empty journal in AlexNet
+Warning--empty journal in YannLeCunCNNs
+Warning--empty booktitle in ApplicationsOfCNNs
+Warning--empty title in im2colImages
+Warning--empty year in im2colImages
+Warning--empty journal in GradientDescent
+Warning--empty journal in NumPyEfficiency
+You've used 10 entries,
+            2118 wiz_defined-function locations,
+            545 strings with 5163 characters,
+and the built_in function-call counts, 2524 in all, are:
+= -- 221
+> -- 141
+< -- 0
++ -- 59
+- -- 46
+* -- 157
+:= -- 457
+add.period$ -- 29
+call.type$ -- 10
+change.case$ -- 51
+chr.to.int$ -- 0
+cite$ -- 24
+duplicate$ -- 103
+empty$ -- 181
+format.name$ -- 46
+if$ -- 489
+int.to.chr$ -- 0
+int.to.str$ -- 10
+missing$ -- 10
+newline$ -- 52
+num.names$ -- 18
+pop$ -- 79
+preamble$ -- 1
+purify$ -- 43
+quote$ -- 0
+skip$ -- 67
+stack$ -- 0
+substring$ -- 53
+swap$ -- 3
+text.length$ -- 0
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 40
+warning$ -- 14
+while$ -- 18
+width$ -- 12
+write$ -- 90
+(There were 14 warnings)

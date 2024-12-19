@@ -1,0 +1,20 @@
+\contentsline {section}{\numberline {1}Introduction}{1}{section.1}%
+\contentsline {section}{\numberline {2}Th^^c3^^a9orie}{2}{section.2}%
+\contentsline {subsection}{\numberline {2.1}L'architecture}{2}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}Les couches de Convolution}{2}{subsection.2.2}%
+\contentsline {subsubsection}{\numberline {2.2.1}Propagation Avant}{3}{subsubsection.2.2.1}%
+\contentsline {subsubsection}{\numberline {2.2.2}Propagation Arri^^c3^^a8re}{3}{subsubsection.2.2.2}%
+\contentsline {subsection}{\numberline {2.3}Les couches de Pooling}{4}{subsection.2.3}%
+\contentsline {subsubsection}{\numberline {2.3.1}Propagation Avant}{4}{subsubsection.2.3.1}%
+\contentsline {subsubsection}{\numberline {2.3.2}Propagation Arri^^c3^^a8re}{5}{subsubsection.2.3.2}%
+\contentsline {section}{\numberline {3}Impl^^c3^^a9mentation}{5}{section.3}%
+\contentsline {subsection}{\numberline {3.1}La m^^c3^^a9thode Im2Col}{6}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}Les couches de Convolution}{8}{subsection.3.2}%
+\contentsline {subsection}{\numberline {3.3}Les couches de Pooling}{10}{subsection.3.3}%
+\contentsline {section}{\numberline {4}Exp^^c3^^a9rimentations}{11}{section.4}%
+\contentsline {subsection}{\numberline {4.1}M^^c3^^a9thode}{12}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}R^^c3^^a9sultats et discussion}{12}{subsection.4.2}%
+\contentsline {subsubsection}{\numberline {4.2.1}Pr^^c3^^a9-traitement des donn^^c3^^a9es}{12}{subsubsection.4.2.1}%
+\contentsline {subsubsection}{\numberline {4.2.2}S^^c3^^a9lection du mod^^c3^^a8le}{12}{subsubsection.4.2.2}%
+\contentsline {subsubsection}{\numberline {4.2.3}Comparaison des r^^c3^^a9sultats}{15}{subsubsection.4.2.3}%
+\contentsline {section}{\numberline {5}Conclusions}{16}{section.5}%

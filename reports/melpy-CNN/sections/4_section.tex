@@ -19,12 +19,20 @@ populaire car il est simple à traiter et offre une grande qualité et quantité
 d’exemples, ce qui en fait une référence pour les premières expérimentations en 
 apprentissage profond. \\
 
+\includegraphics[width=\columnwidth]{images/mnist_samples.png}
+\captionof{figure}{Exemples d'images provenant du dataset MNIST}
+\hfill\break
+
 Cependant, afin d’augmenter la complexité des expérimentations, le jeu de données CIFAR-10\cite{CIFAR10} a également 
 été utilisé. Il contient 60 000 images réparties en 10 classes (avions, voitures, oiseaux, chats, cerfs, 
 chiens, grenouilles, chevaux, bateaux et camions). Les images sont des photographies sous échantillonnées, qui mesurent 32x32 pixels et qui sont en couleur 
 (format RGB), ce qui les rend plus complexes à traiter que celles de MNIST. La diversité des classes et le manque de corrélation 
 entre elles ajoutent également de la complexité à ce jeu de données. En ce qui concerne la qualité de ces dernières,
-elle est comparable à celle de MNIST.
+elle est comparable à celle de MNIST. \\
+
+\includegraphics[width=\columnwidth]{images/cifar10_samples.png}
+\captionof{figure}{Exemples d'images provenant du dataset CIFAR-10}
+\hfill\break
 
 \subsection{Méthode}
 
@@ -74,9 +82,9 @@ L'architecture sélectionnée pour MNIST est la suivante : \\
 \hfill\break
 
 Comme illustré dans la Figure 10, le réseau de neurones commence par une couche de convolution qui 
-génère 16 cartes de caractéristiques, suivie d’une couche de pooling (non représentée ici) qui réduit leur taille de moitié.
+génère 16 cartes de caractéristiques, suivie d’une couche de pooling qui réduit leur taille de moitié.
 Ensuite, une seconde couche de convolution produit 32 cartes de caractéristiques, ensuite aplaties pour alimenter 
-un MLP composé d'une couche cachée composée de 128 neurones. \\
+un MLP ayant une couche cachée composée de 128 neurones. \\
 
 La couche cachée utilise la fonction d’activation Leaky ReLU, tandis que la sortie 
 applique une fonction Softmax. Pour optimiser l'architecture, l’algorithme Adaptive Momentum (Adam) a été utilisé pour minimiser 
@@ -122,14 +130,14 @@ que d'autres configurations testées, n'apportant pas d’informations pertinent
 \hfill\break
 
 \includegraphics[width=\columnwidth]{images/mnist_accuracies.png}
-\captionof{figure}{La précision des modèles calculées à la fin de chaque époque}
+\captionof{figure}{La précision globale des modèles calculées à la fin de chaque époque}
 \hfill\break
 
 Comme l’illustrent les Figures 11 et 12, les modèles 3, 4 et 5 présentent des performances similaires en termes de 
 métriques finales. Cependant, le modèle 3 est sélectionné en raison de sa rapidité d’exécution sur une 
 époque (voir Table 2). \\
 
-On peut cependant noter les observations suivantes à partir de l’ensemble des entraînements :
+En dehors de la sélection d’un modèle à comparer avec Keras, nous pouvons relever les informations suivantes concernant les différents entrainements :
 \begin{itemize}
 \item \textbf{Nombre de paramètres} : Le nombre de paramètres influence significativement le temps nécessaire pour réaliser une époque.
 \item \textbf{Complexité du modèle} : Les modèles plus complexes tendent à mieux détecter les motifs. Cependant, cette complexité devient moins efficace 
@@ -146,25 +154,20 @@ L'architecture sélectionnée pour CIFAR-10 est la suivante : \\
 \hfill\break
 
 
-À REFAIRE
+Comme illustré dans la Figure 13, le réseau de neurones débute par une couche de convolution générant 32 cartes de caractéristiques, suivie d’une couche de pooling réduisant leur taille de moitié. 
+Cette opération est répétée une seconde fois, avec comme seule différence la couche de convolution produisant cette fois 64 cartes de caractéristiques
+Celles-ci sont ensuite aplaties pour alimenter un MLP constitué de 4 couches cachées contenant respectivement 128, 64, 32 et 16 neurones chacune. \\
 
-Comme illustré dans la Figure 13, le réseau de neurones se compose de deux couches de 
-convolution et de deux couches de pooling qui réduisent de moitié la taille des cartes de caractéristiques. 
-Les cartes de caractéristiques sont ensuite applaties pour alimenter un MLP composé d'une couche cachée de 128 neurones. \\
-
-À REFAIRE
-
-La couche cachée utilise la fonction d’activation Leaky ReLU, 
-tandis que la sortie est activée par la fonction Softmax. Pour optimiser l'architecture
-on utilise l'algorithme Adaptive Momentum afin de minimiser la fonction de côut 
-d'entropie croisée catégorielle. \\
+Les couches cachées utilisent la fonction d’activation Leaky ReLU, tandis que la sortie 
+applique une fonction Softmax. Pour optimiser l'architecture, l’algorithme Adaptive Momentum (Adam) a été utilisé pour minimiser 
+la fonction de coût d’entropie croisée catégorielle (Categorical Cross-Entropy). \\
 
 Le choix a été fait sur les 6 entrainements suivants : \\
 
 \scalebox{0.515}{
 \begin{tabular}{l|c c c c c c c|}
     \cline{2-8}
-                                   & $P$                  & $\Delta$                          & $e$           &$t/e$        & Lot     & $\gamma$             & $t$              \\
+                                   & $P$                  & $\Delta$                     & $e$           &$t/e$        & Lot     & $\gamma$             & $t$              \\
     \hline
     \multicolumn{1}{|l|}{$1$}      & 4 128 376            & $4C_{w}+2D_{w,b} = 6$        & 20            & 09min 50sec & 128     & $5^{-5}$             &03h 16min 59sec           \\
     \multicolumn{1}{|l|}{$2$}      & 2 107 146            & $2C_{w}+2D_{w,b} = 4$        & 20            & 17min 24sec & 128     & $1^{-5}$             &05h 48min 14sec           \\
@@ -199,24 +202,46 @@ $t/e$ étant le temps passé en moyenne sur une époque \\
 \hfill\break
 
 \includegraphics[width=\columnwidth]{images/cifar_10_accuracies.png}
-\captionof{figure}{La précision des modèles calculées à la fin de chaque époque}
+\captionof{figure}{La précision globale des modèles calculées à la fin de chaque époque}
 \hfill\break
 
-Comme le montrent les Figures 12 et 13, les modèles 6, 7 et 8 se démarquent comme 
+Comme le montrent les Figures 12 et 13, les modèles 3, 7 et 8 se démarquent comme 
 les plus performants. Parmi eux, c'est bien le modèle 7 qui a été retenu. Ce choix repose sur un 
 compromis entre la qualité de sa généralisation, son temps d’entraînement réduit et 
-son efficacité sur un faible nombre d’époques. \\
+son efficacité dès le début de ce dernier. \\
 
-On peut néanmoins noter les observations suivantes à partir de l'ensemble des entrainements :  
+À l'instar des entrainements sur MNIST, nous pouvons relever les informations suivantes à partir de l'ensemble des entrainements sélectionnés pour CIFAR-10 :  
 \begin{itemize}
-    \item \textbf{Taille des lots} : Elle a un impact significatif sur le temps de calcul par époque ainsi que sur le nombre d’itérations nécessaires pour atteindre la convergence.  
-    \item \textbf{Capacité de généralisation} : La taille des lots influence également la capacité du modèle à bien généraliser sur des données non vues.  
-    \item \textbf{Nombre de paramètres} : Un modèle avec un grand nombre de paramètres peut rendre l’apprentissage plus instable et difficile, comme en témoignent les expériences présentées et mes observations lors 
-    d'entrainements ayant subis les problèmes d'explosion ou disparition de gradients.
+    \item \textbf{Taille des lots} : Elle influence de manière significative le temps de calcul par époque ainsi que le nombre d’itérations nécessaires pour atteindre 
+    la convergence.
+    \item \textbf{Capacité de généralisation} : La taille des lots influence également la capacité du modèle à bien généraliser sur des données non vues, à condition que le modèle ne soit pas trop complexe.
+    \item \textbf{Couches de pooling} : L’intégration de couches de pooling à des positions intéressantes dans l’architecture peut compenser le temps de calcul, 
+    bien que cela se fasse au détriment de la quantité d’informations utilisé pour l’apprentissage.
 \end{itemize}
 \hfill\break
 
 
 \subsubsection{Comparaison des résultats}
+
+Afin d’évaluer les performances de Melpy dans l’utilisation des CNNs, nous comparons cette bibliothèque avec Keras, une autre bibliothèque de deep learning, reconnue pour la simplicité de son utilisation. \\
+
+Pour ce faire, ce sont les architectures sélectionnées plus tôt qui serviront de référence.\\
+
+\textit{Nous utiliserons la courbe du coût du modèle au fil des époques, car elle représente au mieux les performances d’un modèle.} \\
+
+\textbf{MNIST}
+
+\includegraphics[width=\columnwidth]{images/mnist_comparison.png}
+\captionof{figure}{Comparaison du coût entre Melpy et Keras}
+\hfill\break
+
+Comme le montre la Figure 18, les coûts ne sont pas exactement les mêmes. Cela peut s’expliquer par une légère différence 
+dans le calcul du gradient au niveau des couches de convolution. En effet, lors de tests comparant les résultats des opérations 
+mathématiques implémentées dans Melpy avec celles de TensorFlow, la bibliothèque sur laquelle Keras s’appuie pour ses calculs, 
+une différence moyenne allant de 0,4 à 0,6 a été observée entre les gradients de chaque valeur d’entrée. Cette différence est 
+significative en raison du nombre élevé de valeurs impliquées. Par exemple, si l’on somme les erreurs du gradient d’une taille (1, 3, 32, 32), 
+la somme des erreurs peut atteindre jusqu’à 1800, contre des valeurs inférieures à 0 pour les autres opérations. 
+Toutefois, bien que cette différence mérite une étude plus approfondie, elle n’empêche pas un apprentissage tout aussi efficace. \\
+
 
 \end{multicols}

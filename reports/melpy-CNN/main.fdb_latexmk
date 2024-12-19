@@ -1,13 +1,13 @@
 # Fdb version 4
-["bibtex main"] 1734560060.43232 "main.aux" "main.bbl" "main" 1734560086.72901 0
+["bibtex main"] 1734642998.26447 "main.aux" "main.bbl" "main" 1734643001.02115 0
   "./references.bib" 1734174787.08736 3389 76060c92eacb0a4e796b2d6ec0ac50b6 ""
   "/Users/lenny/Library/Application Support/MiKTeX/texmfs/install/bibtex/bst/bibtex/plain.bst" 1733568571.37365 20613 bd3fbfa9f64872b81ac57a0dd2ed855f ""
-  "main.aux" 1734560085.98496 7143 c5131ed4ff0eb8dbedfebbd9146b20f2 "pdflatex"
+  "main.aux" 1734643000.26196 7639 128fd21495750becc0b9c7452899bb07 "pdflatex"
   (generated)
   "main.bbl"
   "main.blg"
   (rewritten before read)
-["pdflatex"] 1734560084.4314 "/Users/lenny/Documents/DEV/git/melpy-project/reports/melpy-CNN/main.tex" "main.pdf" "main" 1734560086.72921 0
+["pdflatex"] 1734642998.54909 "/Users/lenny/Documents/DEV/git/melpy-project/reports/melpy-CNN/main.tex" "main.pdf" "main" 1734643001.02135 0
   "/Users/lenny/Documents/DEV/git/melpy-project/reports/melpy-CNN/main.tex" 1734371142.90534 2927 b80f0de833ff74f6ed5bde942c5802ed ""
   "/Users/lenny/Library/Application Support/MiKTeX/texmfs/data/fonts/map/pdftex/pdftex.map" 1734195543.26268 25678 aa7c8fd3909e804e7d85441c21595406 ""
   "/Users/lenny/Library/Application Support/MiKTeX/texmfs/data/fonts/pk/ljfour/jknappen/ec/dpi600/tcrm1200.pk" 1733593486.98001 14064 6f0346852d2c1a32275f0539282d3d90 ""
@@ -134,8 +134,9 @@
   "abstract.tex" 1733574991.98141 207 cfab5ef085b9a22e65c7c1eee15b5896 ""
   "images/backwardpooling.png" 1734177221.04124 8580 2f8316642f7de29749ca3e5b17dfa155 ""
   "images/cifar10_nn.png" 1734559599.37802 65766 f4eafbe2e6f53af7efc1746d717b5781 ""
-  "images/cifar_10_accuracies.png" 1734557870.18522 202484 0b84eb490ba572ada5efc734409c36f1 ""
-  "images/cifar_10_losses.png" 1734557870.18514 115451 bf507d9dc4b16d0f964eb81925307241 ""
+  "images/cifar10_samples.png" 1734641187.20507 40610 3cbfe422aaa2c3d76fe84f2837cc06b4 ""
+  "images/cifar_10_accuracies.png" 1734636616.00924 194060 58f36b284f3d108764409d03f2da642c ""
+  "images/cifar_10_losses.png" 1734636615.98743 114490 177026190ad142dcf51b425acf72bf56 ""
   "images/featuremaps.png" 1733676081.47928 34854 751457cd8daf079671dd1bc8fa23fb35 ""
   "images/forwardpooling.png" 1734177246.77281 9132 110260cb11602dae79ee52d5221d8b29 ""
   "images/im2col-1.png" 1733779665.4872 44551 2c32ebd01d46e5a8217ae6bd6d351266 ""
@@ -144,18 +145,20 @@
   "images/im2col-4.png" 1734027987.7266 25659 ec7bf28560cb4a9ea4fda6c07fd89f22 ""
   "images/lenet5.jpeg" 1733590678.92597 37125 7c3be9d830ea34c3c45249a9ea48a327 ""
   "images/maxpooling2.png" 1733690445.02889 192209 069bedf4e3a564b0a347e683ed575f27 ""
-  "images/mnist_accuracies.png" 1734546960.51683 52509 071aa21bb78d2b38c475707bdd23f441 ""
-  "images/mnist_losses.png" 1734546951.90238 47601 50cfd08cd22005bdcf47fb390b7596df ""
+  "images/mnist_accuracies.png" 1734639692.43968 59715 925c723c6455955d915ca6c014f93005 ""
+  "images/mnist_comparison.png" 1734640419.36183 47492 80e1d1647e26768eab11841f14d51433 ""
+  "images/mnist_losses.png" 1734639705.07232 56509 c55395ec0bbb7a70cf4a9b9ed76e30bf ""
   "images/mnist_nn.png" 1734559434.16191 57244 025d9958329f881d19fe095a05e10ec7 ""
-  "main.aux" 1734560085.98496 7143 c5131ed4ff0eb8dbedfebbd9146b20f2 "pdflatex"
-  "main.bbl" 1734560060.678 1480 82b2feb7ca2dbdf0f66137cae8962379 "bibtex main"
-  "main.out" 1734560085.98628 3063 0feb2c348f38c8f0a5c761694073a898 "pdflatex"
+  "images/mnist_samples.png" 1734641247.11726 17564 7caa137340cb86165bb957688f7a23dd ""
+  "main.aux" 1734643000.26196 7639 128fd21495750becc0b9c7452899bb07 "pdflatex"
+  "main.bbl" 1734642998.49936 1480 82b2feb7ca2dbdf0f66137cae8962379 "bibtex main"
+  "main.out" 1734643000.26341 3063 0feb2c348f38c8f0a5c761694073a898 "pdflatex"
   "main.tex" 1734371142.90534 2927 b80f0de833ff74f6ed5bde942c5802ed ""
-  "main.toc" 1734560085.98693 1798 a78e03c9a2717e01975edbf4b3b72163 "pdflatex"
+  "main.toc" 1734643000.26382 1798 d811373949e99d1993c4aa0d2915489c "pdflatex"
   "sections/1_intro.tex" 1734174875.89169 1409 ec8e27495533451ebcc45f35de356e66 ""
   "sections/2_section.tex" 1734372776.9505 9744 701097e114d884a07f7b45369f0cb082 ""
   "sections/3_section.tex" 1734373610.59842 18367 0cb94f9a666089ef2c6edeac2c35f0b1 ""
-  "sections/4_section.tex" 1734560083.32929 12393 dee24190b49c815924dbf0bd0a49fea8 ""
+  "sections/4_section.tex" 1734642994.93295 14575 42557d48aba30e6676cff126476fd967 ""
   "sections/5_conclusion.tex" 1733568489.56886 128 2b0b0d53a78c8b1bdf48a4cc39e9a07f ""
   (generated)
   "main.aux"
