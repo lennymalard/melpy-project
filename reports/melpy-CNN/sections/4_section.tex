@@ -49,7 +49,6 @@ la meilleure généralisation.\\
 \textbf{Création et entraînement des architectures avec Keras} L'architecture
 sélectionnée est ensuite entraînée avec Keras de manière similaire.
 
-\textbf{Visualisation et interprétation des prédictions} On analyse les prédictions. 
 
 \textbf{Comparaison des métriques finales} On compare les métriques finales d'une bibliothèque
 avec celles de l'autres. \\
@@ -122,7 +121,7 @@ $t$ étant le temps qu'il a fallu pour entrainer l'architecture \\
 $t/e$ étant le temps passé en moyenne sur une époque \\
 } \\
 \textit{La taille des lots et le taux d’apprentissage restent ici inchangés, car ils se sont révélés significativement plus stables 
-que d'autres configurations testées, n'apportant pas d’informations pertinentes sur les modèles.} \\
+que d'autres configurations testées, n'apportant pas d’informations pertinentes sur les entrainements.} \\
 
 
 \includegraphics[width=\columnwidth]{images/mnist_losses.png}
@@ -133,7 +132,7 @@ que d'autres configurations testées, n'apportant pas d’informations pertinent
 \captionof{figure}{La précision globale des modèles calculées à la fin de chaque époque}
 \hfill\break
 
-Comme l’illustrent les Figures 11 et 12, les modèles 3, 4 et 5 présentent des performances similaires en termes de 
+Comme l’illustrent les Figures 13 et 14, les modèles 3, 4 et 5 présentent des performances similaires en termes de 
 métriques finales. Cependant, le modèle 3 est sélectionné en raison de sa rapidité d’exécution sur une 
 époque (voir Table 2). \\
 
@@ -154,13 +153,13 @@ L'architecture sélectionnée pour CIFAR-10 est la suivante : \\
 \hfill\break
 
 
-Comme illustré dans la Figure 13, le réseau de neurones débute par une couche de convolution générant 32 cartes de caractéristiques, suivie d’une couche de pooling réduisant leur taille de moitié. 
-Cette opération est répétée une seconde fois, avec comme seule différence la couche de convolution produisant cette fois 64 cartes de caractéristiques
+Comme illustré dans la Figure 15, le réseau de neurones débute par une couche de convolution générant 32 cartes de caractéristiques, suivie d’une couche de pooling réduisant leur taille de moitié. 
+Cette opération est répétée une seconde fois, avec comme seule différence la couche de convolution produisant cette fois 64 cartes de caractéristiques.
 Celles-ci sont ensuite aplaties pour alimenter un MLP constitué de 4 couches cachées contenant respectivement 128, 64, 32 et 16 neurones chacune. \\
 
 Les couches cachées utilisent la fonction d’activation Leaky ReLU, tandis que la sortie 
-applique une fonction Softmax. Pour optimiser l'architecture, l’algorithme Adaptive Momentum (Adam) a été utilisé pour minimiser 
-la fonction de coût d’entropie croisée catégorielle (Categorical Cross-Entropy). \\
+applique une fonction Softmax. Pour optimiser l'architecture, l’algorithme Adam a été utilisé pour minimiser 
+la fonction de coût d’entropie croisée catégorielle. \\
 
 Le choix a été fait sur les 6 entrainements suivants : \\
 
@@ -169,13 +168,13 @@ Le choix a été fait sur les 6 entrainements suivants : \\
     \cline{2-8}
                                    & $P$                  & $\Delta$                     & $e$           &$t/e$        & Lot     & $\gamma$             & $t$              \\
     \hline
-    \multicolumn{1}{|l|}{$1$}      & 4 128 376            & $4C_{w}+2D_{w,b} = 6$        & 20            & 09min 50sec & 128     & $5^{-5}$             &03h 16min 59sec           \\
+    \multicolumn{1}{|l|}{$1$}      & 1 056 376            & $4C_{w}+2D_{w,b} = 6$        & 20            & 09min 50sec & 128     & $5^{-5}$             &03h 16min 59sec           \\
     \multicolumn{1}{|l|}{$2$}      & 2 107 146            & $2C_{w}+2D_{w,b} = 4$        & 20            & 17min 24sec & 128     & $1^{-5}$             &05h 48min 14sec           \\
     \multicolumn{1}{|l|}{$3$}      & 2 107 146            & $2C_{w}+2D_{w,b} = 4$        & 35            & 15min 38sec & 128     & $5^{-5}$             &09h 07min 21sec           \\
     \multicolumn{1}{|l|}{$4$}      & 2 107 146            & $2C_{w}+2D_{w,b} = 4$        & 50            & 08min 12sec & 256     & $5^{-5}$             &06h 50min 36sec          \\
-    \multicolumn{1}{|l|}{$5$}      & 2 117 863            & $2C_{w}+2D_{w,b} = 4$        & 100           & 10min 27sec & 128     & $5^{-5}$             &17h 26min 00sec           \\
-    \multicolumn{1}{|l|}{$6$}      & 2 107 242            & $2C_{w,b}+2D_{w,b} = 4$      & 50            & 08min 34sec & 64      & $5^{-6}$             &07h 08min 29sec           \\
-    \multicolumn{1}{|l|}{$7$}      & 5 441 122            & $2C_{w,b}+5D_{w,b} = 7$      & 50            & 05min 53sec & 64      & $5^{-5}$             &04h 54min 52sec           \\
+    \multicolumn{1}{|l|}{$5$}      & 2 117 866            & $2C_{w}+2D_{w,b} = 4$        & 100           & 10min 27sec & 128     & $5^{-5}$             &17h 26min 00sec           \\
+    \multicolumn{1}{|l|}{$6$}      & 8 398 698            & $2C_{w,b}+2D_{w,b} = 4$      & 50            & 08min 34sec & 64      & $5^{-6}$             &07h 08min 29sec           \\
+    \multicolumn{1}{|l|}{$7$}      & 544 122              & $2C_{w,b}+5D_{w,b} = 7$      & 50            & 05min 53sec & 64      & $5^{-5}$             &04h 54min 52sec           \\
     \multicolumn{1}{|l|}{$8$}      & 8 408 442            & $2C_{w,b}+5D_{w,b} = 7$      & 50            & 10min 26sec & 64      & $5^{-5}$             &08h 42min 17sec           \\
     \hline
 \end{tabular}}
@@ -205,7 +204,7 @@ $t/e$ étant le temps passé en moyenne sur une époque \\
 \captionof{figure}{La précision globale des modèles calculées à la fin de chaque époque}
 \hfill\break
 
-Comme le montrent les Figures 12 et 13, les modèles 3, 7 et 8 se démarquent comme 
+Comme le montrent les Figures 16 et 17, les modèles 3, 7 et 8 se démarquent comme 
 les plus performants. Parmi eux, c'est bien le modèle 7 qui a été retenu. Ce choix repose sur un 
 compromis entre la qualité de sa généralisation, son temps d’entraînement réduit et 
 son efficacité dès le début de ce dernier. \\
@@ -240,7 +239,7 @@ dans le calcul du gradient au niveau des couches de convolution. En effet, lors 
 mathématiques implémentées dans Melpy avec celles de TensorFlow, la bibliothèque sur laquelle Keras s’appuie pour ses calculs, 
 une différence moyenne allant de 0,4 à 0,6 a été observée entre les gradients de chaque valeur d’entrée. Cette différence est 
 significative en raison du nombre élevé de valeurs impliquées. Par exemple, si l’on somme les erreurs du gradient d’une taille (1, 3, 32, 32), 
-la somme des erreurs peut atteindre jusqu’à 1800, contre des valeurs inférieures à 0 pour les autres opérations. 
+la somme des erreurs peut atteindre jusqu’à 1800, contre des valeurs proches de 0 pour les autres opérations. 
 Toutefois, bien que cette différence mérite une étude plus approfondie, elle n’empêche pas un apprentissage tout aussi efficace. \\
 
 

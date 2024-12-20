@@ -1,13 +1,13 @@
 # Fdb version 4
-["bibtex main"] 1734642998.26447 "main.aux" "main.bbl" "main" 1734643001.02115 0
+["bibtex main"] 1734708247.42873 "main.aux" "main.bbl" "main" 1734711656.11807 0
   "./references.bib" 1734174787.08736 3389 76060c92eacb0a4e796b2d6ec0ac50b6 ""
   "/Users/lenny/Library/Application Support/MiKTeX/texmfs/install/bibtex/bst/bibtex/plain.bst" 1733568571.37365 20613 bd3fbfa9f64872b81ac57a0dd2ed855f ""
-  "main.aux" 1734643000.26196 7639 128fd21495750becc0b9c7452899bb07 "pdflatex"
+  "main.aux" 1734711655.33417 7639 a9c286acc1d516477500744d5f727bef "pdflatex"
   (generated)
   "main.bbl"
   "main.blg"
   (rewritten before read)
-["pdflatex"] 1734642998.54909 "/Users/lenny/Documents/DEV/git/melpy-project/reports/melpy-CNN/main.tex" "main.pdf" "main" 1734643001.02135 0
+["pdflatex"] 1734711653.61646 "/Users/lenny/Documents/DEV/git/melpy-project/reports/melpy-CNN/main.tex" "main.pdf" "main" 1734711656.11826 0
   "/Users/lenny/Documents/DEV/git/melpy-project/reports/melpy-CNN/main.tex" 1734371142.90534 2927 b80f0de833ff74f6ed5bde942c5802ed ""
   "/Users/lenny/Library/Application Support/MiKTeX/texmfs/data/fonts/map/pdftex/pdftex.map" 1734195543.26268 25678 aa7c8fd3909e804e7d85441c21595406 ""
   "/Users/lenny/Library/Application Support/MiKTeX/texmfs/data/fonts/pk/ljfour/jknappen/ec/dpi600/tcrm1200.pk" 1733593486.98001 14064 6f0346852d2c1a32275f0539282d3d90 ""
@@ -150,15 +150,15 @@
   "images/mnist_losses.png" 1734639705.07232 56509 c55395ec0bbb7a70cf4a9b9ed76e30bf ""
   "images/mnist_nn.png" 1734559434.16191 57244 025d9958329f881d19fe095a05e10ec7 ""
   "images/mnist_samples.png" 1734641247.11726 17564 7caa137340cb86165bb957688f7a23dd ""
-  "main.aux" 1734643000.26196 7639 128fd21495750becc0b9c7452899bb07 "pdflatex"
-  "main.bbl" 1734642998.49936 1480 82b2feb7ca2dbdf0f66137cae8962379 "bibtex main"
-  "main.out" 1734643000.26341 3063 0feb2c348f38c8f0a5c761694073a898 "pdflatex"
+  "main.aux" 1734711655.33417 7639 a9c286acc1d516477500744d5f727bef "pdflatex"
+  "main.bbl" 1734708247.80424 1480 82b2feb7ca2dbdf0f66137cae8962379 "bibtex main"
+  "main.out" 1734711655.33559 3063 0feb2c348f38c8f0a5c761694073a898 "pdflatex"
   "main.tex" 1734371142.90534 2927 b80f0de833ff74f6ed5bde942c5802ed ""
-  "main.toc" 1734643000.26382 1798 d811373949e99d1993c4aa0d2915489c "pdflatex"
+  "main.toc" 1734711655.33598 1798 8b95a2ac3295e0fc3e7a7639dd2176c0 "pdflatex"
   "sections/1_intro.tex" 1734174875.89169 1409 ec8e27495533451ebcc45f35de356e66 ""
   "sections/2_section.tex" 1734372776.9505 9744 701097e114d884a07f7b45369f0cb082 ""
   "sections/3_section.tex" 1734373610.59842 18367 0cb94f9a666089ef2c6edeac2c35f0b1 ""
-  "sections/4_section.tex" 1734642994.93295 14575 42557d48aba30e6676cff126476fd967 ""
+  "sections/4_section.tex" 1734711652.28498 14439 b0dbfc71f74cb0c7b4249a53021ba0c5 ""
   "sections/5_conclusion.tex" 1733568489.56886 128 2b0b0d53a78c8b1bdf48a4cc39e9a07f ""
   (generated)
   "main.aux"
