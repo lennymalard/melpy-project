@@ -203,10 +203,10 @@ INPUT /Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/tfm/p
 INPUT /Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/tfm/public/amsfonts/cmextra/cmex8.tfm
 INPUT /Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm
 OUTPUT main.toc
+INPUT /Users/lenny/Library/Application Support/MiKTeX/texmfs/data/fonts/map/pdftex/pdftex.map
 INPUT ./sections/2_section.tex
 INPUT ./sections/2_section.tex
 INPUT sections/2_section.tex
-INPUT /Users/lenny/Library/Application Support/MiKTeX/texmfs/data/fonts/map/pdftex/pdftex.map
 INPUT /Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/tfm/public/cm/cmr12.tfm
 INPUT /Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/tfm/public/cm/cmbx12.tfm
 INPUT ./images/lenet5.jpeg
@@ -318,13 +318,6 @@ INPUT ./images/mnist_losses.png
 INPUT ./images/mnist_losses.png
 INPUT ./images/mnist_losses.png
 INPUT ./images/mnist_losses.png
-INPUT ./images/mnist_accuracies.png
-INPUT ./images/mnist_accuracies.png
-INPUT ./images/mnist_accuracies.png
-INPUT ./images/mnist_accuracies.png
-INPUT ./images/mnist_accuracies.png
-INPUT ./images/mnist_accuracies.png
-INPUT ./images/mnist_accuracies.png
 INPUT /Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/tfm/jknappen/ec/tcrm1200.tfm
 INPUT ./images/cifar10_nn.png
 INPUT ./images/cifar10_nn.png
@@ -340,13 +333,6 @@ INPUT ./images/cifar_10_losses.png
 INPUT ./images/cifar_10_losses.png
 INPUT ./images/cifar_10_losses.png
 INPUT ./images/cifar_10_losses.png
-INPUT ./images/cifar_10_accuracies.png
-INPUT ./images/cifar_10_accuracies.png
-INPUT ./images/cifar_10_accuracies.png
-INPUT ./images/cifar_10_accuracies.png
-INPUT ./images/cifar_10_accuracies.png
-INPUT ./images/cifar_10_accuracies.png
-INPUT ./images/cifar_10_accuracies.png
 INPUT ./images/mnist_comparison.png
 INPUT ./images/mnist_comparison.png
 INPUT ./images/mnist_comparison.png
@@ -354,6 +340,13 @@ INPUT ./images/mnist_comparison.png
 INPUT ./images/mnist_comparison.png
 INPUT ./images/mnist_comparison.png
 INPUT ./images/mnist_comparison.png
+INPUT ./images/cifar10_losses_comparison.png
+INPUT ./images/cifar10_losses_comparison.png
+INPUT ./images/cifar10_losses_comparison.png
+INPUT ./images/cifar10_losses_comparison.png
+INPUT ./images/cifar10_losses_comparison.png
+INPUT ./images/cifar10_losses_comparison.png
+INPUT ./images/cifar10_losses_comparison.png
 INPUT ./sections/5_conclusion.tex
 INPUT ./sections/5_conclusion.tex
 INPUT sections/5_conclusion.tex

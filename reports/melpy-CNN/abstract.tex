@@ -1,3 +1,17 @@
-Ce projet avait pour objectif d'implémenter, à l'aide de NumPy,
-des réseaux de neurones convolutifs pour la bibliotèque Melpy et de comparer leur performances avec
-Keras. Les résultats nous montrent...
+L’implémentation de réseaux de neurones artificiels à partir de zéro représente un véritable 
+défi pédagogique. Cela exige une compréhension approfondie des concepts sous-jacents afin 
+d’effectuer des inférences efficaces, qui pourront être utilisées dans des cas concrets. 
+La création de Melpy, m’a permis d’apprendre à concevoir 
+un framework en Python pouvant créer ces inférences, notamment pour des données tabulaires.
+C'est donc dans cette optique d'apprentissage, que j'ai trouvé pertinent d’étendre les fonctionnalités de Melpy 
+pour intégrer la vision par ordinateur, en utilisant des réseaux de neurones convolutifs (CNNs). 
+En effet, ce type d’architecture requiert le traitement d'images, bien plus complexes a exploiter dans de 
+simples perceptrons multicouches. \\
+
+Étant donné que Melpy est basé sur l'utilisation de NumPy, de nouvelles couches spécifiques à ces 
+architectures ont été ajoutées et optimisées en utilisant cette bibliothèque. Les résultats obtenus 
+montrent que Melpy est désormais capable de produire des performances comparables à celles de Keras 
+pour la classification d’images. En effet, le coût des architectures durant leur entrainenement, montrent
+un écart notable d'une librairie à l'autre. Toutefois, cela a mit en évidence les limites en termes d’optimisation 
+computationnelle de NumPy, dans sa forme purement Pythonesque, ce qui pourrait constituer un axe d’amélioration 
+pour l’avenir.
