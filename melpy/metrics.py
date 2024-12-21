@@ -1,6 +1,6 @@
 import numpy as np
 
-def accuracy(targets, outputs):
+def accuracy(targets, predictions):
     """
     Computes the accuracy of the model's predictions.
 
@@ -8,7 +8,7 @@ def accuracy(targets, outputs):
     ----------
     targets : ndarray
         The true target values.
-    outputs : ndarray
+    predictions : ndarray
         The predicted output values.
 
     Returns
@@ -21,26 +21,12 @@ def accuracy(targets, outputs):
     ValueError
         If the shapes of `targets` and `outputs` are incompatible.
     """
-    outputs = np.array(outputs)
-    targets = np.array(targets)
+    predicted_labels = np.argmax(predictions, axis=1)
+    true_labels = np.argmax(targets, axis=1)
 
-    accuracy = 1e-10
+    return  np.sum(predicted_labels == true_labels) / len(true_labels)
 
-    if outputs.shape[1] > 1:
-        outputs = (outputs == np.max(outputs, axis=1, keepdims=True)).astype(float)
-
-    total_correct = 0
-    total_elements = 0
-    for i in range(outputs.shape[1]):
-        correct_predictions = np.sum(np.round(outputs[:, i]) == targets[:, i])
-        total_correct += correct_predictions
-        total_elements += len(targets[:, i])
-
-    accuracy = total_correct / total_elements if total_elements > 0 else accuracy
-
-    return accuracy
-
-def differences(targets, outputs):
+def differences(targets, predictions):
     """
     Prints the differences between the target values and the predicted output values.
 
@@ -48,7 +34,7 @@ def differences(targets, outputs):
     ----------
     targets : ndarray
         The true target values.
-    outputs : ndarray
+    predictions : ndarray
         The predicted output values.
 
     Raises
