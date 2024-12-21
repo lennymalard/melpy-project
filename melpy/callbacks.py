@@ -119,6 +119,42 @@ class Callback:
         """
         pass
 
+    def on_step_start(self, model, *args, **kwargs):
+        """
+        Called at the start of each step.
+
+        Parameters
+        ----------
+        model : Sequential
+            The model being trained.
+        *args
+            Additional positional arguments.
+        **kwargs
+            Additional keyword arguments.
+
+        Returns
+        -------
+        None
+        """
+        pass
+
+    def on_step_end(self, model, *args, **kwargs):
+        """
+        Called at the end of each step.
+
+        Parameters
+        ----------
+        model : Sequential
+            The model being trained.
+        *args
+            Additional positional arguments.
+        **kwargs
+            Additional keyword arguments.
+        Returns
+        -------
+        None
+        """
+
 class LiveMetrics(Callback):
     """
     A class for visualizing live metrics during the training of a neural network.

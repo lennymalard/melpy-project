@@ -213,30 +213,24 @@ class Sequential:
             else:
                 self.train_layers[i + 1].inputs = self.train_layers[i].forward()
 
-    def add(self, layer, activation=None):
+    def add(self, layer):
         """
-        Adds a layer and its corresponding activation to the training layers.
+        Adds a layer to the training layers.
 
         Parameters
         ----------
-        layer : Dense or Convolution2D
-            The layer to be added. Must be an instance of Dense or Convolution2D.
-        activation : Activation, optional
-            The activation layer to be added. Must be an instance of Activation. Default is 'None'.
+        layer : Dense, Convolution2D, Pooling2D, Flatten or Dropout
+            The layer to be added. Must be an instance of Dense, Convolution2D, Pooling2D, Flatten or Dropout.
 
         Raises
         ------
         TypeError
-            If `layer` is not an instance of Dense or Convolution2D when `activation` is provided.
-            If `activation` is not an instance of Activation when provided.
+            If `layer` is not an instance of Dense, Convolution2D, Pooling2D, Flatten or Dropout.
         """
-        if not isinstance(layer, (Dense, Convolution2D)) and activation is not None:
-            raise TypeError("`layer` must be of type `Dense` or `Convolution2D`.")
-        if not isinstance(activation, Activation) and activation is not None:
-            raise TypeError("`activation` must be of type `Activation`.")
+        if not isinstance(layer, (Dense, Convolution2D, Pooling2D, Flatten, Dropout)):
+            raise TypeError("`layer` must be of type `Dense`, `Convolution2D`, `Pooling2D`, `Flatten` or `Dropout`.")
+
         self.train_layers.append(layer)
-        if activation is not None:
-            self.train_layers.append(activation)
 
     def forward(self):
         """
@@ -446,7 +440,7 @@ class Sequential:
         self.optimizer = optimizer
         self.cost_function = cost_function
 
-    def fit(self, epochs=1000, batch_size=None, verbose=1, callbacks=[]):
+    def fit(self, epochs=1000, batch_size=None, verbose=1, callbacks=[], get_output=False):
         """
         Trains the model using the provided cost function, optimizer, and other parameters.
 
@@ -472,6 +466,8 @@ class Sequential:
               of `LiveMetrics`, a `figure` parameter should be passed.
             - `on_train_end(model)`: Called at the end of the training loop.
             The default is an empty list.
+        get_output : bool, optional
+            If True the final output is computed. Default is True.
 
         Raises
         ------
@@ -562,6 +558,9 @@ class Sequential:
                 step_bar.set_description(f"Epoch [{epoch + 1}/{epochs}]")
                 step_bar.set_postfix({"loss": loss, "accuracy": acc})
 
+                for callback in callbacks:
+                    callback.on_step_start(self)
+
                 if self.batch_size is None:
                     self.train_input_batch = self.train_inputs
                     self.train_target_batch = self.train_targets
@@ -600,6 +599,9 @@ class Sequential:
                     val_accumulated_loss += self.cost_function.loss(self.val_target_batch, self.val_output_batch)
                     val_accumulated_accuracy += accuracy(self.val_target_batch, self.val_output_batch)
 
+                for callback in callbacks:
+                    callback.on_step_end(self)
+
             self.train_loss = train_accumulated_loss / steps
             self.train_accuracy = train_accumulated_accuracy / steps
 
@@ -624,13 +626,14 @@ class Sequential:
                 else:
                     callback.on_epoch_end(self)
 
-        if self.batch_size is not None:
-            self.train_outputs = self.predict(self.train_inputs[:self.batch_size])
-            for step in range(1, steps):
-                self.train_outputs = np.concatenate((self.train_outputs, self.predict(
-                    self.train_inputs[step * self.batch_size:(step + 1) * self.batch_size])), axis=0)
-        else:
-            self.train_outputs = self.predict(self.train_inputs)
+        if get_output:
+            if self.batch_size is not None:
+                self.train_outputs = self.predict(self.train_inputs[:self.batch_size])
+                for step in range(1, steps):
+                    self.train_outputs = np.concatenate((self.train_outputs, self.predict(
+                        self.train_inputs[step * self.batch_size:(step + 1) * self.batch_size])), axis=0)
+            else:
+                self.train_outputs = self.predict(self.train_inputs)
 
         for callback in callbacks:
             callback.on_train_end(self)
@@ -943,6 +946,14 @@ class Sequential:
         -------
         None
         """
+        params_count = 0
+
         self.predict(self.train_inputs[0].reshape(1, *self.train_inputs[0].shape))
         for i in range(len(self.train_layers)):
+            if isinstance(self.train_layers[i], Dense) or isinstance(self.train_layers[i], Convolution2D):
+                params_count += self.train_layers[i].weights.size
+                if self.train_layers[i].biases is not None:
+                    params_count += self.train_layers[i].biases.size
             print(f"{type(self.train_layers[i]).__name__}: {self.train_layers[i].outputs.shape}")
+
+        print(f"\nNumber of parameters: {params_count}\n")

@@ -121,7 +121,7 @@ class Dense(Layer):
     backward(dX : ndarray)
         Computes the backward pass of the dense layer.
     """
-    def __init__(self, n_in, n_out, weight_initializer="he_uniform"):
+    def __init__(self, n_in, n_out, weight_initializer="he_uniform", activation=None):
         """
         Initializes the Dense layer.
 
@@ -134,6 +134,8 @@ class Dense(Layer):
         weight_initializer : str, optional
             Weight initialization method ('he_normal', 'glorot_normal', 'he_uniform', 'glorot_uniform').
             Default is 'he_uniform'.
+        activation : Activation, optional
+            Activation function ('relu', 'leaky relu', 'sigmoid', 'softmax').
 
         Raises
         ------
@@ -182,6 +184,10 @@ class Dense(Layer):
         self.bias_momentums = np.zeros_like(self.biases)
         self.weight_cache = np.zeros_like(self.weights)
         self.bias_cache = np.zeros_like(self.biases)
+        self.activation = activation
+
+        if not isinstance(activation, Activation) and activation is not None:
+            raise TypeError("`activation` must be of type `Activation`.")
 
     def forward(self):
         """
@@ -193,6 +199,11 @@ class Dense(Layer):
             The output data.
         """
         self.outputs = np.dot(self.inputs, self.weights) + self.biases
+
+        if self.activation is not None:
+            self.activation.inputs = self.outputs
+            self.outputs = self.activation.forward()
+
         return self.outputs
 
     def backward(self, dX):
@@ -209,6 +220,9 @@ class Dense(Layer):
         ndarray
             Partial derivative of loss with respect to input data.
         """
+        if self.activation is not None:
+            dX = self.activation.backward(dX)
+
         self.dY = dX
         self.dW = np.dot(self.inputs.T, self.dY)
         self.dB = np.sum(self.dY, axis=0, keepdims=True)
@@ -539,7 +553,7 @@ class Convolution2D(Layer):
     backward(dX : ndarray)
         Computes the backward pass of the convolution layer.
     """
-    def __init__(self, in_channels, out_channels, kernel_size, padding="valid", stride=1, weight_initializer="he_uniform", use_bias=True):
+    def __init__(self, in_channels, out_channels, kernel_size, padding="valid", stride=1, weight_initializer="he_uniform", use_bias=True, activation=None):
         """
         Initializes the Convolution2D layer.
 
@@ -558,6 +572,8 @@ class Convolution2D(Layer):
         weight_initializer : str, optional
             Weight initialization method ('he_normal', 'glorot_normal', 'he_uniform', 'glorot_uniform').
             Default is 'he_uniform'.
+        activation : Activation, optional
+            Activation function. Default is None.
 
         Raises
         ------
@@ -618,6 +634,10 @@ class Convolution2D(Layer):
         self.padding = padding
         self.kernel_size = kernel_size
         self.stride = stride
+        self.activation = activation
+
+        if not isinstance(activation, Activation) and activation is not None:
+            raise TypeError("`activation` must be of type `Activation`.")
 
         if not isinstance(padding, str):
             raise TypeError("`padding` must be a string.")
@@ -718,6 +738,10 @@ class Convolution2D(Layer):
         if self.biases is not None:
             self.outputs += self.biases
 
+        if self.activation is not None:
+            self.activation.inputs = self.outputs
+            self.outputs = self.activation.forward()
+
         return self.outputs
 
     def backward(self, dX):
@@ -734,6 +758,9 @@ class Convolution2D(Layer):
         ndarray
             Partial derivative of loss with respect to input data.
         """
+        if self.activation is not None:
+            dX = self.activation.backward(dX)
+
         self.dY = dX
 
         flipped_filters = self.weights[:, :, ::-1, ::-1]
