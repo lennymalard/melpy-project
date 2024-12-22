@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.24 (MiKTeX 22.1) (preloaded format=pdflatex 2024.12.7)  21 DEC 2024 18:22
+This is pdfTeX, Version 3.141592653-2.6-1.40.24 (MiKTeX 22.1) (preloaded format=pdflatex 2024.12.7)  22 DEC 2024 16:35
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -533,11 +533,21 @@ File: translations-basic-dictionary-english.trsl (english translation file `tran
 Package translations Info: loading dictionary `translations-basic-dictionary' for `english'. on input line 75.
 \c@lstlisting=\count347
  (abstract.tex
-Underfull \hbox (badness 10000) in paragraph at lines 97--9
+Overfull \hbox (20.30345pt too wide) in paragraph at lines 97--8
+\OT1/cmr/m/n/12 neurones convolutifs afin d'^^Setendre les possibilit^^Ses offertes par Melpy et d'enrichir mes connaissances. 
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 97--8
 
  []
 
-) (sections/1_intro.tex (main.toc
+)
+Overfull \hbox (0.85504pt too wide) in paragraph at lines 10--99
+\OT1/cmr/m/n/12 ^^Sevidence les limites de de la biblioth^^Reque en termes d'optimisation computationnelle, notamment
+ []
+
+(sections/1_intro.tex (main.toc
 Underfull \hbox (badness 10000) in paragraph at lines 17--17
  [][] [][][]\OT1/cmr/m/n/12 Pr^^Se-traitement des 
  []
@@ -578,7 +588,7 @@ Underfull \hbox (badness 10000) in paragraph at lines 19--23
 \OT1/cmr/m/n/12 Ces vecteurs alimentent un perceptron
  []
 
-<images/lenet5.jpeg, id=118, 803.0pt x 239.89626pt>
+<images/lenet5.jpeg, id=119, 803.0pt x 239.89626pt>
 File: images/lenet5.jpeg Graphic file (type jpg)
 <use images/lenet5.jpeg>
 Package pdftex.def Info: images/lenet5.jpeg  used on input line 27.
@@ -1587,10 +1597,10 @@ Underfull \hbox (badness 10000) in paragraph at lines 222--223
 
  []
 
-<images/mnist_comparison.png, id=418, 462.528pt x 346.896pt>
-File: images/mnist_comparison.png Graphic file (type png)
-<use images/mnist_comparison.png>
-Package pdftex.def Info: images/mnist_comparison.png  used on input line 224.
+<images/mnist_loss_comparison.png, id=418, 462.528pt x 346.896pt>
+File: images/mnist_loss_comparison.png Graphic file (type png)
+<use images/mnist_loss_comparison.png>
+Package pdftex.def Info: images/mnist_loss_comparison.png  used on input line 224.
 (pdftex.def)             Requested size: 232.84843pt x 174.63853pt.
 
 Package caption Warning: The option `hypcap=true' will be ignored for this
@@ -1602,11 +1612,11 @@ Underfull \hbox (badness 10000) in paragraph at lines 226--227
 
  []
 
-<images/cifar10_losses_comparison.png, id=419, 1141.866pt x 593.3367pt>
-File: images/cifar10_losses_comparison.png Graphic file (type png)
-<use images/cifar10_losses_comparison.png>
-Package pdftex.def Info: images/cifar10_losses_comparison.png  used on input line 229.
-(pdftex.def)             Requested size: 232.84843pt x 120.992pt.
+<images/cifar10_loss_comparison.png, id=419, 867.24pt x 433.62pt>
+File: images/cifar10_loss_comparison.png Graphic file (type png)
+<use images/cifar10_loss_comparison.png>
+Package pdftex.def Info: images/cifar10_loss_comparison.png  used on input line 229.
+(pdftex.def)             Requested size: 232.84843pt x 116.42392pt.
 
 Package caption Warning: The option `hypcap=true' will be ignored for this
 (caption)                particular \caption on input line 230.
@@ -1657,8 +1667,18 @@ Underfull \hbox (badness 10000) in paragraph at lines 260--263
 
  []
 
-[15 <./images/mnist_comparison.png> <./images/cifar10_losses_comparison.png>]) (sections/5_conclusion.tex) (main.bbl
-Underfull \hbox (badness 10000) in paragraph at lines 12--1
+[15 <./images/mnist_loss_comparison.png> <./images/cifar10_loss_comparison.png>]) (sections/5_conclusion.tex
+Overfull \hbox (7.14804pt too wide) in paragraph at lines 9--12
+\OT1/cmr/m/n/12 initial : impl^^Sementer de z^^Sero ^^Ra l'aide de NumPy des outils permettant la cr^^Seation et l'entrainement
+ []
+
+) (main.bbl
+Overfull \hbox (2.81335pt too wide) in paragraph at lines 13--1
+[]\OT1/cmr/m/n/12 Cependant, nous avons observ^^Se une l^^Seg^^Rere diff^^Serence de performances entre notre impl^^Sementation
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 13--1
 
  []
 
@@ -1674,14 +1694,14 @@ Package rerunfilecheck Info: File `main.out' has not changed.
  ) 
 Here is how much of TeX's memory you used:
  19248 strings out of 475616
- 369275 string characters out of 5768761
+ 369296 string characters out of 5768761
  1288715 words of memory out of 5000000
  41655 multiletter control sequences out of 15000+600000
  566352 words of font info for 65 fonts, out of 8000000 for 9000
  0 hyphenation exceptions out of 8191
  79i,18n,93p,1256b,2755s stack positions out of 10000i,1000n,20000p,200000b,200000s
  </Users/lenny/Library/Application Support/MiKTeX/texmfs/data/fonts/pk/ljfour/jknappen/ec/dpi600/tcrm1200.pk></Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmbx10.pfb></Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmbx12.pfb></Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmex10.pfb></Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cmextra/cmex8.pfb></Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmmi10.pfb></Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmmi12.pfb></Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmmi6.pfb></Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmmi8.pfb></Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmr10.pfb></Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmr12.pfb></Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmr6.pfb></Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmr8.pfb></Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmsy10.pfb></Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmsy5.pfb></Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmsy6.pfb></Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmsy8.pfb></Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmti10.pfb></Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmti12.pfb></Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmtt10.pfb></Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmtt12.pfb>
-Output written on main.pdf (16 pages, 1335548 bytes).
+Output written on main.pdf (16 pages, 1252179 bytes).
 PDF statistics:
  564 PDF objects out of 1000 (max. 8388607)
  213 named destinations out of 1000 (max. 500000)
