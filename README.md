@@ -182,8 +182,8 @@ import melpy.NeuralNetworks as nn
 
 model = nn.Sequential(X_train, y_train, X_test, y_test)
 
-model.add(nn.Dense(X_train.shape[1], 6), nn.ReLU())
-model.add(nn.Dense(6, y_train.shape[1]), nn.Softmax())
+model.add(nn.Dense(X_train.shape[1], 6, activation=nn.ReLU())
+model.add(nn.Dense(6, y_train.shape[1], activation=nn.Softmax())
 
 model.compile(cost_function=nn.CategoricalCrossEntropy(), optimizer=nn.SGD(learning_rate=0.01))
 ```
@@ -206,9 +206,7 @@ model.summary()
 
 ```sh
 Dense: (1, 6)
-ReLU: (1, 6)
 Dense: (1, 3)
-Softmax: (1, 3)
 ```
 
 ### Training the Model
