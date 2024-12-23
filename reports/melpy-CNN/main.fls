@@ -185,12 +185,6 @@ INPUT /Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/tfm/p
 INPUT ./abstract.tex
 INPUT ./abstract.tex
 INPUT abstract.tex
-INPUT ./sections/1_intro.tex
-INPUT ./sections/1_intro.tex
-INPUT sections/1_intro.tex
-INPUT ./main.toc
-INPUT ./main.toc
-INPUT main.toc
 INPUT /Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/tfm/public/cm/cmr8.tfm
 INPUT /Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/tfm/public/cm/cmr6.tfm
 INPUT /Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/tfm/public/cm/cmmi12.tfm
@@ -202,6 +196,12 @@ INPUT /Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/tfm/p
 INPUT /Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/tfm/public/cm/cmex10.tfm
 INPUT /Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/tfm/public/amsfonts/cmextra/cmex8.tfm
 INPUT /Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm
+INPUT ./sections/1_intro.tex
+INPUT ./sections/1_intro.tex
+INPUT sections/1_intro.tex
+INPUT ./main.toc
+INPUT ./main.toc
+INPUT main.toc
 OUTPUT main.toc
 INPUT /Users/lenny/Library/Application Support/MiKTeX/texmfs/data/fonts/map/pdftex/pdftex.map
 INPUT ./sections/2_section.tex
@@ -340,6 +340,13 @@ INPUT ./images/mnist_loss_comparison.png
 INPUT ./images/mnist_loss_comparison.png
 INPUT ./images/mnist_loss_comparison.png
 INPUT ./images/mnist_loss_comparison.png
+INPUT ./images/mnist_accuracy_comparison.png
+INPUT ./images/mnist_accuracy_comparison.png
+INPUT ./images/mnist_accuracy_comparison.png
+INPUT ./images/mnist_accuracy_comparison.png
+INPUT ./images/mnist_accuracy_comparison.png
+INPUT ./images/mnist_accuracy_comparison.png
+INPUT ./images/mnist_accuracy_comparison.png
 INPUT ./images/cifar10_loss_comparison.png
 INPUT ./images/cifar10_loss_comparison.png
 INPUT ./images/cifar10_loss_comparison.png
@@ -347,6 +354,13 @@ INPUT ./images/cifar10_loss_comparison.png
 INPUT ./images/cifar10_loss_comparison.png
 INPUT ./images/cifar10_loss_comparison.png
 INPUT ./images/cifar10_loss_comparison.png
+INPUT ./images/cifar10_accuracy_comparison.png
+INPUT ./images/cifar10_accuracy_comparison.png
+INPUT ./images/cifar10_accuracy_comparison.png
+INPUT ./images/cifar10_accuracy_comparison.png
+INPUT ./images/cifar10_accuracy_comparison.png
+INPUT ./images/cifar10_accuracy_comparison.png
+INPUT ./images/cifar10_accuracy_comparison.png
 INPUT ./sections/5_conclusion.tex
 INPUT ./sections/5_conclusion.tex
 INPUT sections/5_conclusion.tex

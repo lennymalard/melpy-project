@@ -4,6 +4,11 @@
 {\em digitalocean.com}.
 \newblock Image d'exemple de Max Pooling sur une image.
 
+\bibitem{MLP}
+Valentina~Emilia Balas and Nikos~E Mastorakis.
+\newblock Multilayer perceptron and neural networks.
+\newblock 2009.
+
 \bibitem{MNIST}
 Léon Bottou and Chhavi Yadav.
 \newblock Cold case: the lost mnist digits.

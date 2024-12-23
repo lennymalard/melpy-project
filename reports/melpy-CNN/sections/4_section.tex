@@ -23,7 +23,7 @@ apprentissage profond. \\
 \captionof{figure}{Exemples d'images provenant du jeu de données MNIST}
 \hfill\break
 
-Cependant, afin d’augmenter la complexité des expérimentations, le jeu de données CIFAR-10\cite{CIFAR10} a également 
+Cependant, afin d’augmenter la complexité des expérimentations, le jeu de données CIFAR-10 a également 
 été utilisé. Il contient 60 000 images réparties en 10 classes (avions, voitures, oiseaux, chats, cerfs, 
 chiens, grenouilles, chevaux, bateaux et camions). Les images sont des photographies sous échantillonnées, qui mesurent 32x32 pixels et qui sont en couleur 
 (format RGB), ce qui les rend plus complexes à traiter que celles de MNIST. La diversité des classes et le manque de corrélation 
@@ -47,7 +47,7 @@ et entraînées avec différents hyperparamètres pour identifier celle qui offr
 la meilleure généralisation.\\
 
 \textbf{Création et entraînement des architectures avec Keras} L'architecture
-sélectionnée est ensuite entraînée avec Keras de manière similaire.
+sélectionnée est ensuite entraînée avec Keras de manière similaire. \\
 
 
 \textbf{Comparaison des métriques finales} On compare les métriques finales d'une bibliothèque
@@ -56,7 +56,7 @@ avec celles de l'autres. \\
 L’entraînement a été effectué sur un processeur Intel i5-12600K avec 32 Go de RAM. Il est important de 
 noter que les temps de calcul ont pu être influencés par des processus externes indésirables. Concernant 
 la métrique utilisée, seul le coût de l’architecture au fil des époques a été présenté, car il reflète 
-très bien les performances d’un modèle. \\
+parfaitement les performances d’un modèle. \\
 
 
 \subsection{Résultats et discussion}
@@ -215,28 +215,44 @@ son efficacité dès le début de ce dernier. \\
 
 \subsubsection{Comparaison des résultats}
 
-Afin d’évaluer les performances de Melpy dans l’utilisation des CNNs, nous comparons cette bibliothèque avec Keras, une autre bibliothèque de deep learning, reconnue pour la simplicité de son utilisation. \\
+Afin d’évaluer les performances de Melpy dans l’utilisation des CNNs, nous comparons cette bibliothèque avec Keras, une autre bibliothèque de Deep Learning, reconnue pour la simplicité de son utilisation. \\
 
 Pour ce faire, ce sont les architectures sélectionnées plus tôt qui serviront de référence.\\
 
-Observons les différences dans le calcul du coût pour chaque jeu de données : \\
+Observons les différences entre les métriques calculées durant l’entraînement pour chaque jeu de données : \\
 
 \includegraphics[width=\columnwidth]{images/mnist_loss_comparison.png}
 \captionof{figure}{Comparaison du coût entre Melpy et Keras sur MNIST}
 \hfill\break
 
+\includegraphics[width=\columnwidth]{images/mnist_accuracy_comparison.png}
+\captionof{figure}{Comparaison de la précision entre Melpy et Keras sur MNIST}
+\hfill\break
 
 \includegraphics[width=\columnwidth]{images/cifar10_loss_comparison.png}
 \captionof{figure}{Comparaison du coût entre Melpy et Keras sur CIFAR-10}
 \hfill\break
 
-Comme le montrent les Figures 16 et 17, les coûts sont meilleurs sur Keras que sur Melpy. Cela peut s’expliquer par une légère différence 
-dans le calcul du gradient au niveau des couches de convolution. En effet, lors de tests comparant les résultats des opérations 
-mathématiques implémentées dans Melpy avec celles de TensorFlow, la bibliothèque sur laquelle Keras s’appuie pour ses calculs, 
-une différence moyenne allant de 0,4 à 0,6 a été observée entre les gradients de chaque valeur d’entrée. Cette différence est 
-significative en raison du nombre élevé de valeurs impliquées. Par exemple, si l’on somme les erreurs du gradient d’une taille (1, 3, 32, 32), 
-la somme des erreurs peut atteindre jusqu’à 1800, contre des valeurs proches de 0 pour les autres opérations sur lesquelles les tests ont été effectués. 
-Toutefois, bien que cette différence mérite une étude plus approfondie, elle n’empêche pas un apprentissage tout aussi efficace. \\
+\includegraphics[width=\columnwidth]{images/cifar10_accuracy_comparison.png}
+\captionof{figure}{Comparaison de la précision entre Melpy et Keras sur CIFAR-10}
+\hfill\break
+
+Comme le montrent les Figures allant de 16 à 19, les résultats varient considérablement d’un jeu de données à un autre. 
+Cette différence peut s’expliquer par une légère divergence dans le calcul du gradient au niveau des couches 
+de convolution. En effet, des tests comparant les résultats des opérations mathématiques implémentées dans 
+Melpy à celles de TensorFlow, la bibliothèque utilisée par Keras pour ses calculs, ont révélé une différence 
+moyenne allant de 0,4 à 0,6 entre les gradients pour chaque valeur d’entrée. 
+
+Cette différence est significative en raison du grand nombre de valeurs impliquées. 
+Par exemple, pour un gradient de taille (1, 3, 32, 32), la somme des erreurs peut atteindre 1800, alors que 
+les autres opérations, testées de manière équivalente, présentent des écarts proches de zéro. Bien que cette 
+divergence justifie une analyse plus approfondie, elle n’empêche pas un apprentissage globalement correct. 
+
+En effet, sur le jeu de données MNIST, l’architecture entraînée avec Keras a obtenu des performances équivalentes à celles de Melpy, 
+atteignant une précision proche de 98\% sur le jeu de données de validation. En revanche, sur le jeu de données CIFAR-10, bien que 
+l’apprentissage ait été beaucoup plus lent avec Melpy, l’architecture entraînée avec cette dernière a démontré une meilleure capacité 
+de généralisation comparée à celle entraînée avec Keras. Les deux architectures ont convergé vers une précision d’environ 65\% sur 
+le jeu de données de validation. \\
 
 On peut également relevé le temps d'execution qu'il a fallu à Keras sur les mêmes configurations que Melpy : \\
 
@@ -254,7 +270,7 @@ On peut également relevé le temps d'execution qu'il a fallu à Keras sur les m
 
 La différence importante dans les temps d’exécution (voir Table 4) s’explique par les optimisations intégrées à Keras. 
 La bibliothèque compile les modèles en code machine via TensorFlow, ce qui accélère l’exécution 
-des opérations. De plus, Keras exploite efficacement le parallélisme sur les CPU, 
+des opérations. De plus, Keras exploite plus efficacement le parallélisme sur les CPU, 
 ce qui améliore de surcroit les performances des calculs.
 
 En revanche, Melpy, dans son état actuel, n’intègre pas encore de telles optimisations. 

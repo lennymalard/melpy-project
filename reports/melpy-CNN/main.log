@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.24 (MiKTeX 22.1) (preloaded format=pdflatex 2024.12.7)  22 DEC 2024 16:35
+This is pdfTeX, Version 3.141592653-2.6-1.40.24 (MiKTeX 22.1) (preloaded format=pdflatex 2024.12.7)  22 DEC 2024 22:29
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -533,21 +533,11 @@ File: translations-basic-dictionary-english.trsl (english translation file `tran
 Package translations Info: loading dictionary `translations-basic-dictionary' for `english'. on input line 75.
 \c@lstlisting=\count347
  (abstract.tex
-Overfull \hbox (20.30345pt too wide) in paragraph at lines 97--8
-\OT1/cmr/m/n/12 neurones convolutifs afin d'^^Setendre les possibilit^^Ses offertes par Melpy et d'enrichir mes connaissances. 
- []
-
-
 Underfull \hbox (badness 10000) in paragraph at lines 97--8
 
  []
 
-)
-Overfull \hbox (0.85504pt too wide) in paragraph at lines 10--99
-\OT1/cmr/m/n/12 ^^Sevidence les limites de de la biblioth^^Reque en termes d'optimisation computationnelle, notamment
- []
-
-(sections/1_intro.tex (main.toc
+) (sections/1_intro.tex (main.toc
 Underfull \hbox (badness 10000) in paragraph at lines 17--17
  [][] [][][]\OT1/cmr/m/n/12 Pr^^Se-traitement des 
  []
@@ -562,17 +552,17 @@ Underfull \hbox (badness 10000) in paragraph at lines 19--19
 \openout4 = `main.toc'.
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 4--21
+Underfull \hbox (badness 10000) in paragraph at lines 4--22
 \OT1/cmr/m/it/12 Based Learning Applied to Document
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 4--21
+Underfull \hbox (badness 10000) in paragraph at lines 4--22
 \OT1/cmr/m/it/12 Recognition"$[]$\OT1/cmr/m/n/12 . Il y met en avant
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 4--21
+Underfull \hbox (badness 10000) in paragraph at lines 4--22
 \OT1/cmr/m/n/12 l'apprentissage automatique des motifs
  []
 
@@ -588,7 +578,7 @@ Underfull \hbox (badness 10000) in paragraph at lines 19--23
 \OT1/cmr/m/n/12 Ces vecteurs alimentent un perceptron
  []
 
-<images/lenet5.jpeg, id=119, 803.0pt x 239.89626pt>
+<images/lenet5.jpeg, id=125, 803.0pt x 239.89626pt>
 File: images/lenet5.jpeg Graphic file (type jpg)
 <use images/lenet5.jpeg>
 Package pdftex.def Info: images/lenet5.jpeg  used on input line 27.
@@ -643,7 +633,7 @@ Underfull \hbox (badness 10000) in paragraph at lines 85--89
 
  []
 
-<images/featuremaps.png, id=138, 1040.688pt x 548.5293pt>
+<images/featuremaps.png, id=144, 1040.688pt x 548.5293pt>
 File: images/featuremaps.png Graphic file (type png)
 <use images/featuremaps.png>
 Package pdftex.def Info: images/featuremaps.png  used on input line 90.
@@ -713,7 +703,7 @@ Underfull \hbox (badness 10000) in paragraph at lines 177--178
 
  []
 
-<images/forwardpooling.png, id=160, 362.35374pt x 161.60374pt>
+<images/forwardpooling.png, id=163, 362.35374pt x 161.60374pt>
 File: images/forwardpooling.png Graphic file (type png)
 <use images/forwardpooling.png>
 Package pdftex.def Info: images/forwardpooling.png  used on input line 179.
@@ -738,7 +728,7 @@ Underfull \hbox (badness 10000) in paragraph at lines 186--187
 
  []
 
-<images/maxpooling2.png, id=190, 113.39163pt x 29.70297pt>
+<images/maxpooling2.png, id=193, 113.39163pt x 29.70297pt>
 File: images/maxpooling2.png Graphic file (type png)
 <use images/maxpooling2.png>
 Package pdftex.def Info: images/maxpooling2.png  used on input line 188.
@@ -758,7 +748,7 @@ Underfull \hbox (badness 10000) in paragraph at lines 197--199
 
  []
 
-<images/backwardpooling.png, id=193, 362.35374pt x 161.60374pt>
+<images/backwardpooling.png, id=196, 362.35374pt x 161.60374pt>
 File: images/backwardpooling.png Graphic file (type png)
 <use images/backwardpooling.png>
 Package pdftex.def Info: images/backwardpooling.png  used on input line 200.
@@ -823,7 +813,7 @@ Underfull \hbox (badness 10000) in paragraph at lines 61--62
 
  []
 
-<images/im2col-1.png, id=206, 1204.5pt x 722.7pt>
+<images/im2col-1.png, id=209, 1204.5pt x 722.7pt>
 File: images/im2col-1.png Graphic file (type png)
 <use images/im2col-1.png>
 Package pdftex.def Info: images/im2col-1.png  used on input line 63.
@@ -838,7 +828,7 @@ Underfull \hbox (badness 10000) in paragraph at lines 65--66
 
  []
 
-<images/im2col-2.png, id=209, 903.375pt x 542.025pt>
+<images/im2col-2.png, id=212, 903.375pt x 542.025pt>
 File: images/im2col-2.png Graphic file (type png)
 <use images/im2col-2.png>
 Package pdftex.def Info: images/im2col-2.png  used on input line 67.
@@ -853,7 +843,7 @@ Underfull \hbox (badness 10000) in paragraph at lines 69--70
 
  []
 
-<images/im2col-3.png, id=212, 1088.065pt x 653.44125pt>
+<images/im2col-3.png, id=215, 1088.065pt x 653.44125pt>
 File: images/im2col-3.png Graphic file (type png)
 <use images/im2col-3.png>
 Package pdftex.def Info: images/im2col-3.png  used on input line 71.
@@ -883,12 +873,12 @@ Underfull \hbox (badness 10000) in paragraph at lines 87--91
 
  []
 
-
+[6 <./images/im2col-1.png> <./images/im2col-2.png> <./images/im2col-3.png>]
 Underfull \hbox (badness 10000) in paragraph at lines 92--94
 
  []
 
-[6 <./images/im2col-1.png> <./images/im2col-2.png> <./images/im2col-3.png>]
+
 Underfull \hbox (badness 10000) in paragraph at lines 95--96
 
  []
@@ -1045,7 +1035,7 @@ Underfull \hbox (badness 10000) in paragraph at lines 208--212
 
  []
 
-<images/im2col-4.png, id=253, 1204.5pt x 514.92375pt>
+<images/im2col-4.png, id=256, 1204.5pt x 514.92375pt>
 File: images/im2col-4.png Graphic file (type png)
 <use images/im2col-4.png>
 Package pdftex.def Info: images/im2col-4.png  used on input line 213.
@@ -1180,7 +1170,7 @@ Underfull \hbox (badness 10000) in paragraph at lines 14--21
 
  []
 
-<images/mnist_samples.png, id=362, 748.7172pt x 168.3891pt>
+<images/mnist_samples.png, id=365, 748.7172pt x 168.3891pt>
 File: images/mnist_samples.png Graphic file (type png)
 <use images/mnist_samples.png>
 Package pdftex.def Info: images/mnist_samples.png  used on input line 22.
@@ -1196,12 +1186,17 @@ Underfull \hbox (badness 10000) in paragraph at lines 24--25
  []
 
 
+Underfull \hbox (badness 7832) in paragraph at lines 26--32
+\OT1/cmr/m/n/12 voitures, oiseaux, chats, cerfs, chiens,
+ []
+
+
 Underfull \hbox (badness 10000) in paragraph at lines 26--32
 
  []
 
 [11 <./images/mnist_samples.png>]
-<images/cifar10_samples.png, id=386, 860.7357pt x 187.1793pt>
+<images/cifar10_samples.png, id=388, 860.7357pt x 187.1793pt>
 File: images/cifar10_samples.png Graphic file (type png)
 <use images/cifar10_samples.png>
 Package pdftex.def Info: images/cifar10_samples.png  used on input line 33.
@@ -1235,6 +1230,11 @@ Underfull \hbox (badness 10000) in paragraph at lines 45--48
 
 Underfull \hbox (badness 10000) in paragraph at lines 49--51
 []\OT1/cmr/bx/n/12 Cr^^Seation et entra^^^Pnement des
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 49--51
+
  []
 
 
@@ -1297,7 +1297,7 @@ Underfull \hbox (badness 10000) in paragraph at lines 78--79
 
  []
 
-<images/mnist_nn.png, id=387, 760.8425pt x 400.49625pt>
+<images/mnist_nn.png, id=389, 760.8425pt x 400.49625pt>
 File: images/mnist_nn.png Graphic file (type png)
 <use images/mnist_nn.png>
 Package pdftex.def Info: images/mnist_nn.png  used on input line 80.
@@ -1552,11 +1552,11 @@ Underfull \hbox (badness 10000) in paragraph at lines 193--195
 
  []
 
-<images/cifar_10_losses.png, id=408, 1141.866pt x 593.3367pt>
+<images/cifar_10_losses.png, id=409, 706.8006pt x 414.8298pt>
 File: images/cifar_10_losses.png Graphic file (type png)
 <use images/cifar_10_losses.png>
 Package pdftex.def Info: images/cifar_10_losses.png  used on input line 196.
-(pdftex.def)             Requested size: 232.84843pt x 120.992pt.
+(pdftex.def)             Requested size: 232.84843pt x 136.66005pt.
 
 Package caption Warning: The option `hypcap=true' will be ignored for this
 (caption)                particular \caption on input line 197.
@@ -1572,12 +1572,12 @@ Underfull \hbox (badness 10000) in paragraph at lines 200--204
 
  []
 
-
+[14 <./images/cifar10_nn.png> <./images/cifar_10_losses.png>]
 Underfull \hbox (badness 10000) in paragraph at lines 213--214
 
  []
 
-[14 <./images/cifar10_nn.png> <./images/cifar_10_losses.png>]
+
 Underfull \hbox (badness 10000) in paragraph at lines 218--219
 
  []
@@ -1597,7 +1597,7 @@ Underfull \hbox (badness 10000) in paragraph at lines 222--223
 
  []
 
-<images/mnist_loss_comparison.png, id=418, 462.528pt x 346.896pt>
+<images/mnist_loss_comparison.png, id=419, 462.528pt x 346.896pt>
 File: images/mnist_loss_comparison.png Graphic file (type png)
 <use images/mnist_loss_comparison.png>
 Package pdftex.def Info: images/mnist_loss_comparison.png  used on input line 224.
@@ -1612,79 +1612,101 @@ Underfull \hbox (badness 10000) in paragraph at lines 226--227
 
  []
 
-<images/cifar10_loss_comparison.png, id=419, 867.24pt x 433.62pt>
-File: images/cifar10_loss_comparison.png Graphic file (type png)
-<use images/cifar10_loss_comparison.png>
-Package pdftex.def Info: images/cifar10_loss_comparison.png  used on input line 229.
-(pdftex.def)             Requested size: 232.84843pt x 116.42392pt.
+<images/mnist_accuracy_comparison.png, id=420, 462.528pt x 346.896pt>
+File: images/mnist_accuracy_comparison.png Graphic file (type png)
+<use images/mnist_accuracy_comparison.png>
+Package pdftex.def Info: images/mnist_accuracy_comparison.png  used on input line 228.
+(pdftex.def)             Requested size: 232.84843pt x 174.63853pt.
 
 Package caption Warning: The option `hypcap=true' will be ignored for this
-(caption)                particular \caption on input line 230.
+(caption)                particular \caption on input line 229.
 See the caption package documentation for explanation.
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 231--232
+Underfull \hbox (badness 10000) in paragraph at lines 230--231
+
+ []
+
+<images/cifar10_loss_comparison.png, id=421, 867.24pt x 433.62pt>
+File: images/cifar10_loss_comparison.png Graphic file (type png)
+<use images/cifar10_loss_comparison.png>
+Package pdftex.def Info: images/cifar10_loss_comparison.png  used on input line 232.
+(pdftex.def)             Requested size: 232.84843pt x 116.42392pt.
+
+Package caption Warning: The option `hypcap=true' will be ignored for this
+(caption)                particular \caption on input line 233.
+See the caption package documentation for explanation.
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 234--235
+
+ []
+
+<images/cifar10_accuracy_comparison.png, id=422, 867.24pt x 433.62pt>
+File: images/cifar10_accuracy_comparison.png Graphic file (type png)
+<use images/cifar10_accuracy_comparison.png>
+Package pdftex.def Info: images/cifar10_accuracy_comparison.png  used on input line 236.
+(pdftex.def)             Requested size: 232.84843pt x 116.42392pt.
+
+Package caption Warning: The option `hypcap=true' will be ignored for this
+(caption)                particular \caption on input line 237.
+See the caption package documentation for explanation.
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 238--239
+
+ []
+
+[15 <./images/mnist_loss_comparison.png> <./images/mnist_accuracy_comparison.png> <./images/cifar10_loss_comparison.png> <./images/cifar10_accuracy_comparison.png>]
+Underfull \hbox (badness 10000) in paragraph at lines 251--256
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 233--240
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 241--242
+Underfull \hbox (badness 10000) in paragraph at lines 257--258
 []\OT1/cmr/m/n/12 On peut ^^Segalement relev^^Se le temps
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 241--242
+Underfull \hbox (badness 10000) in paragraph at lines 257--258
 
  []
 
 
 Package caption Warning: The option `hypcap=true' will be ignored for this
-(caption)                particular \caption on input line 253.
+(caption)                particular \caption on input line 269.
 See the caption package documentation for explanation.
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 253--254
+Underfull \hbox (badness 10000) in paragraph at lines 269--270
 
  []
 
 
-Underfull \hbox (badness 5446) in paragraph at lines 255--259
-\OT1/cmr/m/n/12 exploite efficacement le parall^^Selisme sur
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 260--263
+Underfull \hbox (badness 10000) in paragraph at lines 276--279
 \OT1/cmr/m/n/12 Ses op^^Serations restent d^^Sependantes de
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 260--263
+Underfull \hbox (badness 10000) in paragraph at lines 276--279
 
  []
 
-[15 <./images/mnist_loss_comparison.png> <./images/cifar10_loss_comparison.png>]) (sections/5_conclusion.tex
-Overfull \hbox (7.14804pt too wide) in paragraph at lines 9--12
-\OT1/cmr/m/n/12 initial : impl^^Sementer de z^^Sero ^^Ra l'aide de NumPy des outils permettant la cr^^Seation et l'entrainement
+) (sections/5_conclusion.tex
+Underfull \hbox (badness 10000) in paragraph at lines 9--13
+
  []
 
 ) (main.bbl
-Overfull \hbox (2.81335pt too wide) in paragraph at lines 13--1
-[]\OT1/cmr/m/n/12 Cependant, nous avons observ^^Se une l^^Seg^^Rere diff^^Serence de performances entre notre impl^^Sementation
+Overfull \hbox (19.58957pt too wide) in paragraph at lines 14--1
+[]\OT1/cmr/m/n/12 Cependant, des diff^^Serences ont ^^Set^^Se observ^^Sees dans les m^^Setriques calcul^^Sees au cours de l'apprentissage,
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 13--1
 
- []
+[16])
 
-)
-
-[16] (main.aux)
+[17] (main.aux)
  ***********
 LaTeX2e <2024-11-01>
 L3 programming layer <2024-11-02>
@@ -1693,17 +1715,17 @@ Package rerunfilecheck Info: File `main.out' has not changed.
 (rerunfilecheck)             Checksum: EF1985EC48FCA0888213E6D1710AC234;3058.
  ) 
 Here is how much of TeX's memory you used:
- 19248 strings out of 475616
- 369296 string characters out of 5768761
- 1288715 words of memory out of 5000000
- 41655 multiletter control sequences out of 15000+600000
+ 19269 strings out of 475616
+ 369976 string characters out of 5768761
+ 1288767 words of memory out of 5000000
+ 41672 multiletter control sequences out of 15000+600000
  566352 words of font info for 65 fonts, out of 8000000 for 9000
  0 hyphenation exceptions out of 8191
  79i,18n,93p,1256b,2755s stack positions out of 10000i,1000n,20000p,200000b,200000s
  </Users/lenny/Library/Application Support/MiKTeX/texmfs/data/fonts/pk/ljfour/jknappen/ec/dpi600/tcrm1200.pk></Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmbx10.pfb></Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmbx12.pfb></Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmex10.pfb></Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cmextra/cmex8.pfb></Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmmi10.pfb></Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmmi12.pfb></Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmmi6.pfb></Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmmi8.pfb></Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmr10.pfb></Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmr12.pfb></Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmr6.pfb></Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmr8.pfb></Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmsy10.pfb></Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmsy5.pfb></Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmsy6.pfb></Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmsy8.pfb></Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmti10.pfb></Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmti12.pfb></Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmtt10.pfb></Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmtt12.pfb>
-Output written on main.pdf (16 pages, 1252179 bytes).
+Output written on main.pdf (17 pages, 1321339 bytes).
 PDF statistics:
- 564 PDF objects out of 1000 (max. 8388607)
- 213 named destinations out of 1000 (max. 500000)
- 246 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 579 PDF objects out of 1000 (max. 8388607)
+ 217 named destinations out of 1000 (max. 500000)
+ 256 words of extra memory for PDF output out of 10000 (max. 10000000)
 
