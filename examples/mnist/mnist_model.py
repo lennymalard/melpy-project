@@ -46,14 +46,14 @@ initializer = "he_uniform"
 
 model = nn.Sequential(X_train, y_train, X_test, y_test)
 
-model.add(nn.Convolution2D(in_channels=1, out_channels=32, kernel_size=2, padding="same"), nn.LeakyReLU())
+model.add(nn.Convolution2D(in_channels=1, out_channels=32, kernel_size=2, padding="same", activation=nn.LeakyReLU()))
 model.add(nn.Pooling2D(pool_size=2, stride=2, mode="max"))
-model.add(nn.Convolution2D(in_channels=32, out_channels=64, kernel_size=2, padding="same"), nn.LeakyReLU())
+model.add(nn.Convolution2D(in_channels=32, out_channels=64, kernel_size=2, padding="same", activation=nn.LeakyReLU()))
 model.add(nn.Flatten())
-model.add(nn.Dense(model.get_flatten_length(), 128, weight_initializer = initializer), nn.LeakyReLU())
-model.add(nn.Dense(128,64), nn.LeakyReLU())
-model.add(nn.Dense(64,10), nn.LeakyReLU())
-model.add(nn.Dense(10, 10, weight_initializer="glorot_normal"), nn.Softmax())
+model.add(nn.Dense(model.get_flatten_length(), 128, weight_initializer = initializer, activation=nn.LeakyReLU()))
+model.add(nn.Dense(128,64, activation=nn.LeakyReLU()))
+model.add(nn.Dense(64,10, activation=nn.LeakyReLU()))
+model.add(nn.Dense(10, 10, weight_initializer="glorot_normal", activation=nn.Softmax()))
 
 model.compile(optimizer= nn.Adam(learning_rate = 1e-4), cost_function=nn.CategoricalCrossEntropy())
 model.summary()
