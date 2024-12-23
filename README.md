@@ -267,16 +267,16 @@ The most common errors typically arise from how the number of neurons is defined
 
 Dense :
 ```python
-model.add(nn.Dense(X_train.shape[1], 7), nn.LeakyReLU()) 
-model.add(nn.Dense(6, y_train.shape[1]), nn.Softmax())
+model.add(nn.Dense(X_train.shape[1], 7, activation=nn.LeakyReLU()) 
+model.add(nn.Dense(6, y_train.shape[1], activation=nn.Softmax())
 ```
 ```sh
 ValueError: shapes (1,7) and (6,2) not aligned: 7 (dim 1) != 6 (dim 0)
 ```
 Convolution2D :
 ```python
-model.add(nn.Convolution2D(in_channels=1, out_channels=32, kernel_size=2, padding="same"), nn.LeakyReLU())
-model.add(nn.Convolution2D(in_channels=12, out_channels=64, kernel_size=2, padding="same"), nn.LeakyReLU())
+model.add(nn.Convolution2D(in_channels=1, out_channels=32, kernel_size=2, padding="same", activation=nn.LeakyReLU())
+model.add(nn.Convolution2D(in_channels=12, out_channels=64, kernel_size=2, padding="same", activation=nn.LeakyReLU())
 ```
 ```sh
 ValueError: matmul: Input operand 1 has a mismatch in its core dimension 0, with gufunc signature (n?,k),(k,m?)->(n?,m?) (size 128 is different from 48)
