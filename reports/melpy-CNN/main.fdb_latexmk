@@ -1,13 +1,13 @@
 # Fdb version 4
-["bibtex main"] 1734902854.98683 "main.aux" "main.bbl" "main" 1734902996.59349 0
+["bibtex main"] 1734902854.98683 "main.aux" "main.bbl" "main" 1735040323.96818 0
   "./references.bib" 1734902082.42155 3641 b33b75185a2d73d4b91813eb362c8b0f ""
   "/Users/lenny/Library/Application Support/MiKTeX/texmfs/install/bibtex/bst/bibtex/plain.bst" 1733568571.37365 20613 bd3fbfa9f64872b81ac57a0dd2ed855f ""
-  "main.aux" 1734902995.83441 7949 28331e5378a78ffbbf4d35f4c470fed3 "pdflatex"
+  "main.aux" 1735040322.58134 7949 28331e5378a78ffbbf4d35f4c470fed3 "pdflatex"
   (generated)
   "main.bbl"
   "main.blg"
   (rewritten before read)
-["pdflatex"] 1734902994.12329 "/Users/lenny/Documents/DEV/git/melpy-project/reports/melpy-CNN/main.tex" "main.pdf" "main" 1734902996.59367 0
+["pdflatex"] 1735040319.69382 "/Users/lenny/Documents/DEV/git/melpy-project/reports/melpy-CNN/main.tex" "main.pdf" "main" 1735040323.96848 0
   "/Users/lenny/Documents/DEV/git/melpy-project/reports/melpy-CNN/main.tex" 1734901513.67653 2924 36a9482a02a4bb49171b1cb45b367892 ""
   "/Users/lenny/Library/Application Support/MiKTeX/texmfs/data/fonts/map/pdftex/pdftex.map" 1734195543.26268 25678 aa7c8fd3909e804e7d85441c21595406 ""
   "/Users/lenny/Library/Application Support/MiKTeX/texmfs/data/fonts/pk/ljfour/jknappen/ec/dpi600/tcrm1200.pk" 1733593486.98001 14064 6f0346852d2c1a32275f0539282d3d90 ""
@@ -131,7 +131,7 @@
   "/Users/lenny/Library/Application Support/MiKTeX/texmfs/install/tex/latex/translations/translations.sty" 1733650602.87415 44247 2188b95d0ee74e31eca4d316263c58a7 ""
   "/Users/lenny/Library/Application Support/MiKTeX/texmfs/install/tex/latex/url/url.sty" 1733568283.02119 12796 8edb7d69a20b857904dd0ea757c14ec9 ""
   "/Users/lenny/Library/Application Support/MiKTeX/texmfs/install/tex/latex/xcolor/xcolor.sty" 1733568244.43291 55384 b454dec21c2d9f45ec0b793f0995b992 ""
-  "abstract.tex" 1734902259.3816 1409 e6bc7cb107defe92bc2b2a0bc877b63a ""
+  "abstract.tex" 1735040086.59541 1422 1a42377c4dba264d37943313eb198905 ""
   "images/backwardpooling.png" 1734177221.04124 8580 2f8316642f7de29749ca3e5b17dfa155 ""
   "images/cifar10_accuracy_comparison.png" 1734893835.54593 78772 0415404dd02352e0e86138ba8525d105 ""
   "images/cifar10_loss_comparison.png" 1734893843.67921 74864 1cb3d7fb3d06d76da96baf2ece9c1673 ""
@@ -151,15 +151,15 @@
   "images/mnist_losses.png" 1734639705.07232 56509 c55395ec0bbb7a70cf4a9b9ed76e30bf ""
   "images/mnist_nn.png" 1734559434.16191 57244 025d9958329f881d19fe095a05e10ec7 ""
   "images/mnist_samples.png" 1734641247.11726 17564 7caa137340cb86165bb957688f7a23dd ""
-  "main.aux" 1734902995.83441 7949 28331e5378a78ffbbf4d35f4c470fed3 "pdflatex"
+  "main.aux" 1735040322.58134 7949 28331e5378a78ffbbf4d35f4c470fed3 "pdflatex"
   "main.bbl" 1734902855.22001 1611 97b9350ca967702c724b04523d78bae6 "bibtex main"
-  "main.out" 1734902995.8358 3058 ef1985ec48fca0888213e6d1710ac234 "pdflatex"
+  "main.out" 1735040322.58492 3058 ef1985ec48fca0888213e6d1710ac234 "pdflatex"
   "main.tex" 1734901513.67653 2924 36a9482a02a4bb49171b1cb45b367892 ""
-  "main.toc" 1734902995.83621 1797 a01203a340a625a9754d35dc8eb45913 "pdflatex"
-  "sections/1_intro.tex" 1734897534.60479 1472 0d038c5b7a196fd7931d4ca632a53bc0 ""
-  "sections/2_section.tex" 1734902196.20562 9731 72547d0370d7a66b9f08c7d1035774dc ""
+  "main.toc" 1735040322.58573 1797 a01203a340a625a9754d35dc8eb45913 "pdflatex"
+  "sections/1_intro.tex" 1735040098.46053 1465 358586fc04b006c4cbe8477cfe76113c ""
+  "sections/2_section.tex" 1735040119.76892 9725 d731af1ce2e084e22b215af54b33ce6c ""
   "sections/3_section.tex" 1734897272.06546 18404 a4a21b245d163f7bb50ee1e7dda5d73e ""
-  "sections/4_section.tex" 1734902992.52922 16516 794d165ed3c973f7f2674aaf340be578 ""
+  "sections/4_section.tex" 1735040318.89033 16504 5be9bd5c3be13941e0429a938606118c ""
   "sections/5_conclusion.tex" 1734899473.76843 1025 3d264994148d2c4a137ee2ec753d1555 ""
   (generated)
   "main.aux"

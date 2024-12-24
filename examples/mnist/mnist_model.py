@@ -42,24 +42,20 @@ for i in range(1, n_samples+1):
 #%% Modeling
 import melpy.NeuralNetworks as nn
 
-initializer = "he_uniform"
-
 model = nn.Sequential(X_train, y_train, X_test, y_test)
 
-model.add(nn.Convolution2D(in_channels=1, out_channels=32, kernel_size=2, padding="same", activation=nn.LeakyReLU()))
+model.add(nn.Convolution2D(in_channels=1, out_channels=32, kernel_size=2, padding="same", weight_initializer="glorot_uniform", activation=nn.LeakyReLU()))
 model.add(nn.Pooling2D(pool_size=2, stride=2, mode="max"))
-model.add(nn.Convolution2D(in_channels=32, out_channels=64, kernel_size=2, padding="same", activation=nn.LeakyReLU()))
+model.add(nn.Convolution2D(in_channels=32, out_channels=64, kernel_size=2, padding="same", weight_initializer="glorot_uniform" , activation=nn.LeakyReLU()))
 model.add(nn.Flatten())
-model.add(nn.Dense(model.get_flatten_length(), 128, weight_initializer = initializer, activation=nn.LeakyReLU()))
-model.add(nn.Dense(128,64, activation=nn.LeakyReLU()))
-model.add(nn.Dense(64,10, activation=nn.LeakyReLU()))
-model.add(nn.Dense(10, 10, weight_initializer="glorot_normal", activation=nn.Softmax()))
+model.add(nn.Dense(model.get_flatten_length(), 128, activation=nn.LeakyReLU()))
+model.add(nn.Dense(128, 10, weight_initializer="glorot_normal", activation=nn.Softmax()))
 
-model.compile(optimizer= nn.Adam(learning_rate = 1e-4), cost_function=nn.CategoricalCrossEntropy())
+model.compile(optimizer= nn.Adam(learning_rate = 1e-3), cost_function=nn.CategoricalCrossEntropy())
 model.summary()
 
 # %% Training
-model.fit(epochs=15, batch_size=256, verbose=2)
+model.fit(epochs=5, batch_size=256, verbose=2)
 model.results()
 
 # %% Save
@@ -67,8 +63,8 @@ model.save_params("mnist_parameters")
 model.save_histories("mnist_history")
 
 # %% Test
-predictions = model.predict(X_test)
-print(f"\nTest Accuracy: {nn.accuracy(y_test, predictions)}")
+predictions = model.predict(X_test[:1000])
+print(f"\nTest Accuracy: {nn.accuracy(y_test[:1000], predictions)}")
 
 # %% Random predictions
 n_samples = 5
