@@ -2,13 +2,13 @@
 \begin{center}
 \section{Implémentation}
 \textbf{Dans cette section, nous verrons l'implémentation des couches de 
-Pooling et de Convolution à l'aide de NumPy.}
+pooling et de convolution à l'aide de NumPy.}
 \bigskip
 \end{center}
 {\color{gray}\hrule}
 \begin{multicols}{2}
 
-Il existe diverses façons de réaliser un Pooling et une Convolution
+Il existe diverses façons de réaliser un pooling et une convolution
 en Python. La méthode la plus intuitive consiste à parcourir chaque pixel d’une
 image avec des boucles, enregistrer les informations dans des listes, puis
 effectuer les calculs élément par élément. Cependant, cette approche
@@ -217,9 +217,9 @@ contribution.\\
 L'ensemble du code de la méthode Im2col se trouve dans le repo de Melpy,
 à l'adresse suivante : \url{https://github.com/lennymalard/melpy-project/blob/main/melpy/im2col.py}
 
-\subsection{Les couches de Convolution}
+\subsection{Les couches de convolution}
 
-Les couches $Convolution2D$ héritent de la superclasse $Layer$ 
+Les couches $convolution2D$ héritent de la superclasse $Layer$ 
 de Melpy, ce qui leur impose l’utilisation des méthodes 
 \textbf{forward()} et \textbf{backward()} pour effectuer 
 respectivement les propagations avant et arrière.\\
@@ -297,12 +297,12 @@ les colonnes d’entrée transposées. Les gradients des biais \texttt{self.dB},
 Les gradients d’entrée sont reconstitués avec \texttt{col2im()} et ajustés pour retirer le padding si nécessaire. 
 Finalement, les gradients \texttt{self.dX} sont retournés pour poursuivre la propagation arrière. \\
 
-L'ensemble du code lié aux couches de Convolution se trouvent dans le repo de Melpy, à l'adresse suivante : \url{https://github.com/lennymalard/melpy-project/blob/main/melpy/layers.py}
+L'ensemble du code lié aux couches de convolution se trouvent dans le repo de Melpy, à l'adresse suivante : \url{https://github.com/lennymalard/melpy-project/blob/main/melpy/layers.py}
 
-\subsection{Les couches de Pooling}
+\subsection{Les couches de pooling}
 
-Les couches $Pooling2D$ héritent également de la superclasse $Layer$ 
-de Melpy, leur imposant les mêmes contraintes que $Convolution2D$.\\
+Les couches $pooling2D$ héritent également de la superclasse $Layer$ 
+de Melpy, leur imposant les mêmes contraintes que $convolution2D$.\\
 
 Voici donc le code de la propagation avant : \\
 
@@ -367,7 +367,7 @@ réassemblés en une forme plate, puis reconstruits avec \texttt{col2im()} pour 
 aux dimensions des entrées. Enfin, les gradients des entrées reconstitués \texttt{self.dX}
 sont retournés pour continuer la propagation arrière. \\
 
-L'ensemble du code lié aux couches de Pooling se trouvent dans le repo de Melpy, à l'adresse suivante : \url{https://github.com/lennymalard/melpy-project/blob/main/melpy/layers.py}
+L'ensemble du code lié aux couches de pooling se trouvent dans le repo de Melpy, à l'adresse suivante : \url{https://github.com/lennymalard/melpy-project/blob/main/melpy/layers.py}
 
 \end{multicols}
 

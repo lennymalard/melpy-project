@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.24 (MiKTeX 22.1) (preloaded format=pdflatex 2024.12.7)  24 DEC 2024 12:38
+This is pdfTeX, Version 3.141592653-2.6-1.40.24 (MiKTeX 22.1) (preloaded format=pdflatex 2024.12.7)  25 DEC 2024 17:49
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -578,7 +578,7 @@ Underfull \hbox (badness 10000) in paragraph at lines 19--23
 \OT1/cmr/m/n/12 Ces vecteurs alimentent un perceptron
  []
 
-<images/lenet5.jpeg, id=125, 803.0pt x 239.89626pt>
+<images/lenet5.jpeg, id=124, 803.0pt x 239.89626pt>
 File: images/lenet5.jpeg Graphic file (type jpg)
 <use images/lenet5.jpeg>
 Package pdftex.def Info: images/lenet5.jpeg  used on input line 27.
@@ -677,7 +677,7 @@ Underfull \hbox (badness 10000) in paragraph at lines 153--155
 
 
 Underfull \hbox (badness 10000) in paragraph at lines 157--161
-\OT1/cmr/m/n/12 Une couche de Pooling r^^Sesume les
+\OT1/cmr/m/n/12 Une couche de pooling r^^Sesume les
  []
 
 
@@ -1658,37 +1658,52 @@ Underfull \hbox (badness 10000) in paragraph at lines 238--239
  []
 
 [15 <./images/mnist_loss_comparison.png> <./images/mnist_accuracy_comparison.png> <./images/cifar10_loss_comparison.png> <./images/cifar10_accuracy_comparison.png>]
-Underfull \hbox (badness 10000) in paragraph at lines 251--256
+Underfull \hbox (badness 10000) in paragraph at lines 255--260
+\OT1/cmr/m/n/12 l'architecture entra^^^Pn^^See avec Keras a
+ []
+
+
+Underfull \hbox (badness 5771) in paragraph at lines 255--260
+\OT1/cmr/m/n/12 obtenu des performances ^^Sequivalentes ^^Ra
+ []
+
+
+Underfull \hbox (badness 6204) in paragraph at lines 255--260
+\OT1/cmr/m/n/12 CIFAR-10, bien que l'apprentissage ait
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 255--260
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 257--258
+Underfull \hbox (badness 10000) in paragraph at lines 261--262
 []\OT1/cmr/m/n/12 On peut ^^Segalement relev^^Se le temps
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 257--258
+Underfull \hbox (badness 10000) in paragraph at lines 261--262
 
  []
 
 
 Package caption Warning: The option `hypcap=true' will be ignored for this
-(caption)                particular \caption on input line 269.
+(caption)                particular \caption on input line 273.
 See the caption package documentation for explanation.
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 269--270
+Underfull \hbox (badness 10000) in paragraph at lines 273--274
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 276--279
+Underfull \hbox (badness 10000) in paragraph at lines 280--283
 \OT1/cmr/m/n/12 Ses op^^Serations restent d^^Sependantes de
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 276--279
+Underfull \hbox (badness 10000) in paragraph at lines 280--283
 
  []
 
@@ -1698,11 +1713,6 @@ Underfull \hbox (badness 10000) in paragraph at lines 9--13
  []
 
 ) (main.bbl
-Overfull \hbox (19.58957pt too wide) in paragraph at lines 14--1
-[]\OT1/cmr/m/n/12 Cependant, des diff^^Serences ont ^^Set^^Se observ^^Sees dans les m^^Setriques calcul^^Sees au cours de l'apprentissage,
- []
-
-
 
 [16])
 
@@ -1712,20 +1722,20 @@ LaTeX2e <2024-11-01>
 L3 programming layer <2024-11-02>
  ***********
 Package rerunfilecheck Info: File `main.out' has not changed.
-(rerunfilecheck)             Checksum: EF1985EC48FCA0888213E6D1710AC234;3058.
+(rerunfilecheck)             Checksum: 865A07CCCA4CDC5FCC7675130B8247C5;3058.
  ) 
 Here is how much of TeX's memory you used:
- 19269 strings out of 475616
- 369976 string characters out of 5768761
- 1288767 words of memory out of 5000000
- 41672 multiletter control sequences out of 15000+600000
+ 19273 strings out of 475616
+ 370037 string characters out of 5768761
+ 1288784 words of memory out of 5000000
+ 41675 multiletter control sequences out of 15000+600000
  566352 words of font info for 65 fonts, out of 8000000 for 9000
  0 hyphenation exceptions out of 8191
  79i,18n,93p,1256b,2755s stack positions out of 10000i,1000n,20000p,200000b,200000s
  </Users/lenny/Library/Application Support/MiKTeX/texmfs/data/fonts/pk/ljfour/jknappen/ec/dpi600/tcrm1200.pk></Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmbx10.pfb></Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmbx12.pfb></Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmex10.pfb></Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cmextra/cmex8.pfb></Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmmi10.pfb></Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmmi12.pfb></Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmmi6.pfb></Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmmi8.pfb></Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmr10.pfb></Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmr12.pfb></Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmr6.pfb></Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmr8.pfb></Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmsy10.pfb></Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmsy5.pfb></Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmsy6.pfb></Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmsy8.pfb></Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmti10.pfb></Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmti12.pfb></Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmtt10.pfb></Users/lenny/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmtt12.pfb>
-Output written on main.pdf (17 pages, 1321335 bytes).
+Output written on main.pdf (17 pages, 1322438 bytes).
 PDF statistics:
- 579 PDF objects out of 1000 (max. 8388607)
- 217 named destinations out of 1000 (max. 500000)
+ 581 PDF objects out of 1000 (max. 8388607)
+ 218 named destinations out of 1000 (max. 500000)
  256 words of extra memory for PDF output out of 10000 (max. 10000000)
 

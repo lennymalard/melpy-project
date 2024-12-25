@@ -11,9 +11,9 @@ Les CNNs se composent de deux parties principales :
 une partie dédiée à l’extraction des caractéristiques des images d’entrée, et une autre 
 à leur classification.
 
-En effet, le réseau va d'abord utiliser une couche de Convolution 
+En effet, le réseau va d'abord utiliser une couche de convolution 
 pour créer des cartes de caractéristiques, puis va ensuite réduire la taille des 
-données grâce à une couche de Pooling. 
+données grâce à une couche de pooling. 
 Ce processus est répété et ajusté selon la profondeur nécessaire au réseau.
 
 Ensuite, les cartes de caractéristiques sont transformées en vecteurs aplatis, 
@@ -28,10 +28,10 @@ Pour imager, nous pouvons prendre comme exemple l'architecture de la Figure 1 :
 \captionof{figure}{Architecture de LeNet-5\cite{YannLeCunCNNs}}
 \hfill\break
 
-Nous observons deux couches de Convolution et deux couches de Pooling. On voit également le  
+Nous observons deux couches de c et deux couches de pooling. On voit également le  
 MLP composé d'une couche d'entrée, d'une couche cachée et d'une couche de sortie.
 
-\subsection{Les couches de Convolution}
+\subsection{Les couches de convolution}
 Nous verrons ici les calculs de propagation avant et de propagation arrière nécéssaires 
 à l'entrainement des couches de convolution.\\
 
@@ -153,18 +153,18 @@ ayant contribué aux erreurs correspondantes.}\\
 Les dérivées calculées sont ensuite utilisées dans un algorithme de Descente de Gradient\cite{GradientDescent},
 afin de mettre à jour le reste des paramètres du réseau.
 
-\subsection{Les couches de Pooling}
-Une couche de Pooling résume les informations d’une image en réduisant les pixels 
+\subsection{Les couches de pooling}
+Une couche de pooling résume les informations d’une image en réduisant les pixels 
 d’une fenêtre à une seule valeur représentative. Cette méthode, déjà présente en 1998 dans l'architecture de 
 LeNet-5, réduit également le coût des calculs en temps et en mémoire. Nous étudierons 
-ici l’une de ses variantes les plus courantes :  le Max Pooling. 
+ici l’une de ses variantes les plus courantes :  le max pooling. 
 
 \subsubsection{Propagation Avant}
 
-Le Pooling est une opération algorithmique donc nous n'aborderons pas
+Le pooling est une opération algorithmique donc nous n'aborderons pas
 la formulation mathématique.\\
 
-Deux paramètres influencent le Max Pooling : le \textit{stride} et 
+Deux paramètres influencent le max pooling : le \textit{stride} et 
 la taille de la fenêtre (\textit{poolsize}). Le \textit{stride} détermine 
 le nombre de pixels à sauter entre chaque position de la fenêtre.
 
@@ -177,16 +177,16 @@ analysée, constituant un nouveau pixel de la sortie.\\
 On peut visualiser l'opération de la manière suivante : \\
 
 \includegraphics[width=\columnwidth]{images/forwardpooling.png}
-\captionof{figure}{Exemple de la propagation avant d'un Max Pooling}
+\captionof{figure}{Exemple de la propagation avant d'un max pooling}
 \hfill\break
 
-Dans la Figure 3, nous voyons qu'un Max Pooling de \textit{poolsize} 2 et 
+Dans la Figure 3, nous voyons qu'un max pooling de \textit{poolsize} 2 et 
 de \textit{stride} 2 a eu pour effet de diviser la taille de l'image par 2.\\
 
 Sur une image réelle, l'opération donnerait le résultat suivant : \\
 
 \includegraphics[width=\columnwidth]{images/maxpooling2.png}
-\captionof{figure}{Exemple d'une opération de Max Pooling sur une image\cite{MaxPoolingImage2}}
+\captionof{figure}{Exemple d'une opération de max pooling sur une image\cite{maxpoolingImage2}}
 \hfill\break
 
 On observe ici une réduction de la taille de l’image tout en préservant ses 
@@ -198,7 +198,7 @@ En propagation arrière, on redistribue les erreurs de la couche précédente, a
 maxima utilisé en propagation avant. Les autres pixels sont quant à eux désactivés. \\
 
 \includegraphics[width=\columnwidth]{images/backwardpooling.png}
-\captionof{figure}{Exemple de la propagation arrière d'un Max Pooling}
+\captionof{figure}{Exemple de la propagation arrière d'un max pooling}
 \hfill\break
 
 \end{multicols}

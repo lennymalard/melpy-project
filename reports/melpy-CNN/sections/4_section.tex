@@ -215,7 +215,7 @@ son efficacité dès le début de ce dernier. \\
 
 \subsubsection{Comparaison des résultats}
 
-Afin d’évaluer les performances de Melpy dans l’utilisation des CNNs, nous comparons cette bibliothèque avec Keras, une autre bibliothèque de Deep Learning, reconnue pour la simplicité de son utilisation. \\
+Afin d’évaluer les performances de Melpy dans l’utilisation des CNNs, nous comparons cette bibliothèque avec Keras, une autre bibliothèque de deep learning, reconnue pour la simplicité de son utilisation. \\
 
 Pour ce faire, ce sont les architectures sélectionnées plus tôt qui serviront de référence.\\
 
@@ -237,22 +237,26 @@ Observons les différences entre les métriques calculées durant l’entraînem
 \captionof{figure}{Comparaison de la précision entre Melpy et Keras sur CIFAR-10}
 \hfill\break
 
-Comme le montrent les Figures allant de 16 à 19, les résultats varient considérablement d’un jeu de données à un autre. 
-Cette différence peut s’expliquer par une légère divergence dans le calcul du gradient au niveau des couches 
-de convolution. En effet, des tests comparant les résultats des opérations mathématiques implémentées dans 
-Melpy à celles de TensorFlow, la bibliothèque utilisée par Keras pour ses calculs, ont révélé une différence 
-moyenne allant de 0,4 à 0,6 entre les gradients pour chaque valeur d’entrée. 
+Comme le montrent les Figures 16 à 19, les résultats varient considérablement d’un jeu de données à 
+un autre. Cette variation peut être attribuée à une légère divergence dans le calcul du gradient au 
+niveau des couches de convolution. En effet, des tests comparant les résultats des opérations mathématiques 
+implémentées dans Melpy à celles de TensorFlow (la bibliothèque utilisée par Keras pour ses calculs) ont 
+révélé une différence moyenne allant de 0,4 à 0,6 entre les gradients pour chaque valeur d’entrée. Bien que 
+faible à l’échelle individuelle, cette divergence devient significative en raison du grand nombre de valeurs 
+impliquées. Par exemple, pour un gradient de taille (1, 3, 32, 32), la somme des erreurs peut atteindre 1800, 
+alors que les autres opérations testées présentent des écarts proches de zéro.
 
-Cette différence est significative en raison du grand nombre de valeurs impliquées. 
-Par exemple, pour un gradient de taille (1, 3, 32, 32), la somme des erreurs peut atteindre 1800, alors que 
-les autres opérations, testées de manière équivalente, présentent des écarts proches de zéro. Bien que cette 
-divergence justifie une analyse plus approfondie, elle n’empêche pas un apprentissage globalement correct. 
+Cette différence s’explique notamment par la méthode de différentiation automatique\cite{autodiff} utilisée par TensorFlow, 
+qui génère des gradients avec une grande précision, et par des méthodes de normalisation intégrées. Ces dernières 
+redistribuent plus équitablement les gradients accumulés lorsque les fenêtres de convolution se chevauchent, 
+évitant ainsi des calculs biaisés. Toutefois, malgré ces limitations, le calcul actuel de la propagation 
+arrière dans Melpy reste suffisant pour obtenir des résultats corrects.
 
-En effet, sur le jeu de données MNIST, l’architecture entraînée avec Keras a obtenu des performances équivalentes à celles de Melpy, 
-atteignant une précision proche de 98\% sur le jeu de données de validation. En revanche, sur le jeu de données CIFAR-10, bien que 
-l’apprentissage ait été beaucoup plus lent avec Melpy, l’architecture entraînée avec cette dernière a démontré une meilleure capacité 
-de généralisation comparée à celle entraînée avec Keras. Les deux architectures ont convergé vers une précision d’environ 65\% sur 
-le jeu de données de validation. \\
+En effet, sur le jeu de données MNIST, l’architecture entraînée avec Keras a obtenu des performances équivalentes 
+à celles de Melpy, atteignant une précision proche de 98\% sur le jeu de données de validation. En revanche, sur 
+le jeu de données CIFAR-10, bien que l’apprentissage ait été significativement plus lent avec Melpy, l’architecture 
+entraînée avec cette dernière a su converger vers une précision d’environ 65\% sur le jeu de données de validation, 
+résultat comparable à celui obtenue avec Keras. \\
 
 On peut également relevé le temps d'execution qu'il a fallu à Keras sur les mêmes configurations que Melpy : \\
 

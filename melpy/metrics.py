@@ -42,8 +42,8 @@ def differences(targets, predictions):
     ValueError
         If the lengths of `targets` and `outputs` are not the same.
     """
-    for i in range(len(outputs)):
-        if outputs[i] >= targets[i]:
-            print(outputs[i] - targets[i])
-        if outputs[i] < targets[i]:
-            print(targets[i] - outputs[i])
+    for i in range(len(predictions)):
+        if predictions[i] >= targets[i]:
+            print(predictions[i] - targets[i])
+        if predictions[i] < targets[i]:
+            print(targets[i] - predictions[i])

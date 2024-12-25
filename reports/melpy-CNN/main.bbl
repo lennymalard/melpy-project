@@ -1,6 +1,6 @@
 \begin{thebibliography}{10}
 
-\bibitem{MaxPoolingImage2}
+\bibitem{maxpoolingImage2}
 {\em digitalocean.com}.
 \newblock Image d'exemple de Max Pooling sur une image.
 
@@ -8,6 +8,12 @@
 Valentina~Emilia Balas and Nikos~E Mastorakis.
 \newblock Multilayer perceptron and neural networks.
 \newblock 2009.
+
+\bibitem{autodiff}
+Atilim~Gunes Baydin, Barak~A. Pearlmutter, Alexey~Andreyevich Radul, and
+  Jeffrey~Mark Siskind.
+\newblock Automatic differentiation in machine learning: a survey.
+\newblock 2015.
 
 \bibitem{MNIST}
 Léon Bottou and Chhavi Yadav.
