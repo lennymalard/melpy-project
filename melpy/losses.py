@@ -6,9 +6,9 @@ class Loss:
 
     Methods
     -------
-    loss(targets : ndarray, outputs : ndarray)
+    loss(targets : ndarray, predictions : ndarray)
         Computes the loss.
-    derivative(targets : ndarray, outputs : ndarray)
+    derivative(targets : ndarray, predictions : ndarray)
         Computes the derivative of the loss.
     """
     def __init__(self):
@@ -17,7 +17,7 @@ class Loss:
         """
         pass
 
-    def loss(self, targets, outputs):
+    def loss(self, targets, predictions):
         """
         Computes the loss.
 
@@ -25,7 +25,7 @@ class Loss:
         ----------
         targets : ndarray
             Target data.
-        outputs : ndarray
+        predictions : ndarray
             Output data.
 
         Returns
@@ -35,7 +35,7 @@ class Loss:
         """
         pass
 
-    def derivative(self, targets, outputs):
+    def derivative(self, targets, predictions):
         """
         Computes the derivative of the loss.
 
@@ -43,7 +43,7 @@ class Loss:
         ----------
         targets : ndarray
             Target data.
-        outputs : ndarray
+        predictions : ndarray
             Output data.
 
         Returns
@@ -59,7 +59,7 @@ class MSE(Loss):
 
     Methods
     -------
-    loss(targets : ndarray, outputs : ndarray)
+    loss(targets : ndarray, predictions : ndarray)
         Computes the mean squared error.
     """
     def __init__(self):
@@ -68,7 +68,7 @@ class MSE(Loss):
         """
         super().__init__()
 
-    def loss(self, targets, outputs):
+    def loss(self, targets, predictions):
         """
         Computes the mean squared error.
 
@@ -76,7 +76,7 @@ class MSE(Loss):
         ----------
         targets : ndarray
             Target data.
-        outputs : ndarray
+        predictions : ndarray
             Output data.
 
         Returns
@@ -84,7 +84,7 @@ class MSE(Loss):
         float
             The mean squared error.
         """
-        diff = targets - outputs
+        diff = targets - predictions
         return np.sum(diff * diff) / np.size(diff)
 
 class BinaryCrossEntropy(Loss):
@@ -93,9 +93,9 @@ class BinaryCrossEntropy(Loss):
 
     Methods
     -------
-    loss(targets : ndarray, outputs : ndarray)
+    loss(targets : ndarray, predictions : ndarray)
         Computes the binary cross entropy loss.
-    derivative(targets : ndarray, outputs : ndarray)
+    derivative(targets : ndarray, predictions : ndarray)
         Computes the binary cross entropy derivative.
     """
     def __init__(self):
@@ -104,7 +104,7 @@ class BinaryCrossEntropy(Loss):
         """
         super().__init__()
 
-    def loss(self, targets, outputs):
+    def loss(self, targets, predictions):
         """
         Computes the binary cross entropy loss.
 
@@ -112,7 +112,7 @@ class BinaryCrossEntropy(Loss):
         ----------
         targets : ndarray
             Target data.
-        outputs : ndarray
+        predictions : ndarray
             Output data.
 
         Returns
@@ -121,10 +121,10 @@ class BinaryCrossEntropy(Loss):
             The binary cross entropy loss.
         """
         e = 1e-10
-        return -(np.sum(targets * np.log(outputs + e) +
-                        (1-targets) * np.log(1-outputs + e))) / len(targets)
+        return -(np.sum(targets * np.log(predictions + e) +
+                        (1-targets) * np.log(1-predictions + e))) / len(targets)
 
-    def derivative(self, targets, outputs):
+    def derivative(self, targets, predictions):
         """
         Computes the binary cross entropy derivative.
 
@@ -132,7 +132,7 @@ class BinaryCrossEntropy(Loss):
         ----------
         targets : ndarray
             Target data.
-        outputs : ndarray
+        predictions : ndarray
             Output data.
 
         Returns
@@ -141,7 +141,7 @@ class BinaryCrossEntropy(Loss):
             The binary cross entropy derivative.
         """
         e = 1e-10
-        return -(targets / outputs - (1 - targets + e) / (1 - outputs + e)) / len(outputs)
+        return -(targets / predictions - (1 - targets + e) / (1 - predictions + e)) / len(predictions)
 
 
 class CategoricalCrossEntropy(Loss):
@@ -150,9 +150,9 @@ class CategoricalCrossEntropy(Loss):
 
     Methods
     -------
-    loss(targets : ndarray, outputs : ndarray)
+    loss(targets : ndarray, predictions : ndarray)
         Computes the categorical cross-entropy loss.
-    derivative(targets : ndarray, outputs : ndarray)
+    derivative(targets : ndarray, predictions : ndarray)
         Computes the categorical cross-entropy derivative.
     """
 
@@ -162,7 +162,7 @@ class CategoricalCrossEntropy(Loss):
         """
         super().__init__()
 
-    def loss(self, targets, outputs):
+    def loss(self, targets, predictions):
         """
         Computes the categorical cross-entropy loss.
 
@@ -170,7 +170,7 @@ class CategoricalCrossEntropy(Loss):
         ----------
         targets : ndarray
             Target data. Can be one-hot encoded or integer labels.
-        outputs : ndarray
+        predictions : ndarray
             Output probabilities (e.g., softmax predictions).
 
         Returns
@@ -178,20 +178,20 @@ class CategoricalCrossEntropy(Loss):
         float
             The categorical cross-entropy loss.
         """
-        outputs_clipped = np.clip(outputs, 1e-7, 1 - 1e-7)
+        predictions_clipped = np.clip(predictions, 1e-7, 1 - 1e-7)
 
         if len(targets.shape) == 1:
-            correct_confidences = outputs_clipped[
-                range(len(outputs)), targets
+            correct_confidences = predictions_clipped[
+                range(len(predictions)), targets
             ]
         elif len(targets.shape) == 2:
-            correct_confidences = np.sum(outputs_clipped * targets, axis=1)
+            correct_confidences = np.sum(predictions_clipped * targets, axis=1)
 
         negative_log_likelihoods = -np.log(correct_confidences)
 
         return np.mean(negative_log_likelihoods)
 
-    def derivative(self, targets, outputs):
+    def derivative(self, targets, predictions):
         """
         Computes the categorical cross-entropy derivative.
 
@@ -199,15 +199,15 @@ class CategoricalCrossEntropy(Loss):
         ----------
         targets : ndarray
             Target data. Can be one-hot encoded or integer labels.
-        outputs : ndarray
+        predictions : ndarray
             Output probabilities (e.g., softmax predictions).
 
         Returns
         -------
         ndarray
-            Gradient of the loss with respect to outputs.
+            Gradient of the loss with respect to predictions.
         """
         if len(targets.shape) == 1:
-            targets = np.eye(outputs.shape[1])[targets]
+            targets = np.eye(predictions.shape[1])[targets]
 
-        return (outputs - targets) / len(outputs)
+        return (predictions - targets) / len(predictions)
