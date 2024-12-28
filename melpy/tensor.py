@@ -6,6 +6,18 @@ class Tensor:
         self.requires_grad = requires_grad
         self.grad = np.zeros_like(self.array)
 
+    @property
+    def shape(self):
+        return self.array.shape
+
+    @property
+    def size(self):
+        return self.array.size
+
+    @property
+    def T(self):
+        return Tensor(self.array.T)
+
     def __str__(self):
         return str(self.array)
 
@@ -78,9 +90,6 @@ class Tensor:
     def zero_grad(self):
         self.grad = np.zeros_like(self.array)
 
-    def T(self):
-        return Tensor(self.array.T)
-
 class Operation:
     def __init__(self,x1, *args, **kwargs):
         self.x1 = x1
@@ -132,11 +141,13 @@ class Operation:
         elif isinstance(obj, Tensor) and obj.requires_grad:
             obj.grad += grad
 
+    def _requires_grad(self, *inputs):
+        return any(isinstance(i, Tensor) and i.requires_grad for i in inputs)
+
 class sum(Operation):
     def forward(self, *args, **kwargs):
         x1_array = self._get_array(self.x1)
-        self.result = Tensor(np.sum(x1_array), requires_grad=(isinstance(self.x1, Tensor) \
-                                                              and self.x1.requires_grad))
+        self.result = Tensor(np.sum(x1_array), requires_grad=self._requires_grad(self.x1))
         return self.result
 
     def backward(self, grad):
@@ -152,10 +163,7 @@ class add(Operation):
     def forward(self, *args, **kwargs):
         x1_array = self._get_array(self.x1)
         x2_array = self._get_array(self.x2)
-        self.result = Tensor(np.add(x1_array, x2_array), requires_grad=((isinstance(self.x1, Tensor) \
-                                                                         and self.x1.requires_grad) \
-                                                                         or (isinstance(self.x2, Tensor) \
-                                                                         and self.x2.requires_grad)))
+        self.result = Tensor(np.add(x1_array, x2_array), requires_grad=self._requires_grad(self.x1, self.x2))
         return self.result
 
     def backward(self, grad):
@@ -170,10 +178,7 @@ class subtract(Operation):
     def forward(self, *args, **kwargs):
         x1_array = self._get_array(self.x1)
         x2_array = self._get_array(self.x2)
-        self.result = Tensor(np.subtract(x1_array, x2_array), requires_grad=((isinstance(self.x1, Tensor) \
-                                                                              and self.x1.requires_grad) \
-                                                                              or (isinstance(self.x2, Tensor) \
-                                                                              and self.x2.requires_grad)))
+        self.result = Tensor(np.subtract(x1_array, x2_array), requires_grad=self._requires_grad(self.x1, self.x2))
         return self.result
 
     def backward(self, grad):
@@ -189,10 +194,7 @@ class multiply(Operation):
     def forward(self, *args, **kwargs):
         x1_array = self._get_array(self.x1)
         x2_array = self._get_array(self.x2)
-        self.result = Tensor(np.multiply(x1_array, x2_array), requires_grad=((isinstance(self.x1, Tensor) \
-                                                                            and self.x1.requires_grad) \
-                                                                            or (isinstance(self.x2, Tensor) \
-                                                                            and self.x2.requires_grad)))
+        self.result = Tensor(np.multiply(x1_array, x2_array),requires_grad=self._requires_grad(self.x1, self.x2))
         return self.result
 
     def backward(self, grad):
@@ -200,6 +202,23 @@ class multiply(Operation):
         x2_array = self._get_array(self.x2)
         self._apply_grad(self.x1, grad * x2_array)
         self._apply_grad(self.x2, grad * x1_array)
+
+class matmul(Operation):
+    def __init__(self, x1, x2, *args, **kwargs):
+        self.x2 = x2
+        super().__init__(x1, x2)
+
+    def forward(self, *args, **kwargs):
+        x1_array = self._get_array(self.x1)
+        x2_array = self._get_array(self.x2)
+        self.result = Tensor(np.matmul(x1_array, x2_array), requires_grad=self._requires_grad(self.x1, self.x2))
+        return self.result
+
+    def backward(self, grad):
+        x1_array = self._get_array(self.x1)
+        x2_array = self._get_array(self.x2)
+        self._apply_grad(self.x1, grad * x2_array.T)
+        self._apply_grad(self.x2, grad * x1_array.T)
 
 class divide(Operation):
     def __init__(self, x1, x2, *args, **kwargs):
@@ -209,10 +228,7 @@ class divide(Operation):
     def forward(self, *args, **kwargs):
         x1_array = self._get_array(self.x1)
         x2_array = self._get_array(self.x2)
-        self.result = Tensor(np.divide(x1_array, x2_array), requires_grad=((isinstance(self.x1, Tensor) \
-                                                                            and self.x1.requires_grad) \
-                                                                            or (isinstance(self.x2, Tensor) \
-                                                                            and self.x2.requires_grad)))
+        self.result = Tensor(np.divide(x1_array, x2_array), requires_grad=self._requires_grad(self.x1, self.x2))
         return self.result
 
     def backward(self, grad):
@@ -230,10 +246,7 @@ class power(Operation):
     def forward(self, *args, **kwargs):
         x1_array = self._get_array(self.x1)
         x2_array = self._get_array(self.x2)
-        self.result = Tensor(np.power(x1_array, x2_array), requires_grad=((isinstance(self.x1, Tensor) \
-                                                                           and self.x1.requires_grad) \
-                                                                           or (isinstance(self.x2, Tensor) \
-                                                                           and self.x2.requires_grad)))
+        self.result = Tensor(np.power(x1_array, x2_array), requires_grad=self._requires_grad(self.x1, self.x2))
         return self.result
 
     def backward(self, grad):
@@ -245,8 +258,7 @@ class power(Operation):
 class exp(Operation):
     def forward(self, *args, **kwargs):
         x1_array = self._get_array(self.x1)
-        self.result = Tensor(np.exp(x1_array), requires_grad=(isinstance(self.x1, Tensor) \
-                                                              and self.x1.requires_grad))
+        self.result = Tensor(np.exp(x1_array), requires_grad=self._requires_grad(self.x1))
         return self.result
 
     def backward(self, grad):
@@ -256,12 +268,10 @@ class exp(Operation):
 class log(Operation):
     def forward(self, *args, **kwargs):
         x1_array = self._get_array(self.x1)
-        self.result = Tensor(np.log(x1_array), requires_grad=(isinstance(self.x1, Tensor) \
-                                                              and self.x1.requires_grad))
+        self.result = Tensor(np.log(x1_array), requires_grad=self._requires_grad(self.x1))
         return self.result
 
     def backward(self, grad):
         x1_array = self._get_array(self.x1)
         self._apply_grad(self.x1, grad / x1_array)
-
 
