@@ -7,120 +7,69 @@ class Tensor:
         self.grad = np.zeros_like(self.array)
 
     def __str__(self):
-        return self.array.__str__()
+        return str(self.array)
 
     def __repr__(self):
         return f"{self.__class__.__name__}({self.array})"
 
     def __add__(self, value):
-        if isinstance(value, Tensor):
-            return Tensor(self.array + value.array)
-        else:
-            return Tensor(self.array + value)
+        return Tensor(self.array + value.array if isinstance(value, Tensor) else self.array + value)
 
     def __radd__(self, value):
-        if isinstance(value, Tensor):
-            return Tensor(self.array + value.array)
-        else:
-            return Tensor(self.array + value)
+        return self.__add__(value)
 
     def __iadd__(self, value):
-        if isinstance(value, Tensor):
-            self.array += value.array
-        else:
-            self.array += value
+        self.array += value.array if isinstance(value, Tensor) else value
         return self
 
     def __sub__(self, value):
-        if isinstance(value, Tensor):
-            return Tensor(self.array - value.array)
-        else:
-            return Tensor(self.array - value)
+        return Tensor(self.array - value.array if isinstance(value, Tensor) else self.array - value)
 
     def __rsub__(self, value):
-        if isinstance(value, Tensor):
-            return Tensor(self.array - value.array)
-        else:
-            return Tensor(self.array - value)
+        return Tensor(value - self.array if isinstance(value, Tensor) else value - self.array)
 
     def __isub__(self, value):
-        if isinstance(value, Tensor):
-            self.array -= value.array
-        else:
-            self.array -= value
+        self.array -= value.array if isinstance(value, Tensor) else value
         return self
 
     def __neg__(self):
-        return Tensor(self.array * -1)
+        return Tensor(-self.array)
 
     def __mul__(self, value):
-        if isinstance(value, Tensor):
-            return Tensor(self.array * value.array)
-        else:
-            return Tensor(self.array * value)
+        return Tensor(self.array * value.array if isinstance(value, Tensor) else self.array * value)
 
     def __rmul__(self, value):
-        if isinstance(value, Tensor):
-            return Tensor(self.array * value.array)
-        else:
-            return Tensor(self.array * value)
+        return self.__mul__(value)
 
     def __imul__(self, value):
-        if isinstance(value, Tensor):
-            self.array *= value.array
-        else:
-            self.array *= value
+        self.array *= value.array if isinstance(value, Tensor) else value
         return self
 
     def __truediv__(self, value):
-        if isinstance(value, Tensor):
-            return Tensor(self.array / value.array)
-        else:
-            return Tensor(self.array / value)
+        return Tensor(self.array / value.array if isinstance(value, Tensor) else self.array / value)
 
     def __rtruediv__(self, value):
-        if isinstance(value, Tensor):
-            return Tensor(self.array / value.array)
-        else:
-            return Tensor(self.array / value)
+        return Tensor(value / self.array if isinstance(value, Tensor) else value / self.array)
 
     def __itruediv__(self, value):
-        if isinstance(value, Tensor):
-            self.array = self.array.astype(np.float64) / value.array.astype(np.float64)
-        else:
-            self.array = self.array.astype(np.float64) / value
+        self.array /= value.array if isinstance(value, Tensor) else value
         return self
 
     def __matmul__(self, value):
-        if isinstance(value, Tensor):
-            return Tensor(self.array @ value.array)
-        else:
-            return Tensor(self.array @ value)
+        return Tensor(self.array @ value.array if isinstance(value, Tensor) else self.array @ value)
 
     def __rmatmul__(self, value):
-        if isinstance(value, Tensor):
-            return Tensor(self.array @ value.array)
-        else:
-            return Tensor(self.array @ value)
+        return self.__matmul__(value)
 
     def __imatmul__(self, value):
-        if isinstance(value, Tensor):
-            self.array @= value.array
-        else:
-            self.array @= value
+        self.array @= value.array if isinstance(value, Tensor) else value
         return self
 
     def __pow__(self, value):
-        if isinstance(value, Tensor):
-            return Tensor(self.array ** value.array)
-        else:
-            return Tensor(self.array ** value)
+        return Tensor(self.array ** value.array if isinstance(value, Tensor) else self.array ** value)
 
     def __ipow__(self, value):
-        if isinstance(value, Tensor):
-            self.array **= value.array
-        else:
-            self.array **= value
+        self.array **= value.array if isinstance(value, Tensor) else value
         return self
 
     def __len__(self):
@@ -147,7 +96,9 @@ class Operation:
         return self.result.array.__str__()
 
     def __repr__(self):
-        return self.result.__repr__()
+        if hasattr(self, "x2"):
+            return f"{self.__class__.__name__}({self.x1.__repr__()}, {self.x2.__repr__()})"
+        return f"{self.__class__.__name__}({self.x1.__repr__()})"
 
     def __neg__(self):
         return -self.result.array
@@ -166,21 +117,32 @@ class Operation:
         if self.result is not None:
             self.result.zero_grad()
 
-class sum(Operation):
-    def __init__(self, x1, *args, **kwargs):
-        super().__init__(x1)
+    def _get_array(self, obj):
+        if isinstance(obj, Operation):
+            return obj.result.array
+        elif isinstance(obj, Tensor):
+            return obj.array
+        else:
+            return obj
 
+    def _apply_grad(self, obj, grad):
+        if isinstance(obj, Operation):
+            obj.result.grad += grad
+            obj.backward(grad)
+        elif isinstance(obj, Tensor) and obj.requires_grad:
+            obj.grad += grad
+
+class sum(Operation):
     def forward(self, *args, **kwargs):
-        x1_array = self.x1.result.array if isinstance(self.x1, Operation) else self.x1.array if isinstance(self.x1, Tensor) else self.x1
-        self.result = Tensor(np.sum(x1_array))
+        x1_array = self._get_array(self.x1)
+        self.result = Tensor(np.sum(x1_array), requires_grad=(isinstance(self.x1, Tensor) \
+                                                              and self.x1.requires_grad))
         return self.result
 
     def backward(self, grad):
-        if isinstance(self.x1, Operation):
-            self.x1.result.grad += grad
-            self.x1.backward(self.x1.result.grad)
-        elif isinstance(self.x1, Tensor) and self.x1.requires_grad:
-            self.x1.grad += grad
+        x1_array = self._get_array(self.x1)
+        grad = grad * np.ones_like(x1_array)
+        self._apply_grad(self.x1, grad)
 
 class add(Operation):
     def __init__(self, x1, x2, *args, **kwargs):
@@ -188,23 +150,17 @@ class add(Operation):
         super().__init__(x1, x2)
 
     def forward(self, *args, **kwargs):
-        x1_array = self.x1.result.array if isinstance(self.x1, Operation) else self.x1.array if isinstance(self.x1, Tensor) else self.x1
-        x2_array = self.x2.result.array if isinstance(self.x2, Operation) else self.x2.array if isinstance(self.x2, Tensor) else self.x2
-
-        self.result = Tensor(np.add(x1_array, x2_array))
+        x1_array = self._get_array(self.x1)
+        x2_array = self._get_array(self.x2)
+        self.result = Tensor(np.add(x1_array, x2_array), requires_grad=((isinstance(self.x1, Tensor) \
+                                                                         and self.x1.requires_grad) \
+                                                                         or (isinstance(self.x2, Tensor) \
+                                                                         and self.x2.requires_grad)))
         return self.result
 
     def backward(self, grad):
-        if isinstance(self.x1, Operation):
-            self.x1.result.grad += grad
-            self.x1.backward(self.x1.result.grad)
-        elif isinstance(self.x1, Tensor) and self.x1.requires_grad:
-            self.x1.grad += grad
-        if isinstance(self.x2, Operation):
-            self.x2.result.grad += grad
-            self.x2.backward(self.x2.result.grad)
-        elif isinstance(self.x2, Tensor) and self.x2.requires_grad:
-            self.x2.grad += grad
+        self._apply_grad(self.x1, grad)
+        self._apply_grad(self.x2, grad)
 
 class subtract(Operation):
     def __init__(self, x1, x2, *args, **kwargs):
@@ -212,23 +168,17 @@ class subtract(Operation):
         super().__init__(x1, x2)
 
     def forward(self, *args, **kwargs):
-        x1_array = self.x1.result.array if isinstance(self.x1, Operation) else self.x1.array if isinstance(self.x1, Tensor) else self.x1
-        x2_array = self.x2.result.array if isinstance(self.x2, Operation) else self.x2.array if isinstance(self.x2, Tensor) else self.x2
-        self.result = Tensor(np.subtract(x1_array - x2_array))
+        x1_array = self._get_array(self.x1)
+        x2_array = self._get_array(self.x2)
+        self.result = Tensor(np.subtract(x1_array, x2_array), requires_grad=((isinstance(self.x1, Tensor) \
+                                                                              and self.x1.requires_grad) \
+                                                                              or (isinstance(self.x2, Tensor) \
+                                                                              and self.x2.requires_grad)))
         return self.result
 
     def backward(self, grad):
-        if isinstance(self.x1, Operation):
-            self.x1.result.grad += grad
-            self.x1.backward(self.x1.result.grad)
-        elif isinstance(self.x1, Tensor) and self.x1.requires_grad:
-            self.x1.grad += grad
-
-        if isinstance(self.x2, Operation):
-            self.x2.result.grad -= grad
-            self.x2.backward(self.x2.result.grad)
-        elif isinstance(self.x2, Tensor) and self.x2.requires_grad:
-            self.x2.grad -= grad
+        self._apply_grad(self.x1, grad)
+        self._apply_grad(self.x2, -grad)
 
 
 class multiply(Operation):
@@ -237,24 +187,19 @@ class multiply(Operation):
         super().__init__(x1, x2)
 
     def forward(self, *args, **kwargs):
-        x1_array = self.x1.result.array if isinstance(self.x1, Operation) else self.x1.array if isinstance(self.x1, Tensor) else self.x1
-        x2_array = self.x2.result.array if isinstance(self.x2, Operation) else self.x2.array if isinstance(self.x2, Tensor) else self.x2
-        self.result = Tensor(np.multiply(x1_array, x2_array))
+        x1_array = self._get_array(self.x1)
+        x2_array = self._get_array(self.x2)
+        self.result = Tensor(np.multiply(x1_array, x2_array), requires_grad=((isinstance(self.x1, Tensor) \
+                                                                            and self.x1.requires_grad) \
+                                                                            or (isinstance(self.x2, Tensor) \
+                                                                            and self.x2.requires_grad)))
         return self.result
 
     def backward(self, grad):
-        if isinstance(self.x1, Operation):
-            self.x1.result.grad += grad * (self.x2.result.array if isinstance(self.x2, Operation) else self.x2.array if isinstance(self.x2, Tensor) else self.x2)
-            self.x1.backward(self.x1.result.grad)
-        elif isinstance(self.x1, Tensor) and self.x1.requires_grad:
-            self.x1.grad += grad *(self.x2.result.array if isinstance(self.x2, Operation) else self.x2.array if isinstance(self.x2, Tensor) else self.x2)
-
-        if isinstance(self.x2, Operation):
-            self.x2.result.grad += grad * (self.x1.result.array if isinstance(self.x1, Operation) else self.x1.array if isinstance(self.x1, Tensor) else self.x1)
-            self.x2.backward(self.x2.result.grad)
-        elif isinstance(self.x2, Tensor) and self.x2.requires_grad:
-            self.x2.grad += grad * (self.x1.result.array if isinstance(self.x1, Operation) else self.x1.array if isinstance(self.x1, Tensor) else self.x1)
-
+        x1_array = self._get_array(self.x1)
+        x2_array = self._get_array(self.x2)
+        self._apply_grad(self.x1, grad * x2_array)
+        self._apply_grad(self.x2, grad * x1_array)
 
 class divide(Operation):
     def __init__(self, x1, x2, *args, **kwargs):
@@ -262,24 +207,19 @@ class divide(Operation):
         super().__init__(x1, x2)
 
     def forward(self, *args, **kwargs):
-        x1_array = self.x1.result.array if isinstance(self.x1, Operation) else self.x1.array if isinstance(self.x1, Tensor) else self.x1
-        x2_array = self.x2.result.array if isinstance(self.x2, Operation) else self.x2.array if isinstance(self.x2, Tensor) else self.x2
-        self.result = Tensor(np.divide(x1_array, x2_array))
+        x1_array = self._get_array(self.x1)
+        x2_array = self._get_array(self.x2)
+        self.result = Tensor(np.divide(x1_array, x2_array), requires_grad=((isinstance(self.x1, Tensor) \
+                                                                            and self.x1.requires_grad) \
+                                                                            or (isinstance(self.x2, Tensor) \
+                                                                            and self.x2.requires_grad)))
         return self.result
 
     def backward(self, grad):
-        x2_squared = (self.x2.result.array if isinstance(self.x2, Operation) else self.x2.array if isinstance(self.x2, Tensor) else self.x2) ** 2
-        if isinstance(self.x1, Operation):
-            self.x1.result.grad += grad / (self.x2.result.array if isinstance(self.x2, Operation) else self.x2.array if isinstance(self.x2, Tensor) else self.x2)
-            self.x1.backward(self.x1.result.grad)
-        elif isinstance(self.x1, Tensor) and self.x1.requires_grad:
-            self.x1.grad += grad / (self.x2.result.array if isinstance(self.x2, Operation) else self.x2.array if isinstance(self.x2, Tensor) else self.x2)
-
-        if isinstance(self.x2, Operation):
-            self.x2.result.grad += grad * -(self.x1.result.array if isinstance(self.x1, Operation) else self.x1.array if isinstance(self.x1, Tensor) else self.x1) / x2_squared
-            self.x2.backward(self.x2.result.grad)
-        elif isinstance(self.x2, Tensor) and self.x2.requires_grad:
-            self.x2.grad += grad * -(self.x1.result.array if isinstance(self.x1, Operation) else self.x1.array if isinstance(self.x1, Tensor) else self.x1) / x2_squared
+        x1_array = self._get_array(self.x1)
+        x2_array = self._get_array(self.x2)
+        self._apply_grad(self.x1, grad / x2_array)
+        self._apply_grad(self.x2, -grad * x1_array / (x2_array ** 2))
 
 
 class power(Operation):
@@ -288,70 +228,40 @@ class power(Operation):
         super().__init__(x1, x2)
 
     def forward(self, *args, **kwargs):
-        x1_array = self.x1.result.array if isinstance(self.x1, Operation) else self.x1.array if isinstance(self.x1, Tensor) else self.x1
-        x2_array = self.x2.result.array if isinstance(self.x2, Operation) else self.x2.array if isinstance(self.x2, Tensor) else self.x2
-        self.result = Tensor(np.power(x1_array, x2_array))
+        x1_array = self._get_array(self.x1)
+        x2_array = self._get_array(self.x2)
+        self.result = Tensor(np.power(x1_array, x2_array), requires_grad=((isinstance(self.x1, Tensor) \
+                                                                           and self.x1.requires_grad) \
+                                                                           or (isinstance(self.x2, Tensor) \
+                                                                           and self.x2.requires_grad)))
         return self.result
 
     def backward(self, grad):
-        x1_array = self.x1.result.array if isinstance(self.x1, Operation) else self.x1.array if isinstance(self.x1,Tensor) else self.x1
-        x2_array = self.x2.result.array if isinstance(self.x2, Operation) else self.x2.array if isinstance(self.x2,Tensor) else self.x2
+        x1_array = self._get_array(self.x1)
+        x2_array = self._get_array(self.x2)
+        self._apply_grad(self.x1, grad * x2_array * np.power(x1_array, x2_array - 1))
+        self._apply_grad(self.x2, grad * np.power(x1_array, x2_array) * np.log(x1_array))
 
-        if isinstance(self.x1, Operation):
-            self.x1.result.grad += grad * x2_array * np.power(x1_array, x2_array - 1)
-            self.x1.backward(self.x1.result.grad)
-        elif isinstance(self.x1, Tensor) and self.x1.requires_grad:
-            self.x1.grad += grad * x2_array * np.power(x1_array, x2_array - 1)
-
-        if isinstance(self.x2, Operation):
-            self.x2.result.grad += grad * np.power(x1_array, x2_array) * np.log(x1_array)
-            self.x2.backward(self.x2.result.grad)
-        elif isinstance(self.x2, Tensor) and self.x2.requires_grad:
-            self.x2.grad += grad * np.power(x1_array, x2_array) * np.log(x1_array)
-    
 class exp(Operation):
-    def __init__(self, x1, *args, **kwargs):
-        super().__init__(x1)
-
     def forward(self, *args, **kwargs):
-        if isinstance(self.x1, Operation):
-            x1_array = self.x1.result.array
-        elif isinstance(self.x1, Tensor):
-            x1_array = self.x1.array
-        else:
-            x1_array = self.x1
-        self.result = Tensor(np.exp(x1_array))
+        x1_array = self._get_array(self.x1)
+        self.result = Tensor(np.exp(x1_array), requires_grad=(isinstance(self.x1, Tensor) \
+                                                              and self.x1.requires_grad))
         return self.result
 
     def backward(self, grad):
-        if isinstance(self.x1, Operation):
-            x1_array = self.x1.result.array
-            self.x1.result.grad += grad * np.exp(x1_array)
-            self.x1.backward(self.x1.result.grad)
-        elif isinstance(self.x1, Tensor) and self.x1.requires_grad:
-            self.x1.grad += grad * np.exp(self.x1.array)
+        x1_array = self._get_array(self.x1)
+        self._apply_grad(self.x1, grad * np.exp(x1_array))
 
 class log(Operation):
-    def __init__(self, x1, *args, **kwargs):
-        super().__init__(x1)
-
     def forward(self, *args, **kwargs):
-        if isinstance(self.x1, Operation):
-            x1_array = self.x1.result.array
-        elif isinstance(self.x1, Tensor):
-            x1_array = self.x1.array
-        else:
-            x1_array = self.x1
-
-        self.result = Tensor(np.log(x1_array))
+        x1_array = self._get_array(self.x1)
+        self.result = Tensor(np.log(x1_array), requires_grad=(isinstance(self.x1, Tensor) \
+                                                              and self.x1.requires_grad))
         return self.result
 
     def backward(self, grad):
-        if isinstance(self.x1, Operation):
-            x1_array = self.x1.result.array
-            self.x1.result.grad += grad / x1_array
-            self.x1.backward(self.x1.result.grad)
-        elif isinstance(self.x1, Tensor) and self.x1.requires_grad:
-            self.x1.grad += grad / self.x1.array
+        x1_array = self._get_array(self.x1)
+        self._apply_grad(self.x1, grad / x1_array)
 
 
