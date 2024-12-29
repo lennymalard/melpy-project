@@ -25,7 +25,7 @@ class Tensor:
         return f"{self.__class__.__name__}({self.array})"
 
     def __add__(self, value):
-        return add(self, value).result
+        return add(self, value)
 
     def __radd__(self, value):
         return self.__add__(value)
@@ -35,20 +35,20 @@ class Tensor:
         return self
 
     def __sub__(self, value):
-        return subtract(self, value).result
+        return subtract(self, value)
 
     def __rsub__(self, value):
-        return subtract(value, self).result
+        return subtract(value, self)
 
     def __isub__(self, value):
         self.array -= value.array if isinstance(value, Tensor) else value
         return self
 
     def __neg__(self):
-        return subtract(0, self).result
+        return subtract(0, self)
 
     def __mul__(self, value):
-        return multiply(self, value).result
+        return multiply(self, value)
 
     def __rmul__(self, value):
         return self.__mul__(value)
@@ -58,17 +58,17 @@ class Tensor:
         return self
 
     def __truediv__(self, value):
-        return divide(self.array, value).result
+        return divide(self.array, value)
 
     def __rtruediv__(self, value):
-        return divide(value, self).result
+        return divide(value, self)
 
     def __itruediv__(self, value):
         self.array /= value.array if isinstance(value, Tensor) else value
         return self
 
     def __matmul__(self, value):
-        return matmul(self, value).result
+        return matmul(self, value)
 
     def __rmatmul__(self, value):
         return self.__matmul__(value)
@@ -78,7 +78,7 @@ class Tensor:
         return self
 
     def __pow__(self, value):
-        return power(self, value).result
+        return power(self, value)
 
     def __ipow__(self, value):
         self.array **= value.array if isinstance(value, Tensor) else value
@@ -108,6 +108,9 @@ class Tensor:
     def zero_grad(self):
         self.grad = np.zeros_like(self.array)
 
+    def to_numpy(self):
+        return self.array
+
 class Operation:
     def __init__(self,x1, *args, **kwargs):
         self.x1 = x1
@@ -126,7 +129,40 @@ class Operation:
         return self.__str__()
 
     def __neg__(self):
-        return -self.result.array
+        return subtract(0, self)
+
+    def __add__(self, value):
+        return add(self, value)
+
+    def __radd__(self, value):
+        return self.__add__(value)
+
+    def __sub__(self, value):
+        return subtract(self, value)
+
+    def __rsub__(self, value):
+        return subtract(value, self)
+
+    def __mul__(self, value):
+        return multiply(self, value)
+
+    def __rmul__(self, value):
+        return self.__mul__(value)
+
+    def __truediv__(self, value):
+        return divide(self, value)
+
+    def __rtruediv__(self, value):
+        return divide(value, self)
+
+    def __matmul__(self, value):
+        return matmul(self, value)
+
+    def __rmatmul__(self, value):
+        return self.__matmul__(value)
+
+    def __pow__(self, value):
+        return power(self, value).result
 
     def forward(self):
         pass

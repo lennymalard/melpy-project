@@ -58,7 +58,7 @@ $l$ l'indice d'une couche\\
 $y$ la sortie\\
 $x$ l'entrée\\
 $w$ le filtre (ou kernel) \\
-$\sigma$ la fonction d'activation\\
+$\phi$ la fonction d'activation\\
 $L$ la fonction coût\\
 $m,n$ les indices des pixels de la sortie\\
 $i,j$ les indices des pixels du filtre\\
@@ -76,10 +76,10 @@ Une couche de convolution aura comme opération
 en propagation avant : 
 
 \begin{align}
-y^{l} &= \sigma (y^{l-1})\star w^{l} \\
+y^{l} &= \phi (y^{l-1})\star w^{l} \\
 &=x^{l}\star w^{l} \\
-y_{m,n}^{l} &= \sum_{j=0}^{k-1}\sum_{i=0}^{k-1}\sigma(y_{i,j}^{l-1}) \cdot w_{m+i,n+j}^{l}\\
-&= \sum_{j=0}^{k-1}\sum_{i=0}^{k-1}\sigma(y_{m+i, n+j}^{l-1}) \cdot w_{i,j}^{l}
+y_{m,n}^{l} &= \sum_{j=0}^{k-1}\sum_{i=0}^{k-1}\phi(y_{i,j}^{l-1}) \cdot w_{m+i,n+j}^{l}\\
+&= \sum_{j=0}^{k-1}\sum_{i=0}^{k-1}\phi(y_{m+i, n+j}^{l-1}) \cdot w_{i,j}^{l}
 \end{align}
 
 Cela génère des cartes de caractéristiques qui mettent en évidence certains 
@@ -118,12 +118,12 @@ $\frac{\partial{L}}{\partial{x_{m,n}^{l+1}}} = \delta^{l+1}_{m,n}$
 {\scriptsize
 \begin{align}
 \implies \frac{\partial L}{\partial w_{i',j'}^{l}} &=  \sum_{n=0}^{W-1}\sum_{m=0}^{H-1}\delta^{l+1}_{m,n}\cdot\frac{\partial x_{m,n}^{l+1}}{\partial w_{i',j'}^{l}}\\
-\frac{\partial x_{m,n}^{l+1}}{\partial w_{i',j'}^{l}}&= \frac{\partial}{\partial w_{i',j'}^{l}}\left(\sum_{j=0}^{W-1}\sum_{i=0}^{H-1}\sigma(x^{l}_{m+i, n+j}) \cdot w^{l}_{i,j}\right)\\
-&= \frac{\partial}{\partial w^{l}_{i',j'}}\big (\sigma(x^{l}_{m+i', n+j'}) \cdot w^{l}_{i',j'}\big )\\
-&= \sigma(x^{l}_{m+i', n+j'}) \cdot \frac{\partial}{\partial w^{l}_{i',j'}}\big (w^{l}_{i',j'}\big )\\
-&= \sigma(x^{l}_{m+i',n+j'})\\
-\implies \frac{\partial L}{\partial w_{i',j'}^{l}} &=  \sum_{n=0}^{W-1}\sum_{m=0}^{H-1}\delta^{l+1}_{m,n}\cdot\sigma(x^{l}_{m+i',n+j'})\\
-&= \delta^{l+1}_{i',j'} \star \sigma(x^{l}_{i',j'})
+\frac{\partial x_{m,n}^{l+1}}{\partial w_{i',j'}^{l}}&= \frac{\partial}{\partial w_{i',j'}^{l}}\left(\sum_{j=0}^{W-1}\sum_{i=0}^{H-1}\phi(x^{l}_{m+i, n+j}) \cdot w^{l}_{i,j}\right)\\
+&= \frac{\partial}{\partial w^{l}_{i',j'}}\big (\phi(x^{l}_{m+i', n+j'}) \cdot w^{l}_{i',j'}\big )\\
+&= \phi(x^{l}_{m+i', n+j'}) \cdot \frac{\partial}{\partial w^{l}_{i',j'}}\big (w^{l}_{i',j'}\big )\\
+&= \phi(x^{l}_{m+i',n+j'})\\
+\implies \frac{\partial L}{\partial w_{i',j'}^{l}} &=  \sum_{n=0}^{W-1}\sum_{m=0}^{H-1}\delta^{l+1}_{m,n}\cdot\phi(x^{l}_{m+i',n+j'})\\
+&= \delta^{l+1}_{i',j'} \star \phi(x^{l}_{i',j'})
 \end{align}}
 
 Calculons ensuite $\frac{\partial L}{\partial x^{l}_{m',n'}}$ : 
@@ -135,12 +135,12 @@ Calculons ensuite $\frac{\partial L}{\partial x^{l}_{m',n'}}$ :
 &=   \sum_{j=0}^{k-1}\sum_{i=0}^{k-1}\delta^{l+1}_{m'-i,n'-j}\cdot\frac{\partial x_{m'-i,n'-j}^{l+1}}{\partial x_{m',n'}^{l}}\\
 \begin{split}
     \frac{\partial x_{m'-i,n'-j}^{l+1}}{\partial x_{m',n'}^{l}} &= \frac{\partial}{\partial x^{l}_{m',n'}}\left( \sum_{j'=0}^{k-1}\sum_{i'=0}^{k-1}\right.  \\ 
-    &  \biggl.\sigma(x^{l}_{m'-i+i',n'-j+j'})  \cdot w^{l}_{i',j'}  \bigg)
+    &  \biggl.\phi(x^{l}_{m'-i+i',n'-j+j'})  \cdot w^{l}_{i',j'}  \bigg)
 \end{split} \\
-&= \frac{\partial}{\partial x^{l}_{m',n'}}\big(\sigma(x^{l}_{m',n'})\cdot w^{l}_{i,j}\big)\\
-&= w^{l}_{i,j}\cdot \frac{\partial}{\partial x^{l}_{m',n'}}\big(\sigma(x^{l}_{m',n'})\big)\\
-&= w^{l}_{i,j}\cdot \sigma'(x^{l}_{m',n'})\\
-\implies \frac{\partial L}{\partial x^{l}_{m',n'}} &=  \sum_{j=0}^{k-1}\sum_{i=0}^{k-1}\delta^{l+1}_{m'-i,n'-j}\cdot w^{l}_{i,j}\cdot \sigma'(x^{l}_{m',n'})\\
+&= \frac{\partial}{\partial x^{l}_{m',n'}}\big(\phi(x^{l}_{m',n'})\cdot w^{l}_{i,j}\big)\\
+&= w^{l}_{i,j}\cdot \frac{\partial}{\partial x^{l}_{m',n'}}\big(\phi(x^{l}_{m',n'})\big)\\
+&= w^{l}_{i,j}\cdot \phi'(x^{l}_{m',n'})\\
+\implies \frac{\partial L}{\partial x^{l}_{m',n'}} &=  \sum_{j=0}^{k-1}\sum_{i=0}^{k-1}\delta^{l+1}_{m'-i,n'-j}\cdot w^{l}_{i,j}\cdot \phi'(x^{l}_{m',n'})\\
 &= \sum_{j=0}^{k-1}\sum_{i=0}^{k-1}\delta^{l+1}_{m'-i,n'-j}\cdot w^{l}_{i,j}\\
 &= rot_{\ang{180}}\left \{ \sum_{j=0}^{k-1}\sum_{i=0}^{k-1}\delta^{l+1}_{m'+i,n'+j}\cdot w^{l}_{i,j} \right \} \\
 & = \delta^{l+1}_{m',n'} \star rot_{\ang{180}}\{w^{l}_{m',n'}\}
