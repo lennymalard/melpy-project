@@ -25,7 +25,7 @@ class Tensor:
         return f"{self.__class__.__name__}({self.array})"
 
     def __add__(self, value):
-        return Tensor(self.array + value.array if isinstance(value, Tensor) else self.array + value)
+        return add(self, value).result
 
     def __radd__(self, value):
         return self.__add__(value)
@@ -35,20 +35,20 @@ class Tensor:
         return self
 
     def __sub__(self, value):
-        return Tensor(self.array - value.array if isinstance(value, Tensor) else self.array - value)
+        return subtract(self, value).result
 
     def __rsub__(self, value):
-        return Tensor(value - self.array if isinstance(value, Tensor) else value - self.array)
+        return subtract(value, self).result
 
     def __isub__(self, value):
         self.array -= value.array if isinstance(value, Tensor) else value
         return self
 
     def __neg__(self):
-        return Tensor(-self.array)
+        return subtract(0, self).result
 
     def __mul__(self, value):
-        return Tensor(self.array * value.array if isinstance(value, Tensor) else self.array * value)
+        return multiply(self, value).result
 
     def __rmul__(self, value):
         return self.__mul__(value)
@@ -58,17 +58,17 @@ class Tensor:
         return self
 
     def __truediv__(self, value):
-        return Tensor(self.array / value.array if isinstance(value, Tensor) else self.array / value)
+        return divide(self.array, value).result
 
     def __rtruediv__(self, value):
-        return Tensor(value / self.array if isinstance(value, Tensor) else value / self.array)
+        return divide(value, self).result
 
     def __itruediv__(self, value):
         self.array /= value.array if isinstance(value, Tensor) else value
         return self
 
     def __matmul__(self, value):
-        return Tensor(self.array @ value.array if isinstance(value, Tensor) else self.array @ value)
+        return matmul(self, value).result
 
     def __rmatmul__(self, value):
         return self.__matmul__(value)
@@ -78,11 +78,29 @@ class Tensor:
         return self
 
     def __pow__(self, value):
-        return Tensor(self.array ** value.array if isinstance(value, Tensor) else self.array ** value)
+        return power(self, value).result
 
     def __ipow__(self, value):
         self.array **= value.array if isinstance(value, Tensor) else value
         return self
+
+    def __eq__(self, value):
+        return Tensor(self.array == (value.array if isinstance(value, Tensor) else value))
+
+    def __ne__(self, value):
+        return Tensor(self.array != (value.array if isinstance(value, Tensor) else value))
+
+    def __gt__(self, value):
+        return Tensor(self.array > (value.array if isinstance(value, Tensor) else value))
+
+    def __ge__(self, value):
+        return Tensor(self.array >= (value.array if isinstance(value, Tensor) else value))
+
+    def __lt__(self, value):
+        return Tensor(self.array < (value.array if isinstance(value, Tensor) else value))
+
+    def __le__(self, value):
+        return Tensor(self.array <= (value.array if isinstance(value, Tensor) else value))
 
     def __len__(self):
         return len(self.array)
@@ -94,7 +112,7 @@ class Operation:
     def __init__(self,x1, *args, **kwargs):
         self.x1 = x1
         self.result = None
-        self.forward(*args, **kwargs)
+        self.forward()
 
     @property
     def grad(self):
@@ -105,14 +123,12 @@ class Operation:
         return self.result.array.__str__()
 
     def __repr__(self):
-        if hasattr(self, "x2"):
-            return f"{self.__class__.__name__}({self.x1.__repr__()}, {self.x2.__repr__()})"
-        return f"{self.__class__.__name__}({self.x1.__repr__()})"
+        return self.__str__()
 
     def __neg__(self):
         return -self.result.array
 
-    def forward(self, *args, **kwargs):
+    def forward(self):
         pass
 
     def backward(self, grad):
@@ -145,7 +161,7 @@ class Operation:
         return any(isinstance(i, Tensor) and i.requires_grad for i in inputs)
 
 class sum(Operation):
-    def forward(self, *args, **kwargs):
+    def forward(self):
         x1_array = self._get_array(self.x1)
         self.result = Tensor(np.sum(x1_array), requires_grad=self._requires_grad(self.x1))
         return self.result
@@ -156,11 +172,11 @@ class sum(Operation):
         self._apply_grad(self.x1, grad)
 
 class add(Operation):
-    def __init__(self, x1, x2, *args, **kwargs):
+    def __init__(self, x1, x2):
         self.x2 = x2
         super().__init__(x1, x2)
 
-    def forward(self, *args, **kwargs):
+    def forward(self):
         x1_array = self._get_array(self.x1)
         x2_array = self._get_array(self.x2)
         self.result = Tensor(np.add(x1_array, x2_array), requires_grad=self._requires_grad(self.x1, self.x2))
@@ -171,11 +187,11 @@ class add(Operation):
         self._apply_grad(self.x2, grad)
 
 class subtract(Operation):
-    def __init__(self, x1, x2, *args, **kwargs):
+    def __init__(self, x1, x2):
         self.x2 = x2
         super().__init__(x1, x2)
 
-    def forward(self, *args, **kwargs):
+    def forward(self):
         x1_array = self._get_array(self.x1)
         x2_array = self._get_array(self.x2)
         self.result = Tensor(np.subtract(x1_array, x2_array), requires_grad=self._requires_grad(self.x1, self.x2))
@@ -187,11 +203,11 @@ class subtract(Operation):
 
 
 class multiply(Operation):
-    def __init__(self, x1, x2, *args, **kwargs):
+    def __init__(self, x1, x2):
         self.x2 = x2
         super().__init__(x1, x2)
 
-    def forward(self, *args, **kwargs):
+    def forward(self):
         x1_array = self._get_array(self.x1)
         x2_array = self._get_array(self.x2)
         self.result = Tensor(np.multiply(x1_array, x2_array),requires_grad=self._requires_grad(self.x1, self.x2))
@@ -204,11 +220,11 @@ class multiply(Operation):
         self._apply_grad(self.x2, grad * x1_array)
 
 class matmul(Operation):
-    def __init__(self, x1, x2, *args, **kwargs):
+    def __init__(self, x1, x2):
         self.x2 = x2
         super().__init__(x1, x2)
 
-    def forward(self, *args, **kwargs):
+    def forward(self):
         x1_array = self._get_array(self.x1)
         x2_array = self._get_array(self.x2)
         self.result = Tensor(np.matmul(x1_array, x2_array), requires_grad=self._requires_grad(self.x1, self.x2))
@@ -221,11 +237,11 @@ class matmul(Operation):
         self._apply_grad(self.x2, grad * x1_array.T)
 
 class divide(Operation):
-    def __init__(self, x1, x2, *args, **kwargs):
+    def __init__(self, x1, x2):
         self.x2 = x2
         super().__init__(x1, x2)
 
-    def forward(self, *args, **kwargs):
+    def forward(self):
         x1_array = self._get_array(self.x1)
         x2_array = self._get_array(self.x2)
         self.result = Tensor(np.divide(x1_array, x2_array), requires_grad=self._requires_grad(self.x1, self.x2))
@@ -239,11 +255,11 @@ class divide(Operation):
 
 
 class power(Operation):
-    def __init__(self, x1, x2, *args, **kwargs):
+    def __init__(self, x1, x2):
         self.x2 = x2
         super().__init__(x1, x2)
 
-    def forward(self, *args, **kwargs):
+    def forward(self):
         x1_array = self._get_array(self.x1)
         x2_array = self._get_array(self.x2)
         self.result = Tensor(np.power(x1_array, x2_array), requires_grad=self._requires_grad(self.x1, self.x2))
@@ -256,7 +272,7 @@ class power(Operation):
         self._apply_grad(self.x2, grad * np.power(x1_array, x2_array) * np.log(x1_array))
 
 class exp(Operation):
-    def forward(self, *args, **kwargs):
+    def forward(self):
         x1_array = self._get_array(self.x1)
         self.result = Tensor(np.exp(x1_array), requires_grad=self._requires_grad(self.x1))
         return self.result
@@ -266,7 +282,7 @@ class exp(Operation):
         self._apply_grad(self.x1, grad * np.exp(x1_array))
 
 class log(Operation):
-    def forward(self, *args, **kwargs):
+    def forward(self):
         x1_array = self._get_array(self.x1)
         self.result = Tensor(np.log(x1_array), requires_grad=self._requires_grad(self.x1))
         return self.result
