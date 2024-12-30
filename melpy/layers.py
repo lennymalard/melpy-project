@@ -1,6 +1,7 @@
 import numpy as np
 from math import sqrt
 from .im2col import *
+from .tensor import *
 
 class Layer:
     """
@@ -163,27 +164,28 @@ class Dense(Layer):
                 Initialized weights.
             """
             if weight_init == "he_normal":
-                weights = np.random.randn(n_in, n_out) * np.sqrt(2.0 / n_in)
+                weights = Tensor(np.random.randn(n_in, n_out) * np.sqrt(2.0 / n_in))
             elif weight_init == "he_uniform":
                 limit = np.sqrt(6 / n_in)
-                weights = np.random.uniform(-limit, limit, (n_in, n_out))
+                weights = Tensor(np.random.uniform(-limit, limit, (n_in, n_out)))
             elif weight_init == "glorot_normal":
-                weights = np.random.randn(n_in, n_out) * np.sqrt(2.0 / (n_in + n_out))
+                weights = Tensor(np.random.randn(n_in, n_out) * np.sqrt(2.0 / (n_in + n_out)))
             elif weight_init == "glorot_uniform":
                 limit = np.sqrt(6 / (n_in + n_out))
-                weights = np.random.uniform(-limit, limit, (n_in, n_out))
+                weights = Tensor(np.random.uniform(-limit, limit, (n_in, n_out)))
             else:
-                raise ValueError("`weight_init` must be either 'he_uniform', 'he_normal', 'glorot_uniform' or 'glorot_normal'.")
+                raise ValueError(
+                    "`weight_init` must be either 'he_uniform', 'he_normal', 'glorot_uniform' or 'glorot_normal'.")
             return weights
 
         self.weights = initialize_weights(weight_initializer, n_in, n_out)
-        self.biases = np.random.rand(1, n_out)
-        self.dW = np.zeros_like(self.weights)
-        self.dB = np.zeros_like(self.biases)
-        self.weight_momentums = np.zeros_like(self.weights)
-        self.bias_momentums = np.zeros_like(self.biases)
-        self.weight_cache = np.zeros_like(self.weights)
-        self.bias_cache = np.zeros_like(self.biases)
+        self.biases = Tensor(np.random.rand(1, n_out))
+        self.dW = Tensor(np.zeros_like(self.weights))
+        self.dB = Tensor(np.zeros_like(self.biases))
+        self.weight_momentums = Tensor(np.zeros_like(self.weights))
+        self.bias_momentums = Tensor(np.zeros_like(self.biases))
+        self.weight_cache = Tensor(np.zeros_like(self.weights))
+        self.bias_cache = Tensor(np.zeros_like(self.biases))
         self.activation = activation
 
         if not isinstance(activation, Activation) and activation is not None:
@@ -198,7 +200,7 @@ class Dense(Layer):
         ndarray
             The output data.
         """
-        self.outputs = np.dot(self.inputs, self.weights) + self.biases
+        self.outputs = dot(self.inputs, self.weights) + self.biases
 
         if self.activation is not None:
             self.activation.inputs = self.outputs
@@ -224,10 +226,9 @@ class Dense(Layer):
             dX = self.activation.backward(dX)
 
         self.dY = dX
-        self.dW = np.dot(self.inputs.T, self.dY)
-        self.dB = np.sum(self.dY, axis=0, keepdims=True)
-        self.dX = np.dot(self.dY, self.weights.T)
-
+        self.outputs.backward(self.dY)
+        self.dX = self.inputs.grad
+        self.dW = self.weights.grad
         return self.dX
 
 class ReLU(Layer, Activation):
@@ -269,8 +270,8 @@ class ReLU(Layer, Activation):
         ndarray
             The differentiated input data.
         """
-        dA = np.ones_like(self.inputs)
-        dA[self.inputs <= 0] = 0
+        dA = np.ones_like(self.inputs.array)
+        dA[self.inputs.array <= 0] = 0
         return dA
 
     def forward(self):
@@ -282,7 +283,7 @@ class ReLU(Layer, Activation):
         ndarray
             The output data.
         """
-        self.outputs = np.maximum(0, self.inputs)
+        self.outputs = Tensor(np.maximum(0, self.inputs.array))
         return self.outputs
 
     def backward(self, dX):
@@ -342,8 +343,8 @@ class LeakyReLU(Layer, Activation):
         ndarray
             The differentiated input data with respect to loss.
         """
-        dA = np.ones_like(self.inputs)
-        dA[self.inputs <= 0] = 0.01
+        dA = np.ones_like(self.inputs.array)
+        dA[self.inputs.array <= 0] = 0.01
         return dA
 
     def forward(self):
@@ -355,7 +356,7 @@ class LeakyReLU(Layer, Activation):
         ndarray
             The output data.
         """
-        self.outputs = np.where(self.inputs > 0, self.inputs, self.inputs * 0.01)
+        self.outputs = Tensor(np.where(self.inputs.array > 0, self.inputs.array, self.inputs.array * 0.01))
         return self.outputs
 
     def backward(self, dX):
@@ -426,7 +427,7 @@ class Sigmoid(Layer, Activation):
         ndarray
             The output data.
         """
-        self.outputs = 1 / (1 + np.exp(-self.inputs))
+        self.outputs = 1 / (1 + exp(-self.inputs))
         return self.outputs
 
     def backward(self, dX):
@@ -444,7 +445,8 @@ class Sigmoid(Layer, Activation):
             Partial derivative of loss with respect to input data.
         """
         self.dY = dX
-        self.dX = self.dY * self.derivative()
+        self.outputs.backward(self.dY)
+        self.dX = self.inputs.grad
         return self.dX
 
 class Softmax(Layer, Activation):
@@ -484,8 +486,8 @@ class Softmax(Layer, Activation):
         ndarray
             The output data.
         """
-        exp_values = np.exp(self.inputs - np.max(self.inputs, axis=1, keepdims=True))
-        probabilities = exp_values / np.sum(exp_values, axis=1, keepdims=True)
+        exp_values = exp(self.inputs - max(self.inputs, axis=1, keepdims=True))
+        probabilities = exp_values / sum(exp_values, axis=1, keepdims=True)
         self.outputs = probabilities
         return self.outputs
 
@@ -504,11 +506,8 @@ class Softmax(Layer, Activation):
             Partial derivative of loss with respect to input data.
         """
         self.dY = dX
-        self.dX = np.empty_like(dX)
-        for index, (single_output, single_dvalues) in enumerate(zip(self.outputs, self.dX)):
-            single_output = single_output.reshape(-1, 1)
-            jacobian_matrix = np.diagflat(single_output) - np.dot(single_output, single_output.T)
-            self.dX[index] = np.dot(jacobian_matrix, single_dvalues)
+        self.outputs.backward(self.dY)
+        self.dX = self.inputs.grad
         return self.dX
 
 class Convolution2D(Layer):
