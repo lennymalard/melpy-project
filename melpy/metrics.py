@@ -1,4 +1,5 @@
 import numpy as np
+from .tensor import *
 
 def accuracy(targets, predictions):
     """
@@ -6,9 +7,9 @@ def accuracy(targets, predictions):
 
     Parameters
     ----------
-    targets : ndarray
+    targets : ndarray, Tensor
         The true target values.
-    predictions : ndarray
+    predictions : ndarray, Tensor
         The predicted output values.
 
     Returns
@@ -21,8 +22,14 @@ def accuracy(targets, predictions):
     ValueError
         If the shapes of `targets` and `outputs` are incompatible.
     """
-    predicted_labels = np.argmax(predictions, axis=1)
-    true_labels = np.argmax(targets, axis=1)
+    if isinstance(targets, np.ndarray):
+        targets = Tensor(targets)
+
+    if isinstance(predictions, np.ndarray):
+        predictions = Tensor(predictions)
+
+    predicted_labels = np.argmax(predictions.array, axis=1)
+    true_labels = np.argmax(targets.array, axis=1)
 
     return  np.sum(predicted_labels == true_labels) / len(true_labels)
 
@@ -32,9 +39,9 @@ def differences(targets, predictions):
 
     Parameters
     ----------
-    targets : ndarray
+    targets : ndarray, Tensor
         The true target values.
-    predictions : ndarray
+    predictions : ndarray, Tensor
         The predicted output values.
 
     Raises
@@ -42,8 +49,14 @@ def differences(targets, predictions):
     ValueError
         If the lengths of `targets` and `outputs` are not the same.
     """
-    for i in range(len(predictions)):
-        if predictions[i] >= targets[i]:
-            print(predictions[i] - targets[i])
-        if predictions[i] < targets[i]:
-            print(targets[i] - predictions[i])
+    if isinstance(targets, np.ndarray):
+        targets = Tensor(targets)
+
+    if isinstance(predictions, np.ndarray):
+        predictions = Tensor(predictions)
+
+    for i in range(len(predictions.array)):
+        if predictions.array[i] >= targets.array[i]:
+            print(predictions.array[i] - targets.array[i])
+        if predictions.array[i] < targets.array[i]:
+            print(targets.array[i] - predictions.array[i])

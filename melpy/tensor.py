@@ -71,6 +71,9 @@ class Tensor:
         self.array /= value.array if isinstance(value, Tensor) else value
         return self
 
+    def __floordiv__(self, value):
+        return floor_divide(self, value)
+
     def __matmul__(self, value):
         return matmul(self, value)
 
@@ -115,6 +118,24 @@ class Tensor:
     def to_numpy(self):
         return self.array
 
+class zeros(Tensor):
+    def __init__(self, *args, **kwargs):
+        array = np.zeros(*args, **kwargs)
+        super().__init__(object = array)
+
+class zeros_like(Tensor):
+    def __init__(self, a,  *args, **kwargs):
+        def _get_array(obj):
+            if isinstance(obj, Operation):
+                return obj.output.array
+            elif isinstance(obj, Tensor):
+                return obj.array
+            else:
+                return np.array(obj)
+
+        array = np.zeros_like(_get_array(a), *args, **kwargs)
+        super().__init__(object = array)
+
 class Operation:
     def __init__(self, x1, x2=None, *args, **kwargs):
         self.x1 = x1
@@ -129,20 +150,29 @@ class Operation:
             return self.output.grad
 
     @property
+    def array(self):
+        if self.output is not None:
+            return self.output.array
+
+    @property
     def shape(self):
-        return self.output.shape
+        if self.output is not None:
+            return self.output.shape
 
     @property
     def size(self):
-        return self.output.size
+        if self.output is not None:
+            return self.output.size
 
     @property
     def T(self):
-        return self.output.T
+        if self.output is not None:
+            return self.output.T
 
     @property
     def ndim(self):
-        return self.output.ndim
+        if self.output is not None:
+            return self.output.ndim
 
     def __str__(self):
         return self.output.array.__str__()
@@ -177,6 +207,9 @@ class Operation:
     def __rtruediv__(self, value):
         return divide(value, self)
 
+    def __floordiv__(self, value):
+        return floor_divide(self, value)
+
     def __matmul__(self, value):
         return matmul(self, value)
 
@@ -193,9 +226,9 @@ class Operation:
         pass
 
     def zero_grad(self):
-        if isinstance(self.x1, Operation):
+        if isinstance(self.x1, Operation) or isinstance(self.x1, Tensor):
             self.x1.zero_grad()
-        if hasattr(self, "x2") and isinstance(self.x2, Operation):
+        if hasattr(self, "x2") and (isinstance(self.x2, Operation) or isinstance(self.x2, Tensor)):
             self.x2.zero_grad()
         if self.output is not None:
             self.output.zero_grad()
@@ -220,7 +253,7 @@ class Operation:
 
     def _compress_grad(self, grad, tensor):
         tensor = self._get_array(tensor)
-        extra_dims = grad.ndim - tensor.ndim
+        extra_dims = np.array(grad).ndim - tensor.ndim
         for _ in range(extra_dims):
             grad = np.sum(grad, axis=0)
         for i, dim in enumerate(tensor.shape):
@@ -241,9 +274,10 @@ class sum(Operation):
 
     def backward(self, grad):
         if self.axis != None and self.keepdims == False:
-            self._apply_grad(self.x1, np.expand_dims(grad, self.axis))
-        else:
+            grad = np.broadcast_to(grad, self.x1.shape)
             self._apply_grad(self.x1, grad)
+        else:
+            self._apply_grad(self.x1, self._compress_grad(grad, self.x1))
 
 class add(Operation):
     def __init__(self, x1, x2, *args, **kwargs):
@@ -321,8 +355,8 @@ class matmul(Operation):
     def backward(self, grad):
         x1_array = self._get_array(self.x1)
         x2_array = self._get_array(self.x2)
-        self._apply_grad(self.x1, grad * x2_array.T)
-        self._apply_grad(self.x2, grad * x1_array.T)
+        self._apply_grad(self.x1, np.matmul(grad, x2_array.T))
+        self._apply_grad(self.x2, np.matmul(x1_array.T, grad))
 
 class divide(Operation):
     def __init__(self, x1, x2, *args, **kwargs):
@@ -340,6 +374,18 @@ class divide(Operation):
         self._apply_grad(self.x1, self._compress_grad(grad / x2_array, self.x1))
         self._apply_grad(self.x2, self._compress_grad(-grad * x1_array / (x2_array ** 2), self.x2))
 
+class floor_divide(Operation):
+    def __init__(self, x1, x2, *args, **kwargs):
+        super().__init__(x1, x2, *args,  **kwargs)
+
+    def forward(self, *args, **kwargs):
+        x1_array = self._get_array(self.x1)
+        x2_array = self._get_array(self.x2)
+        self.output = Tensor(np.floor_divide(x1_array, x2_array, *args, **kwargs), requires_grad=self._requires_grad(self.x1, self.x2))
+        return self.output
+
+    def backward(self, grad):
+        return grad
 
 class power(Operation):
     def __init__(self, x1, x2, *args, **kwargs):
@@ -384,12 +430,14 @@ class log(Operation):
         self._apply_grad(self.x1, grad / x1_array)
 
 class max(Operation):
-    def __init__(self, x1, x2=None, *args, **kwargs):
-        super().__init__(x1, x2, *args,  **kwargs)
+    def __init__(self, x1, x2=None, axis=None, keepdims=False, *args, **kwargs):
+        self.axis = axis
+        self.keepdims = keepdims
+        super().__init__(x1, x2, axis, keepdims, *args,  **kwargs)
 
-    def forward(self, *args, **kwargs):
+    def forward(self, axis, keepdims, *args, **kwargs):
         x1_array = self._get_array(self.x1)
-        self.output = Tensor(np.max(x1_array, *args, **kwargs), requires_grad=self._requires_grad(self.x1))
+        self.output = Tensor(np.max(x1_array, axis=axis, keepdims=keepdims, *args, **kwargs), requires_grad=self._requires_grad(self.x1))
         return self.output
 
     def backward(self, grad):
@@ -398,16 +446,20 @@ class max(Operation):
         self._apply_grad(self.x1, grad * mask)
 
 class min(Operation):
-    def __init__(self, x1, x2=None, *args, **kwargs):
+    def __init__(self, x1, x2=None, axis=None, keepdims=False, *args, **kwargs):
+        self.axis = axis
+        self.keepdims = keepdims
         super().__init__(x1, x2, *args,  **kwargs)
 
-    def forward(self, *args, **kwargs):
+    def forward(self, axis, keepdims, *args, **kwargs):
         x1_array = self._get_array(self.x1)
-        self.output = Tensor(np.min(x1_array, *args, **kwargs), requires_grad=self._requires_grad(self.x1))
+        self.output = Tensor(np.min(x1_array, axis=axis, keepdims=keepdims, *args, **kwargs), requires_grad=self._requires_grad(self.x1))
         return self.output
 
     def backward(self, grad):
-        pass
+        x1_array = self._get_array(self.x1)
+        mask = (x1_array.min(axis=self.axis, keepdims=True) == x1_array).astype(int)
+        self._apply_grad(self.x1, grad * mask)
 
 class argmax(Operation):
     def __init__(self, x1, x2=None, *args, **kwargs):
@@ -419,7 +471,7 @@ class argmax(Operation):
         return self.output
 
     def backward(self, grad):
-        return grad
+        self._apply_grad(self.x1, grad)
 
 class argmin(Operation):
     def __init__(self, x1, x2=None, *args, **kwargs):
@@ -431,22 +483,16 @@ class argmin(Operation):
         return self.output
 
     def backward(self, grad):
-        return grad
+        self._apply_grad(self.x1, grad)
 
-class zeros(Tensor):
-    def __init__(self, *args, **kwargs):
-        array = np.zeros(*args, **kwargs)
-        super().__init__(object = array)
+class clip(Operation):
+    def __init__(self, x1, x2=None, *args, **kwargs):
+        super().__init__(x1, x2, *args,  **kwargs)
 
-class zeros_like(Tensor):
-    def __init__(self, a,  *args, **kwargs):
-        def _get_array(obj):
-            if isinstance(obj, Operation):
-                return obj.output.array
-            elif isinstance(obj, Tensor):
-                return obj.array
-            else:
-                return np.array(obj)
+    def forward(self, *args, **kwargs):
+        x1_array = self._get_array(self.x1)
+        self.output = Tensor(np.clip(x1_array, *args, **kwargs), requires_grad=self._requires_grad(self.x1))
+        return self.output
 
-        array = np.zeros_like(_get_array(a), *args, **kwargs)
-        super().__init__(object = array)
+    def backward(self, grad):
+        self._apply_grad(self.x1, grad)

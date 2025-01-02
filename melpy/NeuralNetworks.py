@@ -5,6 +5,7 @@ from .metrics import *
 from .optimizers import *
 from .callbacks import *
 from .preprocessing import *
+from .tensor import *
 from math import sqrt
 from copy import deepcopy
 import matplotlib.pyplot as plt
@@ -22,30 +23,30 @@ class Sequential:
 
     Attributes
     ----------
-    train_inputs : ndarray
+    train_inputs : ndarray, Tensor
         Input data for training the model.
-    train_input_batch : ndarray
+    train_input_batch : Tensor
         A batch of training inputs.
-    train_targets : ndarray
+    train_targets : ndarray, Tensor
         Target data corresponding to training inputs.
-    train_target_batch : ndarray
+    train_target_batch : Tensor
         A batch of training targets.
-    train_outputs : ndarray
+    train_outputs : Tensor
         Final output predictions during the training phase.
-    train_output_batch : ndarray
+    train_output_batch : Tensor
         A batch of outputs during training.
 
-    val_inputs : ndarray
+    val_inputs : ndarray, Tensor
         Input data for validating the model (optional).
-    val_input_batch : ndarray
+    val_input_batch : Tensor
         A batch of validation inputs.
-    val_targets : ndarray
+val_targets : ndarray, Tensor
         Target data corresponding to validation inputs (optional).
-    val_target_batch : ndarray
+    val_target_batch : Tensor
         A batch of validation targets.
-    val_outputs : ndarray
+    val_outputs : Tensor
         Final output predictions during the validation phase (not computed until further improvements).
-    val_output_batch : ndarray
+    val_output_batch : Tensor
         A batch of outputs during validation.
 
     predictions : ndarray
@@ -99,7 +100,7 @@ class Sequential:
         Compiles the model with the specified cost function and optimizer.
     fit(epochs : int, batch_size : int, verbose : int, callbacks : list)
         Trains the model using the provided cost function, optimizer, and other parameters.
-    predict(X : ndarray)
+    predict(X : ndarray, Tensor)
         Generates predictions for the input data `X`.
     results()
         Visualizes loss and accuracy curves for both training and validation phases.
@@ -121,31 +122,31 @@ class Sequential:
 
         Parameters
         ----------
-        train_inputs : ndarray
+        train_inputs : ndarray, Tensor
             The input data used to train the model.
-        train_targets : ndarray
-            The target labels or values corresponding to the `train_inputs`.
+        train_targets : ndarray, Tensor
+            The target labels or values corresponding to the train_inputs.
         val_inputs : ndarray, optional
-            The input data used for validation. Default is 'None'.
+            The input data used for validation. Default is None.
         val_targets : ndarray, optional
-            The target labels or values corresponding to the `val_inputs`. Default is 'None'.
+            The target labels or values corresponding to the `val_inputs`. Default is None.
 
         Raises
         ------
         TypeError
-            If `train_inputs` and `train_targets` are not of type 'ndarray'.
-            If `val_inputs` and `val_targets` are provided and not of type 'ndarray'.
+            If `train_inputs` and `train_targets` are not of type ndarray or Tensor.
+            If `val_inputs` and `val_targets` are provided and not of type ndarray or Tensor.
         """
-        self.train_inputs = train_inputs
+        self.train_inputs = Tensor(train_inputs) if isinstance(train_inputs, np.ndarray) else train_inputs
         self.train_input_batch = None
-        self.train_targets = train_targets
+        self.train_targets = Tensor(train_targets) if isinstance(train_targets, np.ndarray) else train_targets
         self.train_target_batch = None
         self.train_outputs = None
         self.train_output_batch = None
 
-        self.val_inputs = val_inputs
+        self.val_inputs = Tensor(val_inputs) if isinstance(val_inputs, np.ndarray) else val_inputs
         self.val_input_batch = None
-        self.val_targets = val_targets
+        self.val_targets = Tensor(val_targets) if isinstance(val_targets, np.ndarray) else val_targets
         self.val_target_batch = None
         self.val_outputs = None
         self.val_output_batch = None
@@ -159,7 +160,9 @@ class Sequential:
         self.val_layers = []
 
         self.train_loss = 0.0
+        self.train_loss_batch = 0.0
         self.val_loss = 0.0
+        self.val_loss_batch = 0.0
         self.train_loss_history = []
         self.val_loss_history = []
 
@@ -179,11 +182,15 @@ class Sequential:
         if self.val_inputs is not None and self.val_targets is not None:
             self.validation = True
 
-        if not isinstance(train_inputs, np.ndarray) or not isinstance(train_targets, np.ndarray):
-            raise TypeError('`train_inputs` and `train_targets` must be of type ndarray.')
+        if not isinstance(train_inputs, np.ndarray) and not isinstance(train_inputs, Tensor):
+            raise TypeError('`train_inputs` must be of type ndarray or Tensor.')
+        if not isinstance(train_targets, np.ndarray) and not isinstance(train_targets, Tensor):
+            raise TypeError('`train_targets` must be of type ndarray or Tensor.')
         if self.val_inputs is not None and self.val_targets is not None:
-            if not isinstance(val_inputs, np.ndarray) or not isinstance(val_targets, np.ndarray):
-                raise TypeError('`val_inputs` and `val_targets` must be of type ndarray.')
+            if not isinstance(val_inputs, np.ndarray) and not isinstance(val_inputs, Tensor):
+                raise TypeError('`val_targets` must be of type ndarray or Tensor.')
+            if not isinstance(val_targets, np.ndarray) and not isinstance(val_targets, Tensor):
+                raise TypeError('`val_targets` must be of type ndarray or Tensor.')
 
     def get_flatten_length(self):
         """
@@ -201,7 +208,7 @@ class Sequential:
         ValueError
             If there is no `Flatten` layer in the training layers.
         """
-        self.train_layers[0].inputs = self.train_inputs[0].reshape(1, *self.train_inputs[0].shape)
+        self.train_layers[0].inputs = Tensor(self.train_inputs.array[0].reshape(1, *self.train_inputs.array[0].shape))
         for i in range(len(self.train_layers)):
             if isinstance(self.train_layers[i], Flatten):
                 self.train_layers[i].forward()
@@ -253,6 +260,7 @@ class Sequential:
         for i in range(len(self.train_layers)):
             if i + 1 == len(self.train_layers):
                 self.train_output_batch = self.train_layers[i].forward()
+                self.cost_function.forward(self.train_target_batch, self.train_output_batch)
             else:
                 if isinstance(self.train_layers[i], Dropout):
                     self.train_layers[i].training = True
@@ -262,6 +270,7 @@ class Sequential:
                     self.val_output_batch = self.val_layers[i].forward()
                 else:
                     self.val_layers[i + 1].inputs = self.val_layers[i].forward()
+
 
     def predict(self, X):
         """
@@ -275,7 +284,7 @@ class Sequential:
 
         Parameters
         ----------
-        X : ndarray
+        X : ndarray, Tensor
             The input data for which predictions are to be made.
 
         Returns
@@ -286,19 +295,19 @@ class Sequential:
         Raises
         ------
         TypeError
-            If `X` is not of type 'ndarray'.
+            If `X` is not of type ndarray or Tensor.
         """
-        if not isinstance(X, np.ndarray):
-            raise TypeError("`X` must be of type 'ndarray'.")
+        if not isinstance(X, np.ndarray) and not isinstance(X, Tensor):
+            raise TypeError("`X` must be of type ndarray or Tensor.")
         if X.ndim != self.train_inputs.ndim:
             raise TypeError("`X`must have the same number of dimensions as `self.train_inputs`.")
-        self.train_layers[0].inputs = X
+        self.train_layers[0].inputs = Tensor(X) if isinstance(X, np.ndarray) else X
         for i in range(len(self.train_layers)):
             if isinstance(self.train_layers[i], Dropout):
                 self.train_layers[i].training = False
             if i + 1 == len(self.train_layers):
                 self.predictions = self.train_layers[i].forward()
-                return self.predictions
+                return self.predictions.array
             self.train_layers[i + 1].inputs = self.train_layers[i].forward()
 
     def backward(self):
@@ -313,7 +322,7 @@ class Sequential:
         -------
         None
         """
-        self.dX = self.cost_function.derivative(self.train_target_batch, self.train_output_batch)
+        self.dX = self.cost_function.backward()
         for layer in reversed(self.train_layers):
             self.dX = layer.backward(self.dX)
 
@@ -569,16 +578,22 @@ class Sequential:
                         self.val_input_batch = self.val_inputs
                         self.val_target_batch = self.val_targets
                 else:
-                    self.train_input_batch = self.train_inputs[step * self.batch_size:(step + 1) * self.batch_size]
-                    self.train_target_batch = self.train_targets[step * self.batch_size:(step + 1) * self.batch_size]
+                    self.train_input_batch = Tensor(self.train_inputs.array[step * self.batch_size:(step + 1) * self.batch_size])
+                    self.train_target_batch = Tensor(self.train_targets.array[step * self.batch_size:(step + 1) * self.batch_size])
 
                     if self.validation:
-                        self.val_input_batch = self.val_inputs[
-                                               step * self.val_batch_size:(step + 1) * self.val_batch_size]
-                        self.val_target_batch = self.val_targets[
-                                                step * self.val_batch_size:(step + 1) * self.val_batch_size]
+                        self.val_input_batch = Tensor(self.val_inputs.array[
+                                               step * self.val_batch_size:(step + 1) * self.val_batch_size])
+                        self.val_target_batch = Tensor(self.val_targets.array[
+                                                step * self.val_batch_size:(step + 1) * self.val_batch_size])
 
                 self.forward()
+
+                for layer in self.train_layers:
+                    layer.zero_grad()
+
+                self.cost_function.zero_grad()
+
                 self.backward()
 
                 for i in range(len(self.train_layers)):
@@ -589,14 +604,14 @@ class Sequential:
                             self.val_layers[i].weights = self.train_layers[i].weights
                             self.val_layers[i].biases = self.train_layers[i].biases
 
-                loss = self.cost_function.loss(self.train_target_batch, self.train_output_batch)
+                loss = np.around(self.cost_function.output.array, 5)
                 acc = accuracy(self.train_target_batch, self.train_output_batch)
 
                 train_accumulated_loss += loss
                 train_accumulated_accuracy += acc
 
                 if self.validation:
-                    val_accumulated_loss += self.cost_function.loss(self.val_target_batch, self.val_output_batch)
+                    val_accumulated_loss += self.cost_function.forward(self.val_target_batch, self.val_output_batch)
                     val_accumulated_accuracy += accuracy(self.val_target_batch, self.val_output_batch)
 
                 for callback in callbacks:
@@ -610,7 +625,7 @@ class Sequential:
                 self.train_accuracy_history.append(self.train_accuracy)
 
             if self.validation:
-                self.val_loss = val_accumulated_loss / steps
+                self.val_loss = (val_accumulated_loss / steps).array
                 self.val_accuracy = val_accumulated_accuracy / steps
 
                 if epoch % update == 0 or epoch == 1:
@@ -628,12 +643,12 @@ class Sequential:
 
         if get_output:
             if self.batch_size is not None:
-                self.train_outputs = self.predict(self.train_inputs[:self.batch_size])
+                self.train_outputs = Tensor(self.predict(self.train_inputs.array[:self.batch_size]))
                 for step in range(1, steps):
-                    self.train_outputs = np.concatenate((self.train_outputs, self.predict(
-                        self.train_inputs[step * self.batch_size:(step + 1) * self.batch_size])), axis=0)
+                    self.train_outputs = Tensor(np.concatenate((self.train_outputs.array, Tensor(self.predict(
+                        self.train_inputs.array[step * self.batch_size:(step + 1) * self.batch_size]))), axis=0))
             else:
-                self.train_outputs = self.predict(self.train_inputs)
+                self.train_outputs = Tensor(self.predict(self.train_inputs))
 
         for callback in callbacks:
             callback.on_train_end(self)
@@ -738,23 +753,23 @@ class Sequential:
 
             for layer in self.train_layers:
                 if isinstance(layer, Dense) or isinstance(layer, Convolution2D):
-                    weights.append(layer.weights)
-                    biases.append(layer.biases)
+                    weights.append(np.atleast_1d(layer.weights.array))
+                    biases.append(np.atleast_1d(layer.biases.array))
 
-                    weight_momentums.append(layer.weight_momentums)
-                    bias_momentums.append(layer.bias_momentums)
+                    weight_momentums.append(np.atleast_1d(layer.weight_momentums.array))
+                    bias_momentums.append(np.atleast_1d(layer.bias_momentums.array))
 
-                    weight_cache.append(layer.weight_cache)
-                    bias_cache.append(layer.bias_cache)
+                    weight_cache.append(np.atleast_1d(layer.weight_cache.array))
+                    bias_cache.append(np.atleast_1d(layer.bias_cache.array))
                 else:
-                    weights.append(np.array(0.0))
-                    biases.append(np.array(0.0))
+                    weights.append(np.atleast_1d(0.0))
+                    biases.append(np.atleast_1d(0.0))
 
-                    weight_momentums.append(np.array(0.0))
-                    bias_momentums.append(np.array(0.0))
+                    weight_momentums.append(np.atleast_1d(0.0))
+                    bias_momentums.append(np.atleast_1d(0.0))
 
-                    weight_cache.append(np.array(0.0))
-                    bias_cache.append(np.array(0.0))
+                    weight_cache.append(np.atleast_1d(0.0))
+                    bias_cache.append(np.atleast_1d(0.0))
 
             parameters["weights"] = weights
             parameters["biases"] = biases
@@ -839,14 +854,14 @@ class Sequential:
                     parameters = pickle.load(f)
             for i in range(len(self.train_layers)):
                 if isinstance(self.train_layers[i], Dense) or isinstance(self.train_layers[i], Convolution2D):
-                    self.train_layers[i].weights = parameters["weights"][i]
-                    self.train_layers[i].biases = parameters["biases"][i]
+                    self.train_layers[i].weights = Tensor(parameters["weights"][i])
+                    self.train_layers[i].biases = Tensor(parameters["biases"][i])
 
-                    self.train_layers[i].weight_momentums = parameters["weight_momentums"][i]
-                    self.train_layers[i].bias_momentums = parameters["bias_momentums"][i]
+                    self.train_layers[i].weight_momentums = Tensor(parameters["weight_momentums"][i])
+                    self.train_layers[i].bias_momentums = Tensor(parameters["bias_momentums"][i])
 
-                    self.train_layers[i].weight_cache = parameters["weight_cache"][i]
-                    self.train_layers[i].bias_cache = parameters["bias_cache"][i]
+                    self.train_layers[i].weight_cache = Tensor(parameters["weight_cache"][i])
+                    self.train_layers[i].bias_cache = Tensor(parameters["bias_cache"][i])
 
         elif extension == ".h5" and parameters is None:
             with h5py.File(path, 'r') as f:
@@ -861,14 +876,14 @@ class Sequential:
 
                 for i in range(len(self.train_layers)):
                     if isinstance(self.train_layers[i], Dense) or isinstance(self.train_layers[i], Convolution2D):
-                        self.train_layers[i].weights = weights[f"layer{i}"].astype(np.float64)[:]
-                        self.train_layers[i].biases = biases[f"layer{i}"].astype(np.float64)[:]
+                        self.train_layers[i].weights = Tensor(weights[f"layer{i}"].astype(np.float64)[:])
+                        self.train_layers[i].biases = Tensor(biases[f"layer{i}"].astype(np.float64)[:])
 
-                        self.train_layers[i].weight_momentums = weight_momentums[f"layer{i}"].astype(np.float64)[:]
-                        self.train_layers[i].bias_momentums = bias_momentums[f"layer{i}"].astype(np.float64)[:]
+                        self.train_layers[i].weight_momentums = Tensor(weight_momentums[f"layer{i}"].astype(np.float64)[:])
+                        self.train_layers[i].bias_momentums = Tensor(bias_momentums[f"layer{i}"].astype(np.float64)[:])
 
-                        self.train_layers[i].weight_cache = weight_cache[f"layer{i}"].astype(np.float64)[:]
-                        self.train_layers[i].bias_cache = bias_cache[f"layer{i}"].astype(np.float64)[:]
+                        self.train_layers[i].weight_cache = Tensor(weight_cache[f"layer{i}"].astype(np.float64)[:])
+                        self.train_layers[i].bias_cache = Tensor(bias_cache[f"layer{i}"].astype(np.float64)[:])
         else:
             raise TypeError("`parameters` must be a dictionary")
 
@@ -948,7 +963,7 @@ class Sequential:
         """
         params_count = 0
 
-        self.predict(self.train_inputs[0].reshape(1, *self.train_inputs[0].shape))
+        self.predict(self.train_inputs.array[0].reshape(1, *self.train_inputs.array[0].shape))
         for i in range(len(self.train_layers)):
             if isinstance(self.train_layers[i], Dense) or isinstance(self.train_layers[i], Convolution2D):
                 params_count += self.train_layers[i].weights.size

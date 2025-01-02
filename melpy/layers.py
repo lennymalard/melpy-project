@@ -9,9 +9,9 @@ class Layer:
 
     Attributes
     ----------
-    inputs : ndarray
+    inputs : Tensor
         Input data.
-    outputs : ndarray
+    outputs : Tensor
         Output data.
     dX : ndarray
         Partial derivative of loss with respect to input.
@@ -53,7 +53,7 @@ class Layer:
 
         Returns
         -------
-        ndarray
+        Tensor
             The output data.
         """
         pass
@@ -74,6 +74,9 @@ class Layer:
         """
         pass
 
+    def zero_grad(self):
+        pass
+
 class Activation:
     """
     Base class for all activation functions.
@@ -90,9 +93,9 @@ class Dense(Layer):
 
     Attributes
     ----------
-    inputs : ndarray
+    inputs : Tensor
         Input data.
-    outputs : ndarray
+    outputs : Tensor
         Output data.
     dX : ndarray
         Partial derivative of loss with respect to input.
@@ -102,17 +105,17 @@ class Dense(Layer):
         Partial derivative of loss with respect to weight.
     dB : ndarray
         Partial derivative of loss with respect to bias.
-    weights : ndarray
+    weights : Tensor
         Weights of the dense layer.
-    biases : ndarray
+    biases : Tensor
         Biases of the dense layer.
-    weight_momentums : ndarray
+    weight_momentums : Tensor
         Momentum for weights (also known as first order momentum).
-    bias_momentums : ndarray
+    bias_momentums : Tensor
         Momentum for biases (also known as first order momentum).
-    weight_cache : ndarray
+    weight_cache : Tensor
         Cache for weights (also known as second order momentum).
-    bias_cache : ndarray
+    bias_cache : Tensor
         Cache for biases (also known as second order momentum).
 
     Methods
@@ -160,7 +163,7 @@ class Dense(Layer):
 
             Returns
             -------
-            ndarray
+            Tensor
                 Initialized weights.
             """
             if weight_init == "he_normal":
@@ -180,8 +183,8 @@ class Dense(Layer):
 
         self.weights = initialize_weights(weight_initializer, n_in, n_out)
         self.biases = Tensor(np.random.rand(1, n_out))
-        self.dW = Tensor(np.zeros_like(self.weights))
-        self.dB = Tensor(np.zeros_like(self.biases))
+        self.dW = np.zeros_like(self.weights)
+        self.dB = np.zeros_like(self.biases)
         self.weight_momentums = Tensor(np.zeros_like(self.weights))
         self.bias_momentums = Tensor(np.zeros_like(self.biases))
         self.weight_cache = Tensor(np.zeros_like(self.weights))
@@ -197,14 +200,14 @@ class Dense(Layer):
 
         Returns
         -------
-        ndarray
+        Tensor
             The output data.
         """
         self.outputs = dot(self.inputs, self.weights) + self.biases
 
         if self.activation is not None:
             self.activation.inputs = self.outputs
-            self.outputs = self.activation.forward()
+            return self.activation.forward()
 
         return self.outputs
 
@@ -231,15 +234,20 @@ class Dense(Layer):
         self.dW = self.weights.grad
         return self.dX
 
+    def zero_grad(self):
+        if self.activation is not None:
+            self.activation.zero_grad()
+        self.outputs.zero_grad()
+
 class ReLU(Layer, Activation):
     """
     A class that performs ReLU (Rectified Linear Unit) layer operations.
 
     Attributes
     ----------
-    inputs : ndarray
+    inputs : Tensor
         Input data.
-    outputs : ndarray
+    outputs : Tensor
         Output data.
     dX : ndarray
         Partial derivative of loss with respect to input.
@@ -280,7 +288,7 @@ class ReLU(Layer, Activation):
 
         Returns
         -------
-        ndarray
+        Tensor
             The output data.
         """
         self.outputs = Tensor(np.maximum(0, self.inputs.array))
@@ -310,9 +318,9 @@ class LeakyReLU(Layer, Activation):
 
     Attributes
     ----------
-    inputs : ndarray
+    inputs : Tensor
         Input data.
-    outputs : ndarray
+    outputs : Tensor
         Output data.
     dX : ndarray
         Partial derivative of loss with respect to input.
@@ -353,7 +361,7 @@ class LeakyReLU(Layer, Activation):
 
         Returns
         -------
-        ndarray
+        Tensor
             The output data.
         """
         self.outputs = Tensor(np.where(self.inputs.array > 0, self.inputs.array, self.inputs.array * 0.01))
@@ -383,9 +391,9 @@ class Sigmoid(Layer, Activation):
 
     Attributes
     ----------
-    inputs : ndarray
+    inputs : Tensor
         Input data.
-    outputs : ndarray
+    outputs : Tensor
         Output data.
     dX : ndarray
         Partial derivative of loss with respect to input.
@@ -424,7 +432,7 @@ class Sigmoid(Layer, Activation):
 
         Returns
         -------
-        ndarray
+        Tensor
             The output data.
         """
         self.outputs = 1 / (1 + exp(-self.inputs))
@@ -449,15 +457,18 @@ class Sigmoid(Layer, Activation):
         self.dX = self.inputs.grad
         return self.dX
 
+    def zero_grad(self):
+        self.outputs.zero_grad()
+
 class Softmax(Layer, Activation):
     """
     A class that performs Softmax layer operations.
 
     Attributes
     ----------
-    inputs : ndarray
+    inputs : Tensor
         Input data.
-    outputs : ndarray
+    outputs : Tensor
         Output data.
     dX : ndarray
         Partial derivative of loss with respect to input.
@@ -483,7 +494,7 @@ class Softmax(Layer, Activation):
 
         Returns
         -------
-        ndarray
+        Tensor
             The output data.
         """
         exp_values = exp(self.inputs - max(self.inputs, axis=1, keepdims=True))
@@ -510,6 +521,9 @@ class Softmax(Layer, Activation):
         self.dX = self.inputs.grad
         return self.dX
 
+    def zero_grad(self):
+        self.outputs.zero_grad()
+
 class Convolution2D(Layer):
     """
     A class that performs 2D convolution layer operations.
@@ -520,7 +534,7 @@ class Convolution2D(Layer):
         Number of input channels.
     out_channels : int
         Number of output channels.
-    weights : ndarray
+    weights : Tensor
         Filters of the convolution layer.
     padding : str
         Padding type ('valid' or 'same').
@@ -528,15 +542,15 @@ class Convolution2D(Layer):
         Size of the convolution kernel.
     stride : int
         Stride of the convolution.
-    weight_momentums : ndarray
+    weight_momentums : Tensor
         Momentum for weights.
-    weight_cache : ndarray
+    weight_cache : Tensor
         Cache for weights.
-    biases : ndarray
+    biases : Tensor
         Biases of the convolution layer.
-    bias_momentums : ndarray
+    bias_momentums : Tensor
         Momentum for biases.
-    bias_cache : ndarray
+    bias_cache : Tensor
         Cache for biases.
 
     Methods
@@ -600,34 +614,39 @@ class Convolution2D(Layer):
 
             Returns
             -------
-            ndarray
+            Tensor
                 Initialized weights.
             """
             if weight_init == "he_normal":
-                weights = np.random.randn(out_channels, in_channels, kernel_size, kernel_size) * np.sqrt(2.0 / (in_channels * kernel_size**2))
+                weights = Tensor(np.random.randn(out_channels, in_channels, kernel_size, kernel_size) * np.sqrt(
+                    2.0 / (in_channels * kernel_size ** 2)))
             elif weight_init == "he_uniform":
-                limit = np.sqrt(6 / (in_channels * kernel_size**2))
-                weights = np.random.uniform(-limit, limit, (out_channels, in_channels, kernel_size, kernel_size))
+                limit = np.sqrt(6 / (in_channels * kernel_size ** 2))
+                weights = Tensor(
+                    np.random.uniform(-limit, limit, (out_channels, in_channels, kernel_size, kernel_size)))
             elif weight_init == "glorot_normal":
-                weights = np.random.randn(out_channels, in_channels, kernel_size, kernel_size) * np.sqrt(2.0 / (in_channels * kernel_size**2 + out_channels * kernel_size**2))
+                weights = Tensor(np.random.randn(out_channels, in_channels, kernel_size, kernel_size) * np.sqrt(
+                    2.0 / (in_channels * kernel_size ** 2 + out_channels * kernel_size ** 2)))
             elif weight_init == "glorot_uniform":
-                limit = np.sqrt(6 / (in_channels * kernel_size**2 + out_channels * kernel_size**2))
-                weights = np.random.uniform(-limit, limit, (out_channels, in_channels, kernel_size, kernel_size))
+                limit = np.sqrt(6 / (in_channels * kernel_size ** 2 + out_channels * kernel_size ** 2))
+                weights = Tensor(
+                    np.random.uniform(-limit, limit, (out_channels, in_channels, kernel_size, kernel_size)))
             else:
-                raise ValueError("`weight_init` must be either 'he_uniform', 'he_normal', 'glorot_uniform' or 'glorot_normal'.")
+                raise ValueError(
+                    "`weight_init` must be either 'he_uniform', 'he_normal', 'glorot_uniform' or 'glorot_normal'.")
             return weights
 
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.weights = initialize_weights(weight_initializer, in_channels, out_channels, kernel_size)
         self.dW = np.zeros_like(self.weights)
-        self.weight_momentums = np.zeros_like(self.weights)
-        self.weight_cache = np.zeros_like(self.weights)
+        self.weight_momentums = Tensor(np.zeros_like(self.weights))
+        self.weight_cache = Tensor(np.zeros_like(self.weights))
         if use_bias is True:
-            self.biases = np.zeros(shape=(1, out_channels, 1, 1)).astype(np.float64)
+            self.biases = Tensor(np.zeros(shape=(1, out_channels, 1, 1)).astype(np.float64))
             self.dB = np.zeros_like(self.biases)
-            self.bias_momentums = np.zeros_like(self.biases)
-            self.bias_cache = np.zeros_like(self.biases)
+            self.bias_momentums = Tensor(np.zeros_like(self.biases))
+            self.bias_cache = Tensor(np.zeros_like(self.biases))
         else:
             self.biases = None
         self.padding = padding
@@ -668,10 +687,10 @@ class Convolution2D(Layer):
             else:
                 pad_along_width = max(self.kernel_size - (input_width % self.stride), 0)
 
-            pad_top = pad_along_height // 2
-            pad_bottom = pad_along_height - pad_top
-            pad_left = pad_along_width // 2
-            pad_right = pad_along_width - pad_left
+            pad_top = pad_along_height.array.astype(int) // 2
+            pad_bottom = pad_along_height.array.astype(int) - pad_top
+            pad_left = pad_along_width.array.astype(int) // 2
+            pad_right = pad_along_width.array.astype(int) - pad_left
 
             return (pad_top, pad_bottom, pad_left, pad_right)
 
@@ -681,11 +700,11 @@ class Convolution2D(Layer):
 
         Returns
         -------
-        ndarray
+        Tensor
             Padded input data.
         """
         pad_top, pad_bottom, pad_left, pad_right = self.calculate_padding()
-        return np.pad(self.inputs, ((0, 0), (0, 0), (pad_top, pad_bottom), (pad_left, pad_right)), mode='constant')
+        return Tensor(np.pad(self.inputs.array, ((0, 0), (0, 0), (pad_top, pad_bottom), (pad_left, pad_right)), mode='constant'))
 
     def get_output_size(self, input_height, input_width):
         """
@@ -718,28 +737,28 @@ class Convolution2D(Layer):
 
         Returns
         -------
-        ndarray
+        Tensor
             The output data.
         """
         self.input_padded = self.explicit_padding()
 
         self.input_cols = im2col(self.input_padded, self.kernel_size, self.stride)
-        self.filter_cols = self.weights.reshape(self.out_channels, -1)
+        self.filter_cols = Tensor(self.weights.array.reshape(self.out_channels, -1))
 
         output_height, output_width = self.get_output_size(self.inputs.shape[2], self.inputs.shape[3])
 
         self.output_cols = self.filter_cols @ self.input_cols
 
-        self.outputs = np.array(np.hsplit(self.output_cols, self.inputs.shape[0])).reshape(
+        self.outputs = Tensor(np.array(np.hsplit(self.output_cols.array, self.inputs.shape[0])).reshape(
             (self.input_padded.shape[0], self.out_channels, output_height, output_width)
-        )
+        ))
 
         if self.biases is not None:
-            self.outputs += self.biases
+            self.outputs = self.outputs + self.biases
 
         if self.activation is not None:
             self.activation.inputs = self.outputs
-            self.outputs = self.activation.forward()
+            return self.activation.forward()
 
         return self.outputs
 
@@ -762,30 +781,34 @@ class Convolution2D(Layer):
 
         self.dY = dX
 
-        flipped_filters = self.weights[:, :, ::-1, ::-1]
-        flipped_filters_cols = flipped_filters.reshape(self.out_channels, -1)
-
         self.dY_reshaped = self.dY.reshape(self.dY.shape[0] * self.dY.shape[1], self.dY.shape[2] * self.dY.shape[3])
         self.dY_reshaped = np.array(np.vsplit(self.dY_reshaped, self.inputs.shape[0]))
         self.dY_reshaped = np.concatenate(self.dY_reshaped, axis=-1)
 
-        self.dX_cols = flipped_filters_cols.T @ self.dY_reshaped
-        self.dW_cols = self.dY_reshaped @ self.input_cols.T
+        self.output_cols.backward(self.dY_reshaped)
 
-        self.dX_padded = col2im(self.dX_cols, self.input_padded.shape, self.kernel_size, self.stride)
+        self.dX_cols = self.input_cols.grad
+        self.dW_cols = self.filter_cols.grad
+
+        self.dX_padded = col2im(Tensor(self.dX_cols), self.input_padded.shape, self.kernel_size, self.stride)
 
         if self.padding == "same":
             (pad_top, pad_bottom, pad_left, pad_right) = self.calculate_padding()
-            self.dX = self.dX_padded[:, :, pad_top:-pad_bottom, pad_left:-pad_right]
+            self.dX = self.dX_padded.array[:, :, pad_top:-pad_bottom, pad_left:-pad_right]
         else:
-            self.dX = self.dX_padded
+            self.dX = self.dX_padded.array
 
         self.dW = self.dW_cols.reshape((self.dW_cols.shape[0], self.in_channels, self.kernel_size, self.kernel_size))
 
-        if self.biases is not None:
-            self.dB = np.sum(self.dY, axis=(0, 2, 3), keepdims=True)
+        self.outputs.backward(self.dY)
+        self.dB = self.biases.grad
 
         return self.dX
+
+    def zero_grad(self):
+        if self.activation is not None:
+            self.activation.zero_grad()
+        self.output_cols.zero_grad()
 
 class Pooling2D(Layer):
     """
@@ -839,7 +862,7 @@ class Pooling2D(Layer):
 
         Returns
         -------
-        ndarray
+        Tensor
             The output data.
         """
         output_height = int((self.inputs.shape[2] - self.pool_size + self.stride) // self.stride)
@@ -848,12 +871,13 @@ class Pooling2D(Layer):
         output_shape = (self.inputs.shape[0], self.inputs.shape[1], output_height, output_width)
 
         self.input_cols = im2col(self.inputs, self.pool_size, self.stride)
-        self.input_cols_reshaped = np.array(np.hsplit(np.array(np.hsplit(self.input_cols, self.inputs.shape[0])), self.inputs.shape[1]))
+        self.input_cols_reshaped = Tensor(
+            np.array(np.hsplit(np.array(np.hsplit(self.input_cols.array, self.inputs.shape[0])), self.inputs.shape[1])))
 
-        self.maxima = np.max(self.input_cols_reshaped, axis=2)
-        self.maxima_reshaped = self.maxima.reshape(self.inputs.shape[1], -1)
+        self.maxima = max(self.input_cols_reshaped, axis=2)
+        self.maxima_reshaped = self.maxima.array.reshape(self.inputs.shape[1], -1)
 
-        self.outputs = col2im(self.maxima_reshaped, output_shape, 1, 1)
+        self.outputs = col2im(Tensor(self.maxima_reshaped), output_shape, 1, 1)
 
         return self.outputs
 
@@ -874,21 +898,20 @@ class Pooling2D(Layer):
         self.dY = dX
         self.dX = np.zeros_like(self.inputs)
 
-        self.dY_cols = im2col(self.dY, 1, 1)
-        self.dY_cols_reshaped = np.array(np.hsplit(np.array(np.hsplit(self.dY_cols, self.dY.shape[0])), self.dY.shape[1])).transpose(0, 1, 3, 2)
+        self.dY_cols = im2col(Tensor(self.dY), 1, 1)
+        self.dY_cols_reshaped = np.array(
+            np.hsplit(np.array(np.hsplit(self.dY_cols.array, self.dY.shape[0])), self.dY.shape[1]))
 
-        self.input_cols = im2col(self.inputs, self.pool_size, self.stride)
-        self.input_cols_reshaped = np.array(np.hsplit(np.array(np.hsplit(self.input_cols, self.inputs.shape[0])), self.inputs.shape[1])).transpose(0, 1, 3, 2)
+        self.maxima.backward(self.dY_cols_reshaped)
 
-        self.output_cols = im2col(self.outputs, 1, 1)
-        self.output_cols_reshaped = np.array(np.hsplit(np.array(np.hsplit(self.output_cols, self.inputs.shape[0])), self.inputs.shape[1])).transpose(0, 1, 3, 2)
+        self.dX_cols = np.concatenate(np.concatenate(self.input_cols_reshaped.grad, axis=1), axis=1)
 
-        self.mask = np.array(self.input_cols_reshaped == self.output_cols_reshaped, dtype=np.uint64)
-
-        self.dX_cols = np.concatenate(np.concatenate(np.array(self.mask * self.dY_cols_reshaped).transpose(0, 1, 3, 2), axis=1), axis=1)
-        self.dX = col2im(self.dX_cols, self.inputs.shape, self.pool_size, self.stride)
+        self.dX = col2im(Tensor(self.dX_cols), self.inputs.shape, self.pool_size, self.stride).array
 
         return self.dX
+
+    def zero_grad(self):
+        self.maxima.zero_grad()
 
 class Flatten(Layer):
     """
@@ -913,10 +936,10 @@ class Flatten(Layer):
 
         Returns
         -------
-        ndarray
+        Tensor
             The output data.
         """
-        self.outputs = self.inputs.reshape((self.inputs.shape[0], -1))
+        self.outputs = Tensor(self.inputs.array.reshape((self.inputs.shape[0], -1)))
         return self.outputs
 
     def backward(self, dX):
@@ -984,12 +1007,12 @@ class Dropout(Layer):
 
         Returns
         -------
-        ndarray
+        Tensor
             The output data.
         """
         if self.training:
             self.mask = np.random.binomial(1, 1 - self.p, size=self.inputs.shape)
-            self.outputs = self.inputs * self.mask * 1.0 / (1.0 - self.p)
+            self.outputs = Tensor(self.inputs.array * self.mask * 1.0 / (1.0 - self.p))
         else:
             self.outputs = self.inputs
         return self.outputs
@@ -1075,4 +1098,3 @@ class Linear:
         self.biases -= self.dB * lr
         self.dW *= np.zeros(self.dW.shape, dtype=np.float64)
         self.dB *= np.zeros(self.dB.shape, dtype=np.float64)
-

@@ -1,4 +1,5 @@
 import numpy as np
+from melpy.tensor import *
 
 def get_indices(image_shape, window_shape, stride):
     """
@@ -46,7 +47,7 @@ def im2col(images, window_shape, stride):
 
     Parameters
     ----------
-    images : ndarray
+    images : Tensor
         The input images with shape (batch_size, channels, height, width).
     window_shape : int
         The size of the sliding window (kernel size).
@@ -55,11 +56,11 @@ def im2col(images, window_shape, stride):
 
     Returns
     -------
-    columns : ndarray
+    columns : Tensor
         The column matrix representation of the input images.
     """
     k, i, j = get_indices(images.shape, window_shape, stride)
-    columns = np.concatenate(images[:, k, i, j], axis=-1)
+    columns = Tensor(np.concatenate(images.array[:, k, i, j], axis=-1))
     return columns
 
 def col2im(columns, image_shape, window_shape, stride):
@@ -68,7 +69,7 @@ def col2im(columns, image_shape, window_shape, stride):
 
     Parameters
     ----------
-    columns : ndarray
+    columns : Tensor
         The column matrix representation of the images.
     image_shape : tuple
         The shape of the output image (batch_size, channels, height, width).
@@ -79,11 +80,11 @@ def col2im(columns, image_shape, window_shape, stride):
 
     Returns
     -------
-    images : ndarray
+    images : Tensor
         The reconstructed images with shape (batch_size, channels, height, width).
     """
     images = np.zeros(image_shape)
     k, i, j = get_indices(image_shape, window_shape, stride)
-    cols_reshaped = np.array(np.hsplit(columns, image_shape[0]))
+    cols_reshaped = np.array(np.hsplit(columns.array, image_shape[0]))
     np.add.at(images, (slice(None), k, i, j), cols_reshaped)
-    return images
+    return Tensor(images)

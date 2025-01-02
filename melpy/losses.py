@@ -1,4 +1,6 @@
 import numpy as np
+from .tensor import *
+from .layers import *
 
 class Loss:
     """
@@ -6,26 +8,29 @@ class Loss:
 
     Methods
     -------
-    loss(targets : ndarray, predictions : ndarray)
+    forward(targets : Tensor, predictions : Tensor)
         Computes the loss.
-    derivative(targets : ndarray, predictions : ndarray)
+    backward(targets : Tensor, predictions : Tensor)
         Computes the derivative of the loss.
     """
     def __init__(self):
         """
         Initializes the Loss class.
         """
+        self.targets = None
+        self.predictions = None
+        self.output = None
         pass
 
-    def loss(self, targets, predictions):
+    def forward(self, targets, predictions):
         """
         Computes the loss.
 
         Parameters
         ----------
-        targets : ndarray
+        targets : Tensor
             Target data.
-        predictions : ndarray
+        predictions : Tensor
             Output data.
 
         Returns
@@ -35,22 +40,18 @@ class Loss:
         """
         pass
 
-    def derivative(self, targets, predictions):
+    def backward(self):
         """
         Computes the derivative of the loss.
 
-        Parameters
-        ----------
-        targets : ndarray
-            Target data.
-        predictions : ndarray
-            Output data.
-
         Returns
         -------
-        ndarray
+        Tensor
             The derivative of the loss.
         """
+        pass
+
+    def zero_grad(self):
         pass
 
 class MSE(Loss):
@@ -59,7 +60,7 @@ class MSE(Loss):
 
     Methods
     -------
-    loss(targets : ndarray, predictions : ndarray)
+    forward(targets : Tensor, predictions : Tensor)
         Computes the mean squared error.
     """
     def __init__(self):
@@ -68,15 +69,15 @@ class MSE(Loss):
         """
         super().__init__()
 
-    def loss(self, targets, predictions):
+    def forward(self, targets, predictions):
         """
         Computes the mean squared error.
 
         Parameters
         ----------
-        targets : ndarray
+        targets : Tensor
             Target data.
-        predictions : ndarray
+        predictions : Tensor
             Output data.
 
         Returns
@@ -84,8 +85,19 @@ class MSE(Loss):
         float
             The mean squared error.
         """
-        diff = targets - predictions
-        return np.sum(diff * diff) / np.size(diff)
+        self.targets = targets
+        self.predictions = predictions
+
+        diff = self.targets - self.predictions
+        self.output = sum(diff * diff) / diff.size
+        return self.output
+
+    def backward(self):
+        self.output.backward(1)
+        return self.predictions.grad
+
+    def zero_grad(self):
+        self.output.zero_grad()
 
 class BinaryCrossEntropy(Loss):
     """
@@ -93,9 +105,9 @@ class BinaryCrossEntropy(Loss):
 
     Methods
     -------
-    loss(targets : ndarray, predictions : ndarray)
+    forward(targets : Tensor, predictions : Tensor)
         Computes the binary cross entropy loss.
-    derivative(targets : ndarray, predictions : ndarray)
+    backward(targets : Tensor, predictions : Tensor)
         Computes the binary cross entropy derivative.
     """
     def __init__(self):
@@ -104,15 +116,15 @@ class BinaryCrossEntropy(Loss):
         """
         super().__init__()
 
-    def loss(self, targets, predictions):
+    def forward(self, targets, predictions):
         """
         Computes the binary cross entropy loss.
 
         Parameters
         ----------
-        targets : ndarray
+        targets : Tensor
             Target data.
-        predictions : ndarray
+        predictions : Tensor
             Output data.
 
         Returns
@@ -120,28 +132,28 @@ class BinaryCrossEntropy(Loss):
         float
             The binary cross entropy loss.
         """
-        e = 1e-10
-        return -(np.sum(targets * np.log(predictions + e) +
-                        (1-targets) * np.log(1-predictions + e))) / len(targets)
+        self.targets = targets
+        self.predictions = predictions
 
-    def derivative(self, targets, predictions):
+        e = 1e-10
+        self.output = -(sum(self.targets * log(self.predictions + e) +
+                        (1-self.targets) * log(1-self.predictions + e))) / len(self.targets)
+        return self.output
+
+    def backward(self):
         """
         Computes the binary cross entropy derivative.
 
-        Parameters
-        ----------
-        targets : ndarray
-            Target data.
-        predictions : ndarray
-            Output data.
-
         Returns
         -------
-        ndarray
+        Tensor
             The binary cross entropy derivative.
         """
-        e = 1e-10
-        return -(targets / predictions - (1 - targets + e) / (1 - predictions + e)) / len(predictions)
+        self.output.backward(1)
+        return self.predictions.grad
+
+    def zero_grad(self):
+        self.output.zero_grad()
 
 
 class CategoricalCrossEntropy(Loss):
@@ -150,9 +162,9 @@ class CategoricalCrossEntropy(Loss):
 
     Methods
     -------
-    loss(targets : ndarray, predictions : ndarray)
+    forward(targets : Tensor, predictions : Tensor)
         Computes the categorical cross-entropy loss.
-    derivative(targets : ndarray, predictions : ndarray)
+    backward(targets : Tensor, predictions : Tensor)
         Computes the categorical cross-entropy derivative.
     """
 
@@ -162,15 +174,15 @@ class CategoricalCrossEntropy(Loss):
         """
         super().__init__()
 
-    def loss(self, targets, predictions):
+    def forward(self, targets, predictions, from_logits=False):
         """
         Computes the categorical cross-entropy loss.
 
         Parameters
         ----------
-        targets : ndarray
+        targets : Tensor
             Target data. Can be one-hot encoded or integer labels.
-        predictions : ndarray
+        predictions : Tensor
             Output probabilities (e.g., softmax predictions).
 
         Returns
@@ -178,36 +190,84 @@ class CategoricalCrossEntropy(Loss):
         float
             The categorical cross-entropy loss.
         """
-        predictions_clipped = np.clip(predictions, 1e-7, 1 - 1e-7)
+        self.targets = targets
+        self.predictions = predictions
 
-        if len(targets.shape) == 1:
-            correct_confidences = predictions_clipped[
-                range(len(predictions)), targets
-            ]
-        elif len(targets.shape) == 2:
-            correct_confidences = np.sum(predictions_clipped * targets, axis=1)
+        self.predictions = clip(self.predictions, a_min=1e-15, a_max=1 - 1e-15)
 
-        negative_log_likelihoods = -np.log(correct_confidences)
+        if from_logits:
+            softmax = Softmax()
+            softmax.inputs = self.predictions
+            softmax.forward()
 
-        return np.mean(negative_log_likelihoods)
+            loss = -sum(self.targets * log(softmax.outputs), axis=1)
+        else:
+            loss = -sum(self.targets * log(self.predictions), axis=1)
 
-    def derivative(self, targets, predictions):
+        self.output = sum(loss)/loss.size
+        return self.output
+
+    def backward(self):
         """
         Computes the categorical cross-entropy derivative.
 
+        Returns
+        -------
+        Tensor
+            Gradient of the loss with respect to predictions.
+        """
+        self.output.backward(1)
+        return self.predictions.grad
+
+    def zero_grad(self):
+        self.output.zero_grad()
+
+class NegativeLogLikelihood(Loss):
+    """
+    A class to compute negative log-likelihood loss and its derivative.
+
+    Methods
+    -------
+    forward(targets : Tensor, predictions : Tensor)
+        Computes the negative log-likelihood loss.
+    backward(targets : Tensor, predictions : Tensor)
+        Computes the negative log-likelihood derivative.
+    """
+
+    def __init__(self):
+        """
+        Initializes the CategoricalCrossEntropy class.
+        """
+        super().__init__()
+
+    def forward(self, targets, predictions):
+        """
+        Computes the negative log-likelihood loss.
+
         Parameters
         ----------
-        targets : ndarray
+        targets : Tensor
             Target data. Can be one-hot encoded or integer labels.
-        predictions : ndarray
+        predictions : Tensor
             Output probabilities (e.g., softmax predictions).
 
         Returns
         -------
-        ndarray
+        float
+            The negative log-likelihood loss.
+        """
+        raise NotImplementedError
+
+    def backward(self):
+        """
+        Computes the categorical cross-entropy derivative.
+
+        Returns
+        -------
+        Tensor
             Gradient of the loss with respect to predictions.
         """
-        if len(targets.shape) == 1:
-            targets = np.eye(predictions.shape[1])[targets]
+        raise NotImplementedError
 
-        return (predictions - targets) / len(predictions)
+    def zero_grad(self):
+        raise NotImplementedError

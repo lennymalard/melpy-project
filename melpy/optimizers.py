@@ -1,5 +1,6 @@
 from .layers import *
 import numpy as np
+from .tensor import *
 
 class Optimizer:
     """
@@ -75,9 +76,9 @@ class SGD(Optimizer):
             raise TypeError("'layer' must be of type 'Layer'.")
         if isinstance(layer, Dense) or isinstance(layer, Convolution2D):
             if self.momentum is not None:
-                weights = self.momentum * layer.weight_momentums - layer.dW * self.learning_rate
+                weights = Tensor(self.momentum * layer.weight_momentums.array - layer.dW * self.learning_rate)
                 if layer.biases is not None:
-                    biases = self.momentum * layer.bias_momentums - layer.dB * self.learning_rate
+                    biases = Tensor(self.momentum * layer.bias_momentums.array - layer.dB * self.learning_rate)
 
                 layer.weight_momentums = weights
                 layer.bias_momentums = biases
@@ -85,9 +86,9 @@ class SGD(Optimizer):
                 layer.biases += biases
 
             elif self.momentum is None:
-                layer.weights -= layer.dW * self.learning_rate
+                layer.weights -= Tensor(layer.dW * self.learning_rate)
                 if layer.biases is not None:
-                    layer.biases -= layer.dB * self.learning_rate
+                    layer.biases -= Tensor(layer.dB * self.learning_rate)
 
         return layer
 
@@ -146,24 +147,24 @@ class Adam(Optimizer):
         if not isinstance(layer, Layer):
             raise TypeError("'layer' must be of type 'Layer'.")
         if isinstance(layer, Dense) or isinstance(layer, Convolution2D):
-            layer.weight_momentums = self.beta1 * layer.weight_momentums + (1 - self.beta1) * layer.dW
-            weight_momentums_corrected = layer.weight_momentums / (1 - self.beta1**self.step)
+            layer.weight_momentums = Tensor(self.beta1 * layer.weight_momentums.array + (1 - self.beta1) * layer.dW)
+            weight_momentums_corrected = Tensor(layer.weight_momentums.array / (1 - self.beta1**self.step))
 
-            layer.weight_cache = self.beta2 * layer.weight_cache + (1 - self.beta2) * layer.dW**2
-            weight_cache_corrected = layer.weight_cache / (1 - self.beta2**self.step)
+            layer.weight_cache = Tensor(self.beta2 * layer.weight_cache.array + (1 - self.beta2) * layer.dW**2)
+            weight_cache_corrected = Tensor(layer.weight_cache.array / (1 - self.beta2**self.step))
 
             if layer.biases is not None:
-                layer.bias_momentums = self.beta1 * layer.bias_momentums + (1 - self.beta1) * layer.dB
-                bias_momentums_corrected = layer.bias_momentums / (1 - self.beta1**self.step)
+                layer.bias_momentums = Tensor(self.beta1 * layer.bias_momentums.array + (1 - self.beta1) * layer.dB)
+                bias_momentums_corrected = Tensor(layer.bias_momentums.array / (1 - self.beta1**self.step))
 
-                layer.bias_cache = self.beta2 * layer.bias_cache + (1 - self.beta2) * layer.dB**2
-                bias_cache_corrected = layer.bias_cache / (1 - self.beta2**self.step)
+                layer.bias_cache = Tensor(self.beta2 * layer.bias_cache.array + (1 - self.beta2) * layer.dB**2)
+                bias_cache_corrected = Tensor(layer.bias_cache.array / (1 - self.beta2**self.step))
 
-            weights = - self.learning_rate * weight_momentums_corrected / (np.sqrt(weight_cache_corrected) + self.epsilon)
+            weights = Tensor(- self.learning_rate * weight_momentums_corrected.array / (np.sqrt(weight_cache_corrected.array) + self.epsilon))
             layer.weights += weights
 
             if layer.biases is not None:
-                biases = - self.learning_rate * bias_momentums_corrected / (np.sqrt(bias_cache_corrected) + self.epsilon)
+                biases = Tensor(- self.learning_rate * bias_momentums_corrected.array / (np.sqrt(bias_cache_corrected.array) + self.epsilon))
                 layer.biases += biases
 
             self.step += 1

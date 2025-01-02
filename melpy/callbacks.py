@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from .tensor import *
 
 class Callback:
     """
@@ -274,25 +275,25 @@ class LiveMetrics(Callback):
             figure.clear()
 
             plt.subplot(1, 1, 1)
-            if len(model.train_input_batch[0, :]) <= 2 and len(model.train_targets[0, :]) == 1:
-                if len(model.train_input_batch[:, 0]) > 1000 and self.row_select == "limited":
-                    X_set, y_set = model.train_input_batch[:1000, :], model.train_targets[:1000, :]
-                elif len(model.train_input_batch[:, 0]) > 1000 and self.row_select == "full":
+            if len(model.train_input_batch.array[0, :]) <= 2 and len(model.train_targets.array[0, :]) == 1:
+                if len(model.train_input_batch.array[:, 0]) > 1000 and self.row_select == "limited":
+                    X_set, y_set = model.train_input_batch.array[:1000, :], model.train_targets.array[:1000, :]
+                elif len(model.train_input_batch.array[:, 0]) > 1000 and self.row_select == "full":
                     X_set, y_set = model.train_input_batch, model.train_targets
-                elif (len(model.train_input_batch[:, 0]) <= 1000 and self.row_select == "full") or (len(model.train_input_batch[:, 0]) <= 1000 and self.row_select == "limited"):
-                    X_set, y_set = model.train_input_batch, model.train_targets
+                elif (len(model.train_input_batch.array[:, 0]) <= 1000 and self.row_select == "full") or (len(model.train_input_batch.array[:, 0]) <= 1000 and self.row_select == "limited"):
+                    X_set, y_set = model.train_input_batch.array, model.train_targets.array
 
                 X1, X2 = np.meshgrid(np.arange(start=X_set[:, self.f1].min() - 1, stop=X_set[:, self.f1].max() + 1, step=0.01),
                                      np.arange(start=X_set[:, self.f2].min() - 1, stop=X_set[:, self.f2].max() + 1, step=0.01))
-                plt.contourf(X1, X2, model.predict(np.array([X1.ravel(), X2.ravel()]).T).reshape(X1.shape),
+                plt.contourf(X1, X2, model.predict(Tensor(np.array([X1.ravel(), X2.ravel()]).T)).reshape(X1.shape),
                              alpha=0.3, cmap="coolwarm")
 
-            if len(model.train_input_batch[:, 0]) > 1000 and self.row_select == "limited":
-                plt.scatter(model.train_input_batch[:1000, self.f1], model.train_input_batch[:1000, self.f2], c=model.train_output_batch[:1000, :], cmap="coolwarm", alpha=1)
-            elif len(model.train_input_batch[:, 0]) > 1000 and self.row_select == "full":
-                plt.scatter(model.train_input_batch[:, self.f1], model.train_input_batch[:, self.f2], c=model.train_output_batch[:, :], cmap="coolwarm", alpha=1)
-            elif (len(model.train_input_batch[:, 0]) <= 1000 and self.row_select == "full") or (len(model.train_input_batch[:, 0]) <= 1000 and self.row_select == "limited"):
-                plt.scatter(model.train_input_batch[:, self.f1], model.train_input_batch[:, self.f2], c=model.train_output_batch[:, :], cmap="coolwarm", alpha=1)
+            if len(model.train_input_batch.array[:, 0]) > 1000 and self.row_select == "limited":
+                plt.scatter(model.train_input_batch.array[:1000, self.f1], model.train_input_batch.array[:1000, self.f2], c=model.train_output_batch.array[:1000, :], cmap="coolwarm", alpha=1)
+            elif len(model.train_input_batch.array[:, 0]) > 1000 and self.row_select == "full":
+                plt.scatter(model.train_input_batch.array[:, self.f1], model.train_input_batch.array[:, self.f2], c=model.train_output_batch.array[:, :], cmap="coolwarm", alpha=1)
+            elif (len(model.train_input_batch.array[:, 0]) <= 1000 and self.row_select == "full") or (len(model.train_input_batch.array[:, 0]) <= 1000 and self.row_select == "limited"):
+                plt.scatter(model.train_input_batch.array[:, self.f1], model.train_input_batch.array[:, self.f2], c=model.train_output_batch[:, :], cmap="coolwarm", alpha=1)
 
             figure.canvas.draw()
             figure.canvas.flush_events()
@@ -301,25 +302,25 @@ class LiveMetrics(Callback):
             figure.clear()
 
             plt.subplot(1, 2, 2)
-            if len(model.train_input_batch[0, :]) <= 2 and len(model.train_targets[0, :]) == 1:
-                if len(model.train_input_batch[:, 0]) > 1000 and self.row_select == "limited":
-                    X_set, y_set = model.train_input_batch[:1000, :], model.train_targets[:1000, :]
-                elif len(model.train_input_batch[:, 0]) > 1000 and self.row_select == "full":
-                    X_set, y_set = model.train_input_batch, model.train_targets
-                elif (len(model.train_input_batch[:, 0]) <= 1000 and self.row_select == "full") or (len(model.train_input_batch[:, 0]) <= 1000 and self.row_select == "limited"):
-                    X_set, y_set = model.train_input_batch, model.train_targets
+            if len(model.train_input_batch.array[0, :]) <= 2 and len(model.train_targets.array[0, :]) == 1:
+                if len(model.train_input_batch.array[:, 0]) > 1000 and self.row_select == "limited":
+                    X_set, y_set = model.train_input_batch.array[:1000, :], model.train_targets.array[:1000, :]
+                elif len(model.train_input_batch.array[:, 0]) > 1000 and self.row_select == "full":
+                    X_set, y_set = model.train_input_batch.array, model.train_targets.array
+                elif (len(model.train_input_batch.array[:, 0]) <= 1000 and self.row_select == "full") or (len(model.train_input_batch.array[:, 0]) <= 1000 and self.row_select == "limited"):
+                    X_set, y_set = model.train_input_batch.array, model.train_targets.array
 
                 X1, X2 = np.meshgrid(np.arange(start=X_set[:, self.f1].min() - 1, stop=X_set[:, self.f1].max() + 1, step=0.01),
                                      np.arange(start=X_set[:, self.f2].min() - 1, stop=X_set[:, self.f2].max() + 1, step=0.01))
-                plt.contourf(X1, X2, model.predict(np.array([X1.ravel(), X2.ravel()]).T).reshape(X1.shape),
+                plt.contourf(X1, X2, model.predict(Tensor(np.array([X1.ravel(), X2.ravel()]).T)).reshape(X1.shape),
                              alpha=0.3, cmap="coolwarm")
 
-            if len(model.train_input_batch[:, 0]) > 1000 and self.row_select == "limited":
-                plt.scatter(model.train_input_batch[:1000, self.f1], model.train_input_batch[:1000, self.f2], c=model.train_output_batch[:1000, :], cmap="coolwarm", alpha=1)
-            elif len(model.train_input_batch[:, 0]) > 1000 and self.row_select == "full":
-                plt.scatter(model.train_input_batch[:, self.f1], model.train_input_batch[:, self.f2], c=model.train_output_batch[:, :], cmap="coolwarm", alpha=1)
-            elif (len(model.train_input_batch[:, 0]) <= 1000 and self.row_select == "full") or (len(model.train_input_batch[:, 0]) <= 1000 and self.row_select == "limited"):
-                plt.scatter(model.train_input_batch[:, self.f1], model.train_input_batch[:, self.f2], c=model.train_output_batch[:, :], cmap="coolwarm", alpha=1)
+            if len(model.train_input_batch.array[:, 0]) > 1000 and self.row_select == "limited":
+                plt.scatter(model.train_input_batch.array[:1000, self.f1], model.train_input_batch.array[:1000, self.f2], c=model.train_output_batch.array[:1000, :], cmap="coolwarm", alpha=1)
+            elif len(model.train_input_batch.array[:, 0]) > 1000 and self.row_select == "full":
+                plt.scatter(model.train_input_batch.array[:, self.f1], model.train_input_batch.array[:, self.f2], c=model.train_output_batch.array[:, :], cmap="coolwarm", alpha=1)
+            elif (len(model.train_input_batch.array[:, 0]) <= 1000 and self.row_select == "full") or (len(model.train_input_batch.array[:, 0]) <= 1000 and self.row_select == "limited"):
+                plt.scatter(model.train_input_batch.array[:, self.f1], model.train_input_batch.array[:, self.f2], c=model.train_output_batch.array[:, :], cmap="coolwarm", alpha=1)
 
             plt.subplot(2, 2, 1)
             plt.title("Loss Evolution")

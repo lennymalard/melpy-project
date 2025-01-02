@@ -219,7 +219,7 @@ L'ensemble du code de la méthode Im2col se trouve dans le repo de Melpy,
 
 \subsection{Les couches de convolution}
 
-Les couches $convolution2D$ héritent de la superclasse $Layer$ 
+Les couches $Convolution2D$ héritent de la superclasse $Layer$ 
 de Melpy, ce qui leur impose l’utilisation des méthodes 
 \textbf{forward()} et \textbf{backward()} pour effectuer 
 respectivement les propagations avant et arrière.\\
@@ -301,8 +301,8 @@ L'ensemble du code lié aux couches de convolution se trouvent dans le repo de M
 
 \subsection{Les couches de pooling}
 
-Les couches $pooling2D$ héritent également de la superclasse $Layer$ 
-de Melpy, leur imposant les mêmes contraintes que $convolution2D$.\\
+Les couches $Pooling2D$ héritent également de la superclasse $Layer$ 
+de Melpy, leur imposant les mêmes contraintes que $Convolution2D$.\\
 
 Voici donc le code de la propagation avant : \\
 
