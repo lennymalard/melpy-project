@@ -242,7 +242,10 @@ class Operation:
             return np.array(obj)
 
     def _apply_grad(self, obj, grad):
-        if isinstance(obj, Operation):
+        if isinstance(obj, Function):
+            obj.output.output.grad += grad
+            obj.backward(grad)
+        elif isinstance(obj, Operation):
             obj.output.grad += grad
             obj.backward(grad)
         elif isinstance(obj, Tensor) and obj.requires_grad:
@@ -252,6 +255,7 @@ class Operation:
         return any(isinstance(i, Tensor) and i.requires_grad for i in inputs)
 
     def _compress_grad(self, grad, tensor):
+        grad = np.atleast_2d(grad)
         tensor = self._get_array(tensor)
         extra_dims = np.array(grad).ndim - tensor.ndim
         for _ in range(extra_dims):
@@ -317,7 +321,7 @@ class multiply(Operation):
     def forward(self, *args, **kwargs):
         x1_array = self._get_array(self.x1)
         x2_array = self._get_array(self.x2)
-        self.output = Tensor(np.multiply(x1_array, x2_array, *args, **kwargs),requires_grad=self._requires_grad(self.x1, self.x2))
+        self.output = Tensor(np.multiply(x1_array, x2_array, *args, **kwargs), requires_grad=self._requires_grad(self.x1, self.x2))
         return self.output
 
     def backward(self, grad):
@@ -496,3 +500,59 @@ class clip(Operation):
 
     def backward(self, grad):
         self._apply_grad(self.x1, grad)
+
+class Function(Operation):
+    def __init__(self, x1):
+        super().__init__(x1, x1)
+
+    def forward(self):
+        pass
+
+    def backward(self, grad):
+        pass
+
+class sigmoid(Function):
+    def __init__(self, x1):
+        super().__init__(x1)
+
+    def forward(self):
+        self.output = 1 / (1 + exp(-self.x1))
+        return self.output.output
+
+    def backward(self, grad):
+        self.output.backward(grad)
+
+class tanh(Function):
+    def __init__(self, x1):
+        super().__init__(x1)
+
+    def forward(self):
+        self.output = (exp(self.x1) - exp(-self.x1)) / (exp(self.x1) + exp(-self.x1))
+        return self.output.output
+
+    def backward(self, grad):
+        self.output.backward(grad)
+
+class softmax(Function):
+    def __init__(self, x1):
+        super().__init__(x1)
+
+    def forward(self):
+        exp_values = exp(self.x1 - max(self.x1, axis=1, keepdims=True))
+        probabilities = exp_values / sum(exp_values, axis=1, keepdims=True)
+        self.output = probabilities
+        return self.output.output
+
+    def backward(self, grad):
+        self.output.backward(grad)
+
+class Parameter(Tensor):
+    def __init__(self, object, *args, **kwargs):
+        super().__init__(object, *args, **kwargs)
+        self.momentums = zeros_like(self)
+        self.cache = zeros_like(self)
+
+    def zero_grad(self):
+        self.grad = np.zeros_like(self.array)
+        self.momentums.zero_grad()
+        self.cache.zero_grad()
