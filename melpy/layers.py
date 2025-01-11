@@ -2,6 +2,7 @@ import numpy as np
 from math import sqrt
 from .im2col import *
 from .tensor import *
+from copy import deepcopy
 
 class Layer:
     """
@@ -167,28 +168,24 @@ class Dense(Layer):
                 Initialized weights.
             """
             if weight_init == "he_normal":
-                weights = Tensor(np.random.randn(n_in, n_out) * np.sqrt(2.0 / n_in))
+                weights = Parameter(np.random.randn(n_in, n_out) * np.sqrt(2.0 / n_in))
             elif weight_init == "he_uniform":
                 limit = np.sqrt(6 / n_in)
-                weights = Tensor(np.random.uniform(-limit, limit, (n_in, n_out)))
+                weights = Parameter(np.random.uniform(-limit, limit, (n_in, n_out)))
             elif weight_init == "glorot_normal":
-                weights = Tensor(np.random.randn(n_in, n_out) * np.sqrt(2.0 / (n_in + n_out)))
+                weights = Parameter(np.random.randn(n_in, n_out) * np.sqrt(2.0 / (n_in + n_out)))
             elif weight_init == "glorot_uniform":
                 limit = np.sqrt(6 / (n_in + n_out))
-                weights = Tensor(np.random.uniform(-limit, limit, (n_in, n_out)))
+                weights = Parameter(np.random.uniform(-limit, limit, (n_in, n_out)))
             else:
                 raise ValueError(
                     "`weight_init` must be either 'he_uniform', 'he_normal', 'glorot_uniform' or 'glorot_normal'.")
             return weights
 
         self.weights = initialize_weights(weight_initializer, n_in, n_out)
-        self.biases = Tensor(np.random.rand(1, n_out))
-        self.dW = np.zeros_like(self.weights)
-        self.dB = np.zeros_like(self.biases)
-        self.weight_momentums = Tensor(np.zeros_like(self.weights))
-        self.bias_momentums = Tensor(np.zeros_like(self.biases))
-        self.weight_cache = Tensor(np.zeros_like(self.weights))
-        self.bias_cache = Tensor(np.zeros_like(self.biases))
+        self.biases = Parameter(np.random.rand(1, n_out))
+        self.dW = np.zeros_like(self.weights.array)
+        self.dB = np.zeros_like(self.biases.array)
         self.activation = activation
 
         if not isinstance(activation, Activation) and activation is not None:
@@ -460,6 +457,22 @@ class Sigmoid(Layer, Activation):
     def zero_grad(self):
         self.outputs.zero_grad()
 
+class Tanh(Layer, Activation):
+    def __init__(self):
+        super().__init__()
+
+    def forward(self):
+        self.outputs = (exp(self.inputs) - exp(-self.inputs)) / (exp(self.inputs) + exp(-self.inputs))
+
+    def backward(self, dX):
+        self.dY = dX
+        self.outputs.backward(self.dY)
+        self.dX = self.inputs.grad
+        return self.dX
+
+    def zero_grad(self):
+        self.outputs.zero_grad()
+
 class Softmax(Layer, Activation):
     """
     A class that performs Softmax layer operations.
@@ -618,18 +631,18 @@ class Convolution2D(Layer):
                 Initialized weights.
             """
             if weight_init == "he_normal":
-                weights = Tensor(np.random.randn(out_channels, in_channels, kernel_size, kernel_size) * np.sqrt(
+                weights = Parameter(np.random.randn(out_channels, in_channels, kernel_size, kernel_size) * np.sqrt(
                     2.0 / (in_channels * kernel_size ** 2)))
             elif weight_init == "he_uniform":
                 limit = np.sqrt(6 / (in_channels * kernel_size ** 2))
-                weights = Tensor(
+                weights = Parameter(
                     np.random.uniform(-limit, limit, (out_channels, in_channels, kernel_size, kernel_size)))
             elif weight_init == "glorot_normal":
-                weights = Tensor(np.random.randn(out_channels, in_channels, kernel_size, kernel_size) * np.sqrt(
+                weights = Parameter(np.random.randn(out_channels, in_channels, kernel_size, kernel_size) * np.sqrt(
                     2.0 / (in_channels * kernel_size ** 2 + out_channels * kernel_size ** 2)))
             elif weight_init == "glorot_uniform":
                 limit = np.sqrt(6 / (in_channels * kernel_size ** 2 + out_channels * kernel_size ** 2))
-                weights = Tensor(
+                weights = Parameter(
                     np.random.uniform(-limit, limit, (out_channels, in_channels, kernel_size, kernel_size)))
             else:
                 raise ValueError(
@@ -640,13 +653,9 @@ class Convolution2D(Layer):
         self.out_channels = out_channels
         self.weights = initialize_weights(weight_initializer, in_channels, out_channels, kernel_size)
         self.dW = np.zeros_like(self.weights)
-        self.weight_momentums = Tensor(np.zeros_like(self.weights))
-        self.weight_cache = Tensor(np.zeros_like(self.weights))
         if use_bias is True:
-            self.biases = Tensor(np.zeros(shape=(1, out_channels, 1, 1)).astype(np.float64))
+            self.biases = Parameter(np.zeros(shape=(1, out_channels, 1, 1)).astype(np.float64))
             self.dB = np.zeros_like(self.biases)
-            self.bias_momentums = Tensor(np.zeros_like(self.biases))
-            self.bias_cache = Tensor(np.zeros_like(self.biases))
         else:
             self.biases = None
         self.padding = padding
@@ -1098,3 +1107,124 @@ class Linear:
         self.biases -= self.dB * lr
         self.dW *= np.zeros(self.dW.shape, dtype=np.float64)
         self.dB *= np.zeros(self.dB.shape, dtype=np.float64)
+
+class LSTMCell(Layer):
+    def __init__(self, input_size, hidden_size, activation = None):
+        super().__init__()
+        self.input_size = input_size
+        self.hidden_size = hidden_size
+        self.activation = activation
+
+        self.gates = None
+        self.input_gate = None
+        self.output_gate = None
+        self.forget_gate = None
+        self.cell_input = None
+
+        self.cell_state = None
+        self.previous_cell_state = None
+        self.hidden_state = None
+        self.previous_hidden_state = None
+
+        self.input_weights = None
+        self.hidden_weights = None
+
+        self.biases = None
+
+    def forward(self, cell_state, hidden_state):
+        self.previous_cell_state = Tensor(cell_state.array)
+        self.previous_hidden_state = Tensor(hidden_state.array)
+
+        self.gates = self.inputs @ self.input_weights + self.previous_hidden_state @ self.hidden_weights + self.biases
+        input_gate, output_gate, forget_gate, cell_input = tuple([Tensor(gate) for gate in np.hsplit(self.gates.array, 4)])
+
+        self.input_gate = sigmoid(input_gate)
+        self.output_gate = sigmoid(output_gate)
+        self.forget_gate = sigmoid(forget_gate)
+        self.cell_input = relu(cell_input)
+
+        self.cell_state = self.forget_gate * self.previous_cell_state + self.input_gate * self.cell_input
+        self.hidden_state = self.output_gate * relu(self.cell_state)
+        self.outputs = self.hidden_state
+
+        return self.cell_state, self.hidden_state
+
+    def backward(self, dX):
+        self.dY = dX
+        self.hidden_state.backward(dX)
+        gates_grad = np.hstack(
+            (self.input_gate.grad, self.output_gate.grad, self.forget_gate.grad, self.cell_input.grad))
+        self.gates.backward(gates_grad)
+
+        return self.previous_hidden_state.grad
+
+    def zero_grad(self):
+        self.hidden_state.zero_grad()
+        self.gates.zero_grad()
+
+class LSTM(Layer):
+    def __init__(self, input_size, hidden_size, activation = None, use_bias=True, batch_first=False, dropout=0.0):
+        super().__init__()
+        self.input_size = input_size
+        self.hidden_size = hidden_size
+        self.use_bias = use_bias
+        self.batch_first = batch_first
+        self.dropout = dropout
+
+        self.input_weights = self.Weights((input_size, hidden_size))
+        self.hidden_weights = self.Weights((hidden_size, hidden_size))
+        self.biases = self.Biases((1, hidden_size))
+
+        self.activation = activation
+
+        self.dY = None
+        self.dX = None
+
+        self.cells = []
+
+    def forward(self):
+        if not self.cells:
+            self.hidden_state = zeros((self.inputs.shape[0], self.hidden_size))
+            self.cell_state = zeros((self.inputs.shape[0], self.hidden_size))
+
+            for t in range(self.inputs.shape[1]):
+                self.cells.append(LSTMCell(self.input_size, self.hidden_size, deepcopy(self.activation)))
+                self.cells[-1].inputs = Tensor(self.inputs.array[:, t])
+                self.cells[-1].input_weights = self.input_weights
+                self.cells[-1].hidden_weights = self.hidden_weights
+                self.cells[-1].biases = self.biases
+
+        for cell in self.cells:
+            self.cell_state, self.hidden_state = cell.forward(self.cell_state, self.hidden_state)
+
+        self.outputs = self.hidden_state
+        return self.outputs
+
+    def backward(self, dX):
+        self.dY = dX
+        for cell in reversed(self.cells):
+            dX = cell.backward(dX)
+        self.dX = dX
+        return self.dX
+
+    def zero_grad(self):
+        for cell in self.cells:
+            cell.zero_grad()
+
+    class Weights(Parameter):
+        def __init__(self, shape):
+            limit = np.sqrt(6 / (shape[0] + 4 * shape[1]))
+            array = np.random.uniform(-limit, limit, (shape[0], 4 * shape[1]))
+            super().__init__(object = array)
+
+        def split(self):
+            return tuple(Tensor(W) for W in np.hsplit(self.array, 4))
+
+    class Biases(Parameter):
+        def __init__(self, shape):
+            limit = np.sqrt(6 / (shape[0] + 4 * shape[1]))
+            array = np.random.uniform(-limit, limit, (shape[0], 4 * shape[1]))
+            super().__init__(object = array)
+
+        def split(self):
+            return tuple(Tensor(W) for W in np.hsplit(self.array, 4))
