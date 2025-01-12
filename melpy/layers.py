@@ -1109,7 +1109,7 @@ class Linear:
         self.dB *= np.zeros(self.dB.shape, dtype=np.float64)
 
 class LSTMCell(Layer):
-    def __init__(self, input_size, hidden_size, activation = None):
+    def __init__(self, input_size, hidden_size, activation = None, fused_implementation=True):
         super().__init__()
         self.input_size = input_size
         self.hidden_size = hidden_size
@@ -1126,90 +1126,54 @@ class LSTMCell(Layer):
         self.hidden_state = None
         self.previous_hidden_state = None
 
-        self.input_weights = None
-        self.hidden_weights = None
-
-        self.biases = None
-
-    def forward(self, cell_state, hidden_state):
-        self.previous_cell_state = Tensor(cell_state.array)
-        self.previous_hidden_state = Tensor(hidden_state.array)
-
-        self.gates = self.inputs @ self.input_weights + self.previous_hidden_state @ self.hidden_weights + self.biases
-        input_gate, output_gate, forget_gate, cell_input = tuple([Tensor(gate) for gate in np.hsplit(self.gates.array, 4)])
-
-        self.input_gate = sigmoid(input_gate)
-        self.output_gate = sigmoid(output_gate)
-        self.forget_gate = sigmoid(forget_gate)
-        self.cell_input = relu(cell_input)
-
-        self.cell_state = self.forget_gate * self.previous_cell_state + self.input_gate * self.cell_input
-        self.hidden_state = self.output_gate * relu(self.cell_state)
-        self.outputs = self.hidden_state
-
-        return self.cell_state, self.hidden_state
-
-    def backward(self, dX):
-        self.dY = dX
-        self.hidden_state.backward(dX)
-        gates_grad = np.hstack(
-            (self.input_gate.grad, self.output_gate.grad, self.forget_gate.grad, self.cell_input.grad))
-        self.gates.backward(gates_grad)
-
-        return self.previous_hidden_state.grad
-
-    def zero_grad(self):
-        self.hidden_state.zero_grad()
-        self.gates.zero_grad()
-
-class LSTM(Layer):
-    def __init__(self, input_size, hidden_size, activation = None, use_bias=True, batch_first=False, dropout=0.0):
-        super().__init__()
-        self.input_size = input_size
-        self.hidden_size = hidden_size
-        self.use_bias = use_bias
-        self.batch_first = batch_first
-        self.dropout = dropout
-
         self.input_weights = self.Weights((input_size, hidden_size))
         self.hidden_weights = self.Weights((hidden_size, hidden_size))
         self.biases = self.Biases((1, hidden_size))
 
-        self.activation = activation
+        self.i_input_weights, self.f_input_weights, self.c_input_weights, self.o_input_weights  = self.input_weights.split()
+        self.i_hidden_weights, self.f_hidden_weights, self.c_hidden_weights, self.o_hidden_weights = self.hidden_weights.split()
+        self.i_biases, self.f_biases, self.c_biases, self.o_biases  = self.biases.split()
 
-        self.dY = None
-        self.dX = None
+        self.fused_implementation = fused_implementation
 
-        self.cells = []
+    def forward(self, hidden_state, cell_state):
+        self.previous_hidden_state = Tensor(hidden_state.array)
+        self.previous_cell_state = Tensor(cell_state.array)
 
-    def forward(self):
-        if not self.cells:
-            self.hidden_state = zeros((self.inputs.shape[0], self.hidden_size))
-            self.cell_state = zeros((self.inputs.shape[0], self.hidden_size))
+        if self.fused_implementation:
+            self.gates = self.inputs @ self.input_weights + self.previous_hidden_state @ self.hidden_weights + self.biases
+            input_gate, forget_gate, cell_input, output_gate = tuple([Tensor(gate) for gate in np.hsplit(self.gates.array, 4)])
+        else:
+            input_gate = self.inputs @ self.i_input_weights + self.previous_hidden_state @ self.i_hidden_weights + self.i_biases
+            output_gate = self.inputs @ self.o_input_weights + self.previous_hidden_state @ self.o_hidden_weights + self.o_biases
+            forget_gate = self.inputs @ self.f_input_weights + self.previous_hidden_state @ self.f_hidden_weights + self.f_biases
+            cell_input = self.inputs @ self.c_input_weights + self.previous_hidden_state @ self.c_hidden_weights + self.c_biases
 
-            for t in range(self.inputs.shape[1]):
-                self.cells.append(LSTMCell(self.input_size, self.hidden_size, deepcopy(self.activation)))
-                self.cells[-1].inputs = Tensor(self.inputs.array[:, t])
-                self.cells[-1].input_weights = self.input_weights
-                self.cells[-1].hidden_weights = self.hidden_weights
-                self.cells[-1].biases = self.biases
+        self.input_gate = sigmoid(input_gate)
+        self.output_gate = sigmoid(output_gate)
+        self.forget_gate = sigmoid(forget_gate)
+        self.cell_input = tanh(cell_input)
 
-        for cell in self.cells:
-            self.cell_state, self.hidden_state = cell.forward(self.cell_state, self.hidden_state)
-
+        self.cell_state = self.forget_gate * self.previous_cell_state + self.input_gate * self.cell_input
+        self.hidden_state = self.output_gate * tanh(self.cell_state)
         self.outputs = self.hidden_state
-        return self.outputs
 
-    def backward(self, dX):
-        self.dY = dX
-        for cell in reversed(self.cells):
-            dX = cell.backward(dX)
-        self.dX = dX
-        return self.dX
+        return self.hidden_state, self.cell_state
+
+    def backward(self, hidden_state_grad, cell_state_grad):
+        self.dY = hidden_state_grad
+        self.hidden_state.backward(hidden_state_grad)
+        if self.fused_implementation:
+            gates_grad = np.hstack(
+                (self.input_gate.x1.grad, self.forget_gate.x1.grad, self.cell_input.x1.grad, self.output_gate.x1.grad))
+            self.gates.backward(gates_grad)
+        self.dX = self.previous_hidden_state.grad
+        return self.dX, self.previous_cell_state.grad
 
     def zero_grad(self):
-        for cell in self.cells:
-            cell.zero_grad()
+        self.hidden_state.zero_grad()
+        if self.fused_implementation:
+            self.gates.zero_grad()
 
     class Weights(Parameter):
         def __init__(self, shape):
@@ -1218,7 +1182,7 @@ class LSTM(Layer):
             super().__init__(object = array)
 
         def split(self):
-            return tuple(Tensor(W) for W in np.hsplit(self.array, 4))
+            return tuple(Parameter(W) for W in np.hsplit(self.array, 4))
 
     class Biases(Parameter):
         def __init__(self, shape):
@@ -1227,4 +1191,62 @@ class LSTM(Layer):
             super().__init__(object = array)
 
         def split(self):
-            return tuple(Tensor(W) for W in np.hsplit(self.array, 4))
+            return tuple(Parameter(W) for W in np.hsplit(self.array, 4))
+
+class LSTM(Layer):
+    def __init__(self, input_size, hidden_size, activation = None, num_layers=1, use_bias=True, batch_first=False, dropout=0.0, fused_implementation=True):
+        super().__init__()
+        self.input_size = input_size
+        self.hidden_size = hidden_size
+        self.use_bias = use_bias
+        self.batch_first = batch_first
+        self.dropout = dropout
+        self.num_layers = num_layers
+        self.activation = activation
+
+        self.cells = [LSTMCell(input_size, hidden_size, fused_implementation=fused_implementation) for _ in range(num_layers)]
+        self.states = {}
+        self.fused_implementation = fused_implementation
+
+        self.hidden_state = None
+        self.cell_state = None
+        self.hidden_state_grad = None
+        self.cell_state_grad = None
+
+        self.dY = None
+        self.dX = None
+
+    def forward(self):
+        self.hidden_state = zeros((self.inputs.shape[0], self.hidden_size))
+        self.cell_state = zeros((self.inputs.shape[0], self.hidden_size))
+
+        for t in range(self.inputs.shape[1]):
+            for i in range(len(self.cells)):
+                self.cells[i].inputs = Tensor(self.inputs.array[:, t])
+                self.hidden_state, self.cell_state = self.cells[i].forward(self.hidden_state, self.cell_state)
+                if f"cell{i}" not in self.states.keys():
+                    self.states[f"cell{i}"] = [(self.hidden_state, self.cell_state)]
+                else:
+                    self.states[f"cell{i}"].append((self.hidden_state, self.cell_state))
+
+        self.outputs = self.hidden_state
+        return self.outputs
+
+    def backward(self, dX):
+        self.dY = dX
+        self.hidden_state_grad = dX
+        self.cell_state_grad = np.zeros_like(self.states["cell0"][0][1].array)
+        for t in reversed(range(self.inputs.shape[1])):
+            for i in reversed(range(len(self.cells))):
+                self.cells[i].inputs = Tensor(self.inputs.array[:, t])
+                self.cells[i].hidden_state = self.states[f"cell{i}"][t][0]
+                self.cells[i].cell_state = self.states[f"cell{i}"][t][1]
+                hidden_state_grad, cell_state_grad = self.cells[i].backward(self.hidden_state_grad, self.cell_state_grad)
+                self.hidden_state_grad += hidden_state_grad
+                self.cell_state_grad += cell_state_grad
+        self.dX = self.hidden_state_grad
+        return self.dX
+
+    def zero_grad(self):
+        for cell in self.cells:
+            cell.zero_grad()

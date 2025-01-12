@@ -54,7 +54,7 @@ class Loss:
     def zero_grad(self):
         pass
 
-class MSE(Loss):
+class MeanSquaredError(Loss):
     """
     A class to perform the mean squared error loss.
 
@@ -65,7 +65,7 @@ class MSE(Loss):
     """
     def __init__(self):
         """
-        Initializes the MSE class.
+        Initializes the MeanSquaredError class.
         """
         super().__init__()
 
@@ -89,7 +89,7 @@ class MSE(Loss):
         self.predictions = predictions
 
         diff = self.targets - self.predictions
-        self.output = sum(diff * diff) / diff.size
+        self.output = sum(diff*diff) / diff.size
         return self.output
 
     def backward(self):
@@ -155,7 +155,6 @@ class BinaryCrossEntropy(Loss):
     def zero_grad(self):
         self.output.zero_grad()
 
-
 class CategoricalCrossEntropy(Loss):
     """
     A class to compute categorical cross-entropy loss and its derivative.
@@ -196,11 +195,7 @@ class CategoricalCrossEntropy(Loss):
         self.predictions = clip(self.predictions, a_min=1e-15, a_max=1 - 1e-15)
 
         if from_logits:
-            softmax = Softmax()
-            softmax.inputs = self.predictions
-            softmax.forward()
-
-            loss = -sum(self.targets * log(softmax.outputs), axis=1)
+            loss = -sum(self.targets * log(softmax(self.predictions)), axis=1)
         else:
             loss = -sum(self.targets * log(self.predictions), axis=1)
 

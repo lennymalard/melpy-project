@@ -149,6 +149,10 @@ class Operation:
         if self.output is not None:
             return self.output.grad
 
+    @grad.setter
+    def grad(self, value):
+        self.output.grad = value
+
     @property
     def array(self):
         if self.output is not None:
@@ -299,7 +303,6 @@ class add(Operation):
         self._apply_grad(self.x1, self._compress_grad(grad, x1_array))
         self._apply_grad(self.x2, self._compress_grad(grad, x2_array))
 
-
 class subtract(Operation):
     def __init__(self, x1, x2, *args, **kwargs):
         super().__init__(x1, x2, *args,  **kwargs)
@@ -389,7 +392,8 @@ class floor_divide(Operation):
         return self.output
 
     def backward(self, grad):
-        return grad
+        self._apply_grad(self.x1, grad)
+        self._apply_grad(self.x2, grad)
 
 class power(Operation):
     def __init__(self, x1, x2, *args, **kwargs):
@@ -464,6 +468,44 @@ class min(Operation):
         x1_array = self._get_array(self.x1)
         mask = (x1_array.min(axis=self.axis, keepdims=True) == x1_array).astype(int)
         self._apply_grad(self.x1, grad * mask)
+
+class maximum(Operation):
+    def __init__(self, x1, x2=None, *args, **kwargs):
+        super().__init__(x1, x2,  *args, **kwargs)
+
+    def forward(self, *args, **kwargs):
+        x1_array = self._get_array(self.x1)
+        x2_array = self._get_array(self.x2)
+        self.output = Tensor(np.maximum(x1_array, x2_array, *args, **kwargs), requires_grad=self._requires_grad(self.x1, self.x2))
+        return self.output
+
+    def backward(self, grad):
+        x1_array = self._get_array(self.x1)
+        x2_array = self._get_array(self.x2)
+        output_array = self._get_array(self.output)
+        mask1 = (output_array == x1_array).astype(int)
+        mask2 = (output_array == x2_array).astype(int)
+        self._apply_grad(self.x1, grad * mask1)
+        self._apply_grad(self.x2, grad * mask2)
+
+class minimum(Operation):
+    def __init__(self, x1, x2=None, *args, **kwargs):
+        super().__init__(x1, x2, *args, **kwargs)
+
+    def forward(self, *args, **kwargs):
+        x1_array = self._get_array(self.x1)
+        x2_array = self._get_array(self.x2)
+        self.output = Tensor(np.minimum(x1_array, x2_array, *args, **kwargs), requires_grad=self._requires_grad(self.x1, self.x2))
+        return self.output
+
+    def backward(self, grad):
+        x1_array = self._get_array(self.x1)
+        x2_array = self._get_array(self.x2)
+        output_array = self._get_array(self.output)
+        mask1 = (output_array == x1_array).astype(int)
+        mask2 = (output_array == x2_array).astype(int)
+        self._apply_grad(self.x1, grad * mask1)
+        self._apply_grad(self.x2, grad * mask2)
 
 class argmax(Operation):
     def __init__(self, x1, x2=None, *args, **kwargs):
@@ -541,6 +583,17 @@ class softmax(Function):
         exp_values = exp(self.x1 - max(self.x1, axis=1, keepdims=True))
         probabilities = exp_values / sum(exp_values, axis=1, keepdims=True)
         self.output = probabilities
+        return self.output.output
+
+    def backward(self, grad):
+        self.output.backward(grad)
+
+class relu(Function):
+    def __init__(self, x1):
+        super().__init__(x1)
+
+    def forward(self):
+        self.output = maximum(0, self.x1)
         return self.output.output
 
     def backward(self, grad):

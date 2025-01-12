@@ -15,7 +15,7 @@ class Optimizer:
 
     Methods
     -------
-    update_params(layer : Layer)
+    update_layer(layer : Layer)
         Updates the parameters of the given layer.
     """
     def __init__(self):
@@ -23,9 +23,12 @@ class Optimizer:
         Initializes the Optimizer object.
         """
         self.learning_rate = None
-        self.momentum = None
+        self.step = 1
 
-    def update_params(self, layer):
+    def update_parameter(self, parameter):
+        pass
+
+    def update_layer(self, layer):
         """
         Updates the parameters of the given layer.
 
@@ -42,23 +45,36 @@ class SGD(Optimizer):
 
     Methods
     -------
-    update_params(layer : Layer)
+    update_layer(layer : Layer)
         Updates the parameters of the given layer using SGD.
     """
-    def __init__(self, learning_rate=0.001, momentum=None):
+    def __init__(self, learning_rate=0.001, momentum=None, gradnorm=1e15):
         """
         Initializes the SGD optimizer.
         """
         super().__init__()
         self.learning_rate = learning_rate
         self.momentum = momentum
+        self.gradnorm = gradnorm
 
         if not isinstance(learning_rate, float):
             raise TypeError("`learning_rate` must be a float")
         if not isinstance(momentum, float) and momentum is not None:
             raise TypeError("`momentum` must be a float or None")
 
-    def update_params(self, layer):
+    def update_parameter(self, parameter):
+        if np.linalg.norm(parameter.grad) >= self.gradnorm:
+            grad = self.gradnorm * parameter.grad / np.linalg.norm(parameter.grad)
+        if self.momentum is not None:
+            update_value = Tensor(self.momentum * parameter.momentums.array - parameter.grad * self.learning_rate)
+            parameter.momentums = update_value
+            parameter += update_value
+        else:
+            parameter -= Tensor(parameter.grad * self.learning_rate)
+
+        return parameter
+
+    def update_layer(self, layer):
         """
         Updates the parameters of the given layer using SGD.
 
@@ -74,21 +90,35 @@ class SGD(Optimizer):
         """
         if not isinstance(layer, Layer):
             raise TypeError("'layer' must be of type 'Layer'.")
+
         if isinstance(layer, Dense) or isinstance(layer, Convolution2D):
-            if self.momentum is not None:
-                weights = Tensor(self.momentum * layer.weight_momentums.array - layer.dW * self.learning_rate)
-                if layer.biases is not None:
-                    biases = Tensor(self.momentum * layer.bias_momentums.array - layer.dB * self.learning_rate)
+            layer.weights = self.update_parameter(layer.weights)
+            if layer.biases is not None:
+                layer.biases = self.update_parameter(layer.biases)
 
-                layer.weight_momentums = weights
-                layer.bias_momentums = biases
-                layer.weights += weights
-                layer.biases += biases
+        elif isinstance(layer, LSTM):
+            for cell in layer.cells:
+                if cell.fused_implementation:
+                    cell.input_weights = self.update_parameter(cell.input_weights)
+                    cell.hidden_weights = self.update_parameter(cell.hidden_weights)
+                    cell.biases = self.update_parameter(cell.biases)
 
-            elif self.momentum is None:
-                layer.weights -= Tensor(layer.dW * self.learning_rate)
-                if layer.biases is not None:
-                    layer.biases -= Tensor(layer.dB * self.learning_rate)
+                else:
+                    cell.i_input_weights = self.update_parameter(cell.i_input_weights)
+                    cell.i_hidden_weights = self.update_parameter(cell.i_hidden_weights)
+                    cell.i_biases = self.update_parameter(cell.i_biases)
+
+                    cell.o_input_weights = self.update_parameter(cell.o_input_weights)
+                    cell.o_hidden_weights = self.update_parameter(cell.o_hidden_weights)
+                    cell.o_biases = self.update_parameter(cell.o_biases)
+
+                    cell.f_input_weights = self.update_parameter(cell.f_input_weights)
+                    cell.f_hidden_weights = self.update_parameter(cell.f_hidden_weights)
+                    cell.f_biases = self.update_parameter(cell.f_biases)
+
+                    cell.c_input_weights = self.update_parameter(cell.c_input_weights)
+                    cell.c_hidden_weights = self.update_parameter(cell.c_hidden_weights)
+                    cell.c_biases = self.update_parameter(cell.c_biases)
 
         return layer
 
@@ -109,10 +139,10 @@ class Adam(Optimizer):
 
     Methods
     -------
-    update_params(layer : Layer)
+    update_layer(layer : Layer)
         Updates the parameters of the given layer using Adam.
     """
-    def __init__(self, learning_rate=0.001, beta1=0.9, beta2=0.999):
+    def __init__(self, learning_rate=0.001, beta1=0.9, beta2=0.999, gradnorm=1e15):
         """
         Initializes the Adam optimizer.
         """
@@ -122,6 +152,7 @@ class Adam(Optimizer):
         self.learning_rate = learning_rate
         self.epsilon = 1e-7
         self.step = 1
+        self.gradnorm = gradnorm
 
         if not isinstance(learning_rate, float):
             raise TypeError("`learning_rate` must be a float")
@@ -130,7 +161,24 @@ class Adam(Optimizer):
         if not isinstance(beta2, float):
             raise TypeError("`beta2` must be a float")
 
-    def update_params(self, layer):
+    def update_parameter(self, parameter):
+        if np.linalg.norm(parameter.grad) >= self.gradnorm:
+            parameter.grad = self.gradnorm * parameter.grad / np.linalg.norm(parameter.grad)
+
+        parameter.momentums = Tensor(self.beta1 * parameter.momentums.array + (1 - self.beta1) * parameter.grad)
+        momentums_corrected = Tensor(parameter.momentums.array / (1 - self.beta1 ** self.step))
+
+        parameter.cache = Tensor(self.beta2 * parameter.cache.array + (1 - self.beta2) * parameter.grad ** 2)
+        cache_corrected = Tensor(parameter.cache.array / (1 - self.beta2 ** self.step))
+
+        update_value = Tensor(- self.learning_rate * momentums_corrected.array / (
+                    np.sqrt(cache_corrected.array) + self.epsilon))
+
+        parameter += update_value
+
+        return parameter
+
+    def update_layer(self, layer):
         """
         Updates the parameters of the given layer using Adam.
 
@@ -147,25 +195,31 @@ class Adam(Optimizer):
         if not isinstance(layer, Layer):
             raise TypeError("'layer' must be of type 'Layer'.")
         if isinstance(layer, Dense) or isinstance(layer, Convolution2D):
-            layer.weight_momentums = Tensor(self.beta1 * layer.weight_momentums.array + (1 - self.beta1) * layer.dW)
-            weight_momentums_corrected = Tensor(layer.weight_momentums.array / (1 - self.beta1**self.step))
-
-            layer.weight_cache = Tensor(self.beta2 * layer.weight_cache.array + (1 - self.beta2) * layer.dW**2)
-            weight_cache_corrected = Tensor(layer.weight_cache.array / (1 - self.beta2**self.step))
-
+            layer.weights = self.update_parameter(layer.weights)
             if layer.biases is not None:
-                layer.bias_momentums = Tensor(self.beta1 * layer.bias_momentums.array + (1 - self.beta1) * layer.dB)
-                bias_momentums_corrected = Tensor(layer.bias_momentums.array / (1 - self.beta1**self.step))
+                layer.biases = self.update_parameter(layer.biases)
 
-                layer.bias_cache = Tensor(self.beta2 * layer.bias_cache.array + (1 - self.beta2) * layer.dB**2)
-                bias_cache_corrected = Tensor(layer.bias_cache.array / (1 - self.beta2**self.step))
+        elif isinstance(layer, LSTM):
+            for cell in layer.cells:
+                if cell.fused_implementation:
+                    cell.input_weights = self.update_parameter(cell.input_weights)
+                    cell.hidden_weights = self.update_parameter(cell.hidden_weights)
+                    cell.biases = self.update_parameter(cell.biases)
+                else:
+                    cell.i_input_weights = self.update_parameter(cell.i_input_weights)
+                    cell.i_hidden_weights = self.update_parameter(cell.i_hidden_weights)
+                    cell.i_biases = self.update_parameter(cell.i_biases)
 
-            weights = Tensor(- self.learning_rate * weight_momentums_corrected.array / (np.sqrt(weight_cache_corrected.array) + self.epsilon))
-            layer.weights += weights
+                    cell.o_input_weights = self.update_parameter(cell.o_input_weights)
+                    cell.o_hidden_weights = self.update_parameter(cell.o_hidden_weights)
+                    cell.o_biases = self.update_parameter(cell.o_biases)
 
-            if layer.biases is not None:
-                biases = Tensor(- self.learning_rate * bias_momentums_corrected.array / (np.sqrt(bias_cache_corrected.array) + self.epsilon))
-                layer.biases += biases
+                    cell.f_input_weights = self.update_parameter(cell.f_input_weights)
+                    cell.f_hidden_weights = self.update_parameter(cell.f_hidden_weights)
+                    cell.f_biases = self.update_parameter(cell.f_biases)
 
-            self.step += 1
+                    cell.c_input_weights = self.update_parameter(cell.c_input_weights)
+                    cell.c_hidden_weights = self.update_parameter(cell.c_hidden_weights)
+                    cell.c_biases = self.update_parameter(cell.c_biases)
+
         return layer

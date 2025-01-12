@@ -597,12 +597,14 @@ val_targets : ndarray, Tensor
                 self.backward()
 
                 for i in range(len(self.train_layers)):
-                    self.train_layers[i] = self.optimizer.update_params(self.train_layers[i])
+                    self.train_layers[i] = self.optimizer.update_layer(self.train_layers[i])
 
                     if self.validation:
                         if isinstance(self.val_layers[i], Dense) or isinstance(self.val_layers[i], Convolution2D):
                             self.val_layers[i].weights = self.train_layers[i].weights
                             self.val_layers[i].biases = self.train_layers[i].biases
+
+                self.optimizer.step += 1
 
                 loss = np.around(self.cost_function.output.array, 5)
                 acc = accuracy(self.train_target_batch, self.train_output_batch)
