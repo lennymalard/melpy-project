@@ -64,7 +64,7 @@ class SGD(Optimizer):
 
     def update_parameter(self, parameter):
         if np.linalg.norm(parameter.grad) >= self.gradnorm:
-            grad = self.gradnorm * parameter.grad / np.linalg.norm(parameter.grad)
+            parameter.grad = self.gradnorm * parameter.grad / np.linalg.norm(parameter.grad)
         if self.momentum is not None:
             update_value = Tensor(self.momentum * parameter.momentums.array - parameter.grad * self.learning_rate)
             parameter.momentums = update_value
@@ -98,27 +98,10 @@ class SGD(Optimizer):
 
         elif isinstance(layer, LSTM):
             for cell in layer.cells:
-                if cell.fused_implementation:
-                    cell.input_weights = self.update_parameter(cell.input_weights)
-                    cell.hidden_weights = self.update_parameter(cell.hidden_weights)
+                cell.input_weights = self.update_parameter(cell.input_weights)
+                cell.hidden_weights = self.update_parameter(cell.hidden_weights)
+                if cell.biases is not None:
                     cell.biases = self.update_parameter(cell.biases)
-
-                else:
-                    cell.i_input_weights = self.update_parameter(cell.i_input_weights)
-                    cell.i_hidden_weights = self.update_parameter(cell.i_hidden_weights)
-                    cell.i_biases = self.update_parameter(cell.i_biases)
-
-                    cell.o_input_weights = self.update_parameter(cell.o_input_weights)
-                    cell.o_hidden_weights = self.update_parameter(cell.o_hidden_weights)
-                    cell.o_biases = self.update_parameter(cell.o_biases)
-
-                    cell.f_input_weights = self.update_parameter(cell.f_input_weights)
-                    cell.f_hidden_weights = self.update_parameter(cell.f_hidden_weights)
-                    cell.f_biases = self.update_parameter(cell.f_biases)
-
-                    cell.c_input_weights = self.update_parameter(cell.c_input_weights)
-                    cell.c_hidden_weights = self.update_parameter(cell.c_hidden_weights)
-                    cell.c_biases = self.update_parameter(cell.c_biases)
 
         return layer
 
@@ -201,25 +184,9 @@ class Adam(Optimizer):
 
         elif isinstance(layer, LSTM):
             for cell in layer.cells:
-                if cell.fused_implementation:
-                    cell.input_weights = self.update_parameter(cell.input_weights)
-                    cell.hidden_weights = self.update_parameter(cell.hidden_weights)
+                cell.input_weights = self.update_parameter(cell.input_weights)
+                cell.hidden_weights = self.update_parameter(cell.hidden_weights)
+                if cell.biases is not None:
                     cell.biases = self.update_parameter(cell.biases)
-                else:
-                    cell.i_input_weights = self.update_parameter(cell.i_input_weights)
-                    cell.i_hidden_weights = self.update_parameter(cell.i_hidden_weights)
-                    cell.i_biases = self.update_parameter(cell.i_biases)
-
-                    cell.o_input_weights = self.update_parameter(cell.o_input_weights)
-                    cell.o_hidden_weights = self.update_parameter(cell.o_hidden_weights)
-                    cell.o_biases = self.update_parameter(cell.o_biases)
-
-                    cell.f_input_weights = self.update_parameter(cell.f_input_weights)
-                    cell.f_hidden_weights = self.update_parameter(cell.f_hidden_weights)
-                    cell.f_biases = self.update_parameter(cell.f_biases)
-
-                    cell.c_input_weights = self.update_parameter(cell.c_input_weights)
-                    cell.c_hidden_weights = self.update_parameter(cell.c_hidden_weights)
-                    cell.c_biases = self.update_parameter(cell.c_biases)
 
         return layer

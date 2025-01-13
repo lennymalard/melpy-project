@@ -234,8 +234,8 @@ val_targets : ndarray, Tensor
         TypeError
             If `layer` is not an instance of Dense, Convolution2D, Pooling2D, Flatten or Dropout.
         """
-        if not isinstance(layer, (Dense, Convolution2D, Pooling2D, Flatten, Dropout)):
-            raise TypeError("`layer` must be of type `Dense`, `Convolution2D`, `Pooling2D`, `Flatten` or `Dropout`.")
+        if not isinstance(layer, (Dense, Convolution2D, Pooling2D, Flatten, Dropout, LSTM)):
+            raise TypeError("`layer` must be of type `Dense`, `Convolution2D`, `LSTM`, `Pooling2D`, `Flatten` or `Dropout`.")
 
         self.train_layers.append(layer)
 
