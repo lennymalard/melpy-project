@@ -2,6 +2,10 @@ import numpy as np
 from .tensor import *
 from .layers import *
 
+def check_tensor(obj, name):
+    if not isinstance(obj, Tensor) and not isinstance(obj, Operation) and obj is not None:
+        raise TypeError(f"`{name}` must be a Tensor.")
+
 class Loss:
     """
     Base class for all loss functions.
@@ -85,8 +89,13 @@ class MeanSquaredError(Loss):
         float
             The mean squared error.
         """
+        check_tensor(targets, "targets")
+        check_tensor(predictions, "predictions")
+
         self.targets = targets
         self.predictions = predictions
+
+        self.predictions.requires_grad = True
 
         diff = self.targets - self.predictions
         self.output = sum(diff*diff) / diff.size
@@ -132,8 +141,13 @@ class BinaryCrossEntropy(Loss):
         float
             The binary cross entropy loss.
         """
+        check_tensor(targets, "targets")
+        check_tensor(predictions, "predictions")
+
         self.targets = targets
         self.predictions = predictions
+
+        self.predictions.requires_grad = True
 
         e = 1e-10
         self.output = -(sum(self.targets * log(self.predictions + e) +
@@ -189,8 +203,13 @@ class CategoricalCrossEntropy(Loss):
         float
             The categorical cross-entropy loss.
         """
+        check_tensor(targets, "targets")
+        check_tensor(predictions, "predictions")
+
         self.targets = targets
         self.predictions = predictions
+
+        self.predictions.requires_grad = True
 
         self.predictions = clip(self.predictions, a_min=1e-15, a_max=1 - 1e-15)
 
