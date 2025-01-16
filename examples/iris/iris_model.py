@@ -37,14 +37,14 @@ import melpy.NeuralNetworks as nn
 
 model = nn.Sequential(X_train, y_train, X_test, y_test)
 
-model.add(nn.Dense(X_train.shape[1], 6, activation=nn.LeakyReLU()))
-model.add(nn.Dense(6, y_train.shape[1], activation=nn.Softmax()))
+model.add(nn.Dense(X_train.shape[1], 6, activation="relu"))
+model.add(nn.Dense(6, y_train.shape[1], activation="softmax"))
 
 model.compile(cost_function=nn.CategoricalCrossEntropy(), optimizer=nn.SGD(learning_rate=0.001, momentum=0.9))
 model.summary()
 
 # %% Training
-model.fit(epochs=5000, verbose = 1, callbacks=[nn.LiveMetrics()])
+model.fit(epochs=5000, verbose = 1, callbacks=[nn.LiveMetrics()], get_output=True)
 model.results()
 
 # %% Save

@@ -2,7 +2,7 @@
 import numpy as np
 import pandas as pd
 
-train_dataset = pd.read_csv("examples/titanic/data/train.csv", delimiter=",")
+train_dataset = pd.read_csv("/Users/lenny/Documents/DEV/git/melpy-project/examples/titanic/data/train.csv", delimiter=",")
 
 X_train = train_dataset.iloc[:750,[2,4,5,9]].values
 y_train = train_dataset.iloc[:750,1].values.reshape(-1,1)
@@ -65,7 +65,7 @@ model.train_layers= [nn.Dense(X_train.shape[1], 12),
 model.compile(cost_function=nn.BinaryCrossEntropy(), optimizer=nn.Adam(learning_rate=0.01))
 
 # %% Training
-model.fit(epochs=10000, verbose = 1, callbacks = [nn.LiveMetrics(mode=3, f1=0, f2=2)])
+model.fit(epochs=10000, verbose = 1, callbacks = [nn.LiveMetrics(mode=3, f1=0, f2=2)], get_output=True)
 model.results()
 
 # %% Save

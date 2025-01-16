@@ -43,23 +43,21 @@ import melpy.NeuralNetworks as nn
 
 model = nn.Sequential(X_train, y_train, X_test, y_test)
 
-model.add(nn.Convolution2D(in_channels=1, out_channels=32, kernel_size=2, padding="same", weight_initializer="glorot_uniform", activation=nn.LeakyReLU()))
+model.add(nn.Convolution2D(in_channels=1, out_channels=32, kernel_size=2, padding="same", weight_initializer="glorot_uniform", activation="leaky_relu"))
 model.add(nn.Pooling2D(pool_size=2, stride=2, mode="max"))
-model.add(nn.Convolution2D(in_channels=32, out_channels=64, kernel_size=2, padding="same", weight_initializer="glorot_uniform" , activation=nn.LeakyReLU()))
+model.add(nn.Convolution2D(in_channels=32, out_channels=64, kernel_size=2, padding="same", weight_initializer="glorot_uniform" , activation="leaky_relu"))
 model.add(nn.Flatten())
-model.add(nn.Dense(model.get_flatten_length(), 128, activation=nn.LeakyReLU()))
-model.add(nn.Dense(128, 10, weight_initializer="glorot_normal", activation=nn.Softmax()))
+model.add(nn.Dense(model.get_flatten_length(), 128, activation="leaky_relu"))
+model.add(nn.Dense(128, 10, weight_initializer="glorot_normal", activation="softmax"))
 
-model.compile(optimizer=nn.Adam(learning_rate=1e-3), cost_function=nn.CategoricalCrossEntropy())
+model.compile(optimizer= nn.Adam(learning_rate = 1e-3), cost_function=nn.CategoricalCrossEntropy())
 model.summary()
 # %% Parameters loading
-model.load_params("results/mnist_parameters_12_24_2024-12_42_17.h5")
+model.load_params("results/mnist_parameters_01_16_2025-21_39_58.h5")
 
 # %% Test
-n_test_samples = 1000
-
-predictions = model.predict(X_test[:n_test_samples])
-print(f"\nTest Accuracy: {nn.accuracy(y_test[:n_test_samples], predictions)}")
+predictions = model.predict(X_test[:1000])
+print(f"\nTest Accuracy: {nn.accuracy(y_test[:1000], predictions)}")
 
 # %% Random predictions
 n_samples = 5
@@ -67,7 +65,7 @@ n_samples = 5
 figure = plt.figure()
 
 for i in range(1, n_samples + 1):
-    rand_n = randint(0, n_test_samples - 1)
+    rand_n = randint(0, predictions.shape[0] - 1)
     plt.subplot(1, n_samples, i)
     plt.title(f"pred: {np.argmax(predictions[rand_n])}, target: {np.argmax(y_test[rand_n])}")
     plt.imshow(X_test[rand_n, 0, :, :], cmap="gray")
@@ -79,16 +77,16 @@ for i in range(1, 10, 3):
     rand_channel1 = randint(0, model.train_layers[0].outputs.shape[1] - 1)
     rand_channel2 = randint(0, model.train_layers[1].outputs.shape[1] - 1)
 
-    rand_n = randint(0, n_test_samples - 1)
+    rand_n = randint(0, predictions.shape[0] - 1)
 
     plt.subplot(3, 3, i)
     plt.title("input")
-    plt.imshow(model.train_layers[0].inputs[rand_n, 0, :, :], cmap="gray")
+    plt.imshow(model.train_layers[0].inputs.array[rand_n, 0, :, :], cmap="gray")
 
     plt.subplot(3, 3, i + 1)
     plt.title("conv2d")
-    plt.imshow(model.train_layers[0].outputs[rand_n, rand_channel1, :, :], cmap="gray")
+    plt.imshow(model.train_layers[0].outputs.array[rand_n, rand_channel1, :, :], cmap="gray")
 
     plt.subplot(3, 3, i + 2)
     plt.title("pooling2d")
-    plt.imshow(model.train_layers[1].outputs[rand_n, rand_channel2, :, :], cmap="gray")
+    plt.imshow(model.train_layers[1].outputs.array[rand_n, rand_channel2, :, :], cmap="gray")
