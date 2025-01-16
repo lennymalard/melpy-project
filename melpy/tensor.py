@@ -1,7 +1,7 @@
 import numpy as np
 
 class Tensor:
-    def __init__(self, object, requires_grad=True, *args, **kwargs):
+    def __init__(self, object, requires_grad=False, *args, **kwargs):
         self.array = np.array(object, *args, **kwargs).astype(np.float64)
         self.requires_grad = requires_grad
         self.grad = np.zeros_like(self.array)
@@ -26,7 +26,7 @@ class Tensor:
         return str(self.array)
 
     def __repr__(self):
-        return f"{self.__class__.__name__}({self.array})"
+        return f"Tensor({self.array})"
 
     def __add__(self, value):
         return add(self, value)
@@ -112,6 +112,10 @@ class Tensor:
     def __len__(self):
         return len(self.array)
 
+    def reshape(self, *args, **kwargs):
+        self.array = self.array.reshape(*args, **kwargs)
+        return self
+
     def zero_grad(self):
         self.grad = np.zeros_like(self.array)
 
@@ -135,6 +139,17 @@ class zeros_like(Tensor):
 
         array = np.zeros_like(_get_array(a), *args, **kwargs)
         super().__init__(object = array)
+
+class Parameter(Tensor):
+    def __init__(self, object, *args, **kwargs):
+        super().__init__(object, *args, **kwargs)
+        self.momentums = zeros_like(self)
+        self.cache = zeros_like(self)
+
+    def zero_grad(self):
+        self.grad = np.zeros_like(self.array)
+        self.momentums.zero_grad()
+        self.cache.zero_grad()
 
 class Operation:
     def __init__(self, x1, x2=None, *args, **kwargs):
@@ -178,11 +193,20 @@ class Operation:
         if self.output is not None:
             return self.output.ndim
 
+    @property
+    def requires_grad(self):
+        if self.output is not None:
+            return self.output.requires_grad
+
+    @requires_grad.setter
+    def requires_grad(self, value):
+        self.output.requires_grad = value
+
     def __str__(self):
         return self.output.array.__str__()
 
     def __repr__(self):
-        return self.__str__()
+        return f"Tensor({self.array})"
 
     def __neg__(self):
         return subtract(0, self)
@@ -230,9 +254,9 @@ class Operation:
         pass
 
     def zero_grad(self):
-        if isinstance(self.x1, Operation) or isinstance(self.x1, Tensor):
+        if isinstance(self.x1, Operation) or isinstance(self.x1, Tensor) and self.x1.requires_grad:
             self.x1.zero_grad()
-        if hasattr(self, "x2") and (isinstance(self.x2, Operation) or isinstance(self.x2, Tensor)):
+        if hasattr(self, "x2") and ((isinstance(self.x2, Operation) or isinstance(self.x2, Tensor))) and self.x2.requires_grad:
             self.x2.zero_grad()
         if self.output is not None:
             self.output.zero_grad()
@@ -246,17 +270,17 @@ class Operation:
             return np.array(obj)
 
     def _apply_grad(self, obj, grad):
-        if isinstance(obj, Function):
+        if isinstance(obj, Function) and obj.requires_grad and not leaky_relu:
             obj.output.output.grad += grad
             obj.backward(grad)
-        elif isinstance(obj, Operation):
+        elif isinstance(obj, Operation) and obj.requires_grad:
             obj.output.grad += grad
             obj.backward(grad)
         elif isinstance(obj, Tensor) and obj.requires_grad:
             obj.grad += grad
 
     def _requires_grad(self, *inputs):
-        return any(isinstance(i, Tensor) and i.requires_grad for i in inputs)
+        return any((isinstance(i, Tensor) or isinstance(i, Operation)) and i.requires_grad for i in inputs)
 
     def _compress_grad(self, grad, tensor):
         grad = np.atleast_2d(grad)
@@ -409,7 +433,7 @@ class power(Operation):
         x1_array = self._get_array(self.x1)
         x2_array = self._get_array(self.x2)
         self._apply_grad(self.x1, grad * x2_array * np.power(x1_array, x2_array - 1))
-        self._apply_grad(self.x2, grad * np.power(x1_array, x2_array) * np.log(x1_array))
+        self._apply_grad(self.x2, grad * np.power(x1_array, x2_array) * np.log(x1_array + 1e-15))
 
 class exp(Operation):
     def __init__(self, x1, x2=None, *args, **kwargs):
@@ -545,13 +569,29 @@ class clip(Operation):
 
 class Function(Operation):
     def __init__(self, x1):
-        super().__init__(x1, x1)
+        super().__init__(x1)
+
+    def update_requires_grad(self, obj, value):
+        if not isinstance(value, bool):
+            raise TypeError('`value` must be bool.')
+        if isinstance(obj, Tensor) or isinstance(obj, Operation):
+            obj.requires_grad = value
+            self.forward()
+        else:
+            raise TypeError('`obj` must be Tensor or Operation.')
 
     def forward(self):
         pass
 
     def backward(self, grad):
-        pass
+        self.output.backward(grad)
+
+    def derivative(self): # Must be used independently of a computational graph.
+        x1_requires_grad = self.x1.requires_grad
+        self.update_requires_grad(self.x1, True)
+        self.backward(1)
+        self.update_requires_grad(self.x1, x1_requires_grad)
+        return self.x1.grad
 
 class sigmoid(Function):
     def __init__(self, x1):
@@ -561,9 +601,6 @@ class sigmoid(Function):
         self.output = 1 / (1 + exp(-self.x1))
         return self.output.output
 
-    def backward(self, grad):
-        self.output.backward(grad)
-
 class tanh(Function):
     def __init__(self, x1):
         super().__init__(x1)
@@ -571,9 +608,6 @@ class tanh(Function):
     def forward(self):
         self.output = (exp(self.x1) - exp(-self.x1)) / (exp(self.x1) + exp(-self.x1))
         return self.output.output
-
-    def backward(self, grad):
-        self.output.backward(grad)
 
 class softmax(Function):
     def __init__(self, x1):
@@ -585,9 +619,6 @@ class softmax(Function):
         self.output = probabilities
         return self.output.output
 
-    def backward(self, grad):
-        self.output.backward(grad)
-
 class relu(Function):
     def __init__(self, x1):
         super().__init__(x1)
@@ -596,16 +627,20 @@ class relu(Function):
         self.output = maximum(0, self.x1)
         return self.output.output
 
+class leaky_relu(Function):
+    def __init__(self, x1):
+        super().__init__(x1)
+
+    def forward(self):
+        self.output = Tensor(np.where(self.x1.array > 0, self.x1.array, self.x1.array * 0.01), requires_grad=self._requires_grad(self.x1))
+        return self.output
+
     def backward(self, grad):
-        self.output.backward(grad)
+        self._apply_grad(self.x1, grad * self.derivative())
 
-class Parameter(Tensor):
-    def __init__(self, object, *args, **kwargs):
-        super().__init__(object, *args, **kwargs)
-        self.momentums = zeros_like(self)
-        self.cache = zeros_like(self)
-
-    def zero_grad(self):
-        self.grad = np.zeros_like(self.array)
-        self.momentums.zero_grad()
-        self.cache.zero_grad()
+    def derivative(self):
+        self.update_requires_grad(self.x1, True)
+        dA = np.ones_like(self.x1.array)
+        dA[self.x1.array < 0] = 0.01
+        self.update_requires_grad(self.x1, False)
+        return dA
