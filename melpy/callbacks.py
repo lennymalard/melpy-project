@@ -209,11 +209,6 @@ class LiveMetrics(Callback):
             - If the `row_select` parameter is not one of ("limited", "full").
             - If the `f1` or `f2` parameters are not integers.
         """
-        self.mode = mode
-        self.f1 = f1
-        self.f2 = f2
-        self.row_select = row_select
-
         if not isinstance(row_select, str):
             raise ValueError("`row_select` must be a string.")
         if not isinstance(f1, int):
@@ -222,10 +217,15 @@ class LiveMetrics(Callback):
             raise ValueError("`f2` must be an integer.")
         if not isinstance(mode, int):
             raise ValueError("`mode` must be an integer.")
-        if self.mode not in (1, 2, 3):
+        if mode not in (1, 2, 3):
             raise ValueError("`mode` must be one of (1, 2, 3).")
-        if self.row_select not in ("limited", "full"):
+        if row_select not in ("limited", "full"):
             raise ValueError("`row_select` must be one of ('limited', 'full').")
+
+        self.mode = mode
+        self.f1 = f1
+        self.f2 = f2
+        self.row_select = row_select
 
     def on_epoch_end(self, model, figure):
         """
