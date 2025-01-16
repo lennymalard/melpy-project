@@ -38,7 +38,10 @@ X_val = sc.transform(X_val)
 # %% Data visualization
 import seaborn
 
-df = pd.DataFrame({"Pclass": X_train[:,0].flatten(), "Sex": X_train[:,1].flatten(), "Age": X_train[:,2].flatten(), "Fare": X_train[:,3].flatten(), "Survived": y_train.flatten()})
+df = pd.DataFrame({"Pclass": X_train[:,0].flatten(), "Sex": X_train[:,1].flatten(),
+                   "Age": X_train[:,2].flatten(), "Fare": X_train[:,3].flatten(),
+                   "Survived": y_train.flatten()})
+
 seaborn.pairplot(df, hue="Survived")
 
 import matplotlib.pyplot as plt
