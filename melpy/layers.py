@@ -1,8 +1,29 @@
 import numpy as np
-from math import sqrt
 from .im2col import *
 from .tensor import *
-from copy import deepcopy
+
+def check_activation(activation):
+    if not isinstance(activation, str) and activation is not None:
+        raise TypeError("`activation` must be of type str.")
+    if activation.lower() not in ("sigmoid", "tanh", "softmax", "tanh", "relu", "leaky_relu"):
+        raise ValueError("'activation' must be one of 'sigmoid', 'softmax', 'tanh', 'relu', 'leaky_relu'.'")
+    
+def initialize_activation(activation, type):
+    if activation is None:
+        return None
+    check_activation(activation)
+    if type is Layer:
+        return {"sigmoid": Sigmoid(), "softmax": Softmax(), "tanh": Tanh(), "relu": ReLU(), "leaky_relu": LeakyReLU()}[activation.lower()]
+    elif type is Function:
+        return {"sigmoid": sigmoid, "softmax": softmax, "tanh": tanh, "relu": relu, "leaky_relu": leaky_relu}[activation.lower()]
+
+def check_input_dims(inputs, ndim):
+    if inputs.ndim != ndim:
+        raise ValueError(f"`inputs` must have {ndim} dimensions.")
+
+def check_tensor(obj, name):
+    if not isinstance(obj, Tensor) and not isinstance(obj, Operation) and obj is not None:
+        raise TypeError(f"`{name}` must be a Tensor.")
 
 class Layer:
     """
@@ -76,6 +97,13 @@ class Layer:
         pass
 
     def zero_grad(self):
+        """
+        Zeros the gradients of the Tanh activation function.
+
+        Returns
+        -------
+        None
+        """
         pass
 
 class Activation:
@@ -95,9 +123,9 @@ class Dense(Layer):
     Attributes
     ----------
     inputs : Tensor
-        Input data.
+        Input data with the shape configuration `(batch size, input size)`.
     outputs : Tensor
-        Output data.
+        Output data with the shape configuration `(batch size, output size)`.
     dX : ndarray
         Partial derivative of loss with respect to input.
     dY : ndarray
@@ -110,14 +138,8 @@ class Dense(Layer):
         Weights of the dense layer.
     biases : Tensor
         Biases of the dense layer.
-    weight_momentums : Tensor
-        Momentum for weights (also known as first order momentum).
-    bias_momentums : Tensor
-        Momentum for biases (also known as first order momentum).
-    weight_cache : Tensor
-        Cache for weights (also known as second order momentum).
-    bias_cache : Tensor
-        Cache for biases (also known as second order momentum).
+    activation : Activation, optional
+        Activation function.
 
     Methods
     -------
@@ -126,21 +148,21 @@ class Dense(Layer):
     backward(dX : ndarray)
         Computes the backward pass of the dense layer.
     """
-    def __init__(self, n_in, n_out, weight_initializer="he_uniform", activation=None):
+    def __init__(self, in_features, out_features, weight_initializer="he_uniform", activation=None):
         """
         Initializes the Dense layer.
 
         Parameters
         ----------
-        n_in : int
+        in_features : int
             Number of input features.
-        n_out : int
+        out_features : int
             Number of output features.
         weight_initializer : str, optional
             Weight initialization method ('he_normal', 'glorot_normal', 'he_uniform', 'glorot_uniform').
             Default is 'he_uniform'.
-        activation : Activation, optional
-            Activation function ('relu', 'leaky relu', 'sigmoid', 'softmax').
+        activation : str, optional
+            Activation function ('relu', 'leaky_relu', 'sigmoid', 'softmax', 'tanh').
 
         Raises
         ------
@@ -149,7 +171,7 @@ class Dense(Layer):
         """
         super().__init__()
 
-        def initialize_weights(weight_init, n_in, n_out):
+        def initialize_weights(weight_init, in_features, out_features):
             """
             Initializes the weights based on the specified method.
 
@@ -157,9 +179,9 @@ class Dense(Layer):
             ----------
             weight_init : str
                 Weight initialization method.
-            n_in : int
+            in_features : int
                 Number of input features.
-            n_out : int
+            out_features : int
                 Number of output features.
 
             Returns
@@ -167,29 +189,27 @@ class Dense(Layer):
             Tensor
                 Initialized weights.
             """
-            if weight_init == "he_normal":
-                weights = Parameter(np.random.randn(n_in, n_out) * np.sqrt(2.0 / n_in))
-            elif weight_init == "he_uniform":
-                limit = np.sqrt(6 / n_in)
-                weights = Parameter(np.random.uniform(-limit, limit, (n_in, n_out)))
-            elif weight_init == "glorot_normal":
-                weights = Parameter(np.random.randn(n_in, n_out) * np.sqrt(2.0 / (n_in + n_out)))
-            elif weight_init == "glorot_uniform":
-                limit = np.sqrt(6 / (n_in + n_out))
-                weights = Parameter(np.random.uniform(-limit, limit, (n_in, n_out)))
+            if weight_init.lower() == "he_normal":
+                weights = Parameter(np.random.randn(in_features, out_features) * np.sqrt(2.0 / in_features), requires_grad=True)
+            elif weight_init.lower() == "he_uniform":
+                limit = np.sqrt(6 / in_features)
+                weights = Parameter(np.random.uniform(-limit, limit, (in_features, out_features)), requires_grad=True)
+            elif weight_init.lower() == "glorot_normal":
+                weights = Parameter(np.random.randn(in_features, out_features) * np.sqrt(2.0 / (in_features + out_features)), requires_grad=True)
+            elif weight_init.lower() == "glorot_uniform":
+                limit = np.sqrt(6 / (in_features + out_features))
+                weights = Parameter(np.random.uniform(-limit, limit, (in_features, out_features)), requires_grad=True)
             else:
                 raise ValueError(
                     "`weight_init` must be either 'he_uniform', 'he_normal', 'glorot_uniform' or 'glorot_normal'.")
             return weights
 
-        self.weights = initialize_weights(weight_initializer, n_in, n_out)
-        self.biases = Parameter(np.random.rand(1, n_out))
+        self.weights = initialize_weights(weight_initializer, in_features, out_features)
+        self.biases = Parameter(np.random.rand(1, out_features), requires_grad=True)
         self.dW = np.zeros_like(self.weights.array)
         self.dB = np.zeros_like(self.biases.array)
-        self.activation = activation
 
-        if not isinstance(activation, Activation) and activation is not None:
-            raise TypeError("`activation` must be of type `Activation`.")
+        self.activation = initialize_activation(activation, Layer)
 
     def forward(self):
         """
@@ -200,6 +220,12 @@ class Dense(Layer):
         Tensor
             The output data.
         """
+        check_tensor(self.inputs, "inputs")
+        check_tensor(self.outputs, "outputs")
+        check_input_dims(self.inputs, 2)
+        self.inputs.requires_grad = True
+        self.weights.requires_grad = True
+        self.biases.requires_grad = True
         self.outputs = dot(self.inputs, self.weights) + self.biases
 
         if self.activation is not None:
@@ -232,6 +258,13 @@ class Dense(Layer):
         return self.dX
 
     def zero_grad(self):
+        """
+        Zeros the gradients of the Tanh activation function.
+
+        Returns
+        -------
+        None
+        """
         if self.activation is not None:
             self.activation.zero_grad()
         self.outputs.zero_grad()
@@ -288,7 +321,10 @@ class ReLU(Layer, Activation):
         Tensor
             The output data.
         """
-        self.outputs = Tensor(np.maximum(0, self.inputs.array))
+        check_tensor(self.inputs, "inputs")
+        check_tensor(self.outputs, "outputs")
+        self.inputs.requires_grad = True
+        self.outputs = Tensor(np.maximum(0, self.inputs.array), requires_grad=True)
         return self.outputs
 
     def backward(self, dX):
@@ -349,7 +385,7 @@ class LeakyReLU(Layer, Activation):
             The differentiated input data with respect to loss.
         """
         dA = np.ones_like(self.inputs.array)
-        dA[self.inputs.array <= 0] = 0.01
+        dA[self.inputs.array < 0] = 0.01
         return dA
 
     def forward(self):
@@ -361,7 +397,10 @@ class LeakyReLU(Layer, Activation):
         Tensor
             The output data.
         """
-        self.outputs = Tensor(np.where(self.inputs.array > 0, self.inputs.array, self.inputs.array * 0.01))
+        check_tensor(self.inputs, "inputs")
+        check_tensor(self.outputs, "outputs")
+        self.inputs.requires_grad = True
+        self.outputs = Tensor(np.where(self.inputs.array > 0, self.inputs.array, self.inputs.array * 0.01), requires_grad=True)
         return self.outputs
 
     def backward(self, dX):
@@ -432,6 +471,9 @@ class Sigmoid(Layer, Activation):
         Tensor
             The output data.
         """
+        check_tensor(self.inputs, "inputs")
+        check_tensor(self.outputs, "outputs")
+        self.inputs.requires_grad = True
         self.outputs = 1 / (1 + exp(-self.inputs))
         return self.outputs
 
@@ -455,23 +497,90 @@ class Sigmoid(Layer, Activation):
         return self.dX
 
     def zero_grad(self):
+        """
+        Zeros the gradients of the Tanh activation function.
+
+        Returns
+        -------
+        None
+        """
         self.outputs.zero_grad()
 
 class Tanh(Layer, Activation):
+    """
+    A class that performs Tanh (Hyperbolic Tangent) activation function operations.
+
+    Attributes
+    ----------
+    inputs : Tensor
+        Input data.
+    outputs : Tensor
+        Output data.
+    dX : ndarray
+        Partial derivative of loss with respect to input.
+    dY : ndarray
+        Partial derivative of loss with respect to output.
+
+    Methods
+    -------
+    forward()
+        Computes the forward pass of the Tanh activation function.
+    backward(dX : ndarray)
+        Computes the backward pass of the Tanh activation function.
+    zero_grad()
+        Zeros the gradients of the Tanh activation function.
+    """
+
     def __init__(self):
+        """
+        Initializes the Tanh activation function.
+        """
         super().__init__()
 
     def forward(self):
+        """
+        Computes the forward pass of the Tanh activation function.
+
+        Returns
+        -------
+        Tensor
+            The output data.
+        """
+        check_tensor(self.inputs, "inputs")
+        check_tensor(self.outputs, "outputs")
+        self.inputs.requires_grad = True
         self.outputs = (exp(self.inputs) - exp(-self.inputs)) / (exp(self.inputs) + exp(-self.inputs))
+        return self.outputs
 
     def backward(self, dX):
+        """
+        Computes the backward pass of the Tanh activation function.
+
+        Parameters
+        ----------
+        dX : ndarray
+            Partial derivative of loss with respect to output data.
+
+        Returns
+        -------
+        ndarray
+            Partial derivative of loss with respect to input data.
+        """
         self.dY = dX
         self.outputs.backward(self.dY)
         self.dX = self.inputs.grad
         return self.dX
 
     def zero_grad(self):
+        """
+        Zeros the gradients of the Tanh activation function.
+
+        Returns
+        -------
+        None
+        """
         self.outputs.zero_grad()
+
 
 class Softmax(Layer, Activation):
     """
@@ -510,6 +619,9 @@ class Softmax(Layer, Activation):
         Tensor
             The output data.
         """
+        check_tensor(self.inputs, "inputs")
+        check_tensor(self.outputs, "outputs")
+        self.inputs.requires_grad = True
         exp_values = exp(self.inputs - max(self.inputs, axis=1, keepdims=True))
         probabilities = exp_values / sum(exp_values, axis=1, keepdims=True)
         self.outputs = probabilities
@@ -535,14 +647,25 @@ class Softmax(Layer, Activation):
         return self.dX
 
     def zero_grad(self):
+        """
+        Zeros the gradients of the Tanh activation function.
+
+        Returns
+        -------
+        None
+        """
         self.outputs.zero_grad()
 
 class Convolution2D(Layer):
     """
-    A class that performs 2D convolution layer operations.
+    A class that performs Convolution 2D layer operations.
 
     Attributes
     ----------
+    inputs : Tensor
+        Input data with the shape configuration `(batch size, input channels, height, width)`.
+    outputs : Tensor
+        Output data with the shape configuration `(batch size, output channels, height, width)`.
     in_channels : int
         Number of input channels.
     out_channels : int
@@ -555,16 +678,8 @@ class Convolution2D(Layer):
         Size of the convolution kernel.
     stride : int
         Stride of the convolution.
-    weight_momentums : Tensor
-        Momentum for weights.
-    weight_cache : Tensor
-        Cache for weights.
-    biases : Tensor
-        Biases of the convolution layer.
-    bias_momentums : Tensor
-        Momentum for biases.
-    bias_cache : Tensor
-        Cache for biases.
+    activation : Activation, optional
+        Activation of the convolution layer.
 
     Methods
     -------
@@ -598,7 +713,7 @@ class Convolution2D(Layer):
         weight_initializer : str, optional
             Weight initialization method ('he_normal', 'glorot_normal', 'he_uniform', 'glorot_uniform').
             Default is 'he_uniform'.
-        activation : Activation, optional
+        activation : str, optional
             Activation function. Default is None.
 
         Raises
@@ -630,20 +745,26 @@ class Convolution2D(Layer):
             Tensor
                 Initialized weights.
             """
-            if weight_init == "he_normal":
+            if not isinstance(padding, str):
+                raise TypeError("`padding` must be a string.")
+
+            if padding not in ("valid", "same"):
+                raise ValueError("`padding` must be 'valid' or 'same'.")
+
+            if weight_init.lower() == "he_normal":
                 weights = Parameter(np.random.randn(out_channels, in_channels, kernel_size, kernel_size) * np.sqrt(
-                    2.0 / (in_channels * kernel_size ** 2)))
-            elif weight_init == "he_uniform":
+                    2.0 / (in_channels * kernel_size ** 2)), requires_grad=True)
+            elif weight_init.lower() == "he_uniform":
                 limit = np.sqrt(6 / (in_channels * kernel_size ** 2))
                 weights = Parameter(
-                    np.random.uniform(-limit, limit, (out_channels, in_channels, kernel_size, kernel_size)))
-            elif weight_init == "glorot_normal":
+                    np.random.uniform(-limit, limit, (out_channels, in_channels, kernel_size, kernel_size)), requires_grad=True)
+            elif weight_init.lower() == "glorot_normal":
                 weights = Parameter(np.random.randn(out_channels, in_channels, kernel_size, kernel_size) * np.sqrt(
-                    2.0 / (in_channels * kernel_size ** 2 + out_channels * kernel_size ** 2)))
-            elif weight_init == "glorot_uniform":
+                    2.0 / (in_channels * kernel_size ** 2 + out_channels * kernel_size ** 2)), requires_grad=True)
+            elif weight_init.lower() == "glorot_uniform":
                 limit = np.sqrt(6 / (in_channels * kernel_size ** 2 + out_channels * kernel_size ** 2))
                 weights = Parameter(
-                    np.random.uniform(-limit, limit, (out_channels, in_channels, kernel_size, kernel_size)))
+                    np.random.uniform(-limit, limit, (out_channels, in_channels, kernel_size, kernel_size)), requires_grad=True)
             else:
                 raise ValueError(
                     "`weight_init` must be either 'he_uniform', 'he_normal', 'glorot_uniform' or 'glorot_normal'.")
@@ -654,22 +775,15 @@ class Convolution2D(Layer):
         self.weights = initialize_weights(weight_initializer, in_channels, out_channels, kernel_size)
         self.dW = np.zeros_like(self.weights)
         if use_bias is True:
-            self.biases = Parameter(np.zeros(shape=(1, out_channels, 1, 1)).astype(np.float64))
+            self.biases = Parameter(np.zeros(shape=(1, out_channels, 1, 1)).astype(np.float64), requires_grad=True)
             self.dB = np.zeros_like(self.biases)
         else:
             self.biases = None
         self.padding = padding
         self.kernel_size = kernel_size
         self.stride = stride
-        self.activation = activation
 
-        if not isinstance(activation, Activation) and activation is not None:
-            raise TypeError("`activation` must be of type `Activation`.")
-
-        if not isinstance(padding, str):
-            raise TypeError("`padding` must be a string.")
-        if self.padding not in ("valid", "same"):
-            raise ValueError("`padding` must be 'valid' or 'same'.")
+        self.activation = initialize_activation(activation, Layer)
 
         if self.padding == "same":
             self.stride = 1
@@ -713,7 +827,7 @@ class Convolution2D(Layer):
             Padded input data.
         """
         pad_top, pad_bottom, pad_left, pad_right = self.calculate_padding()
-        return Tensor(np.pad(self.inputs.array, ((0, 0), (0, 0), (pad_top, pad_bottom), (pad_left, pad_right)), mode='constant'))
+        return Tensor(np.pad(self.inputs.array, ((0, 0), (0, 0), (pad_top, pad_bottom), (pad_left, pad_right)), mode='constant'), requires_grad=True)
 
     def get_output_size(self, input_height, input_width):
         """
@@ -749,10 +863,16 @@ class Convolution2D(Layer):
         Tensor
             The output data.
         """
+        check_tensor(self.inputs, "inputs")
+        check_tensor(self.outputs, "outputs")
+        check_input_dims(self.inputs, 4)
+        self.inputs.requires_grad = True
+        self.weights.requires_grad = True
+        self.biases.requires_grad = True
         self.input_padded = self.explicit_padding()
 
         self.input_cols = im2col(self.input_padded, self.kernel_size, self.stride)
-        self.filter_cols = Tensor(self.weights.array.reshape(self.out_channels, -1))
+        self.filter_cols = Tensor(self.weights.array.reshape(self.out_channels, -1), requires_grad=True)
 
         output_height, output_width = self.get_output_size(self.inputs.shape[2], self.inputs.shape[3])
 
@@ -760,7 +880,7 @@ class Convolution2D(Layer):
 
         self.outputs = Tensor(np.array(np.hsplit(self.output_cols.array, self.inputs.shape[0])).reshape(
             (self.input_padded.shape[0], self.out_channels, output_height, output_width)
-        ))
+        ), requires_grad=True)
 
         if self.biases is not None:
             self.outputs = self.outputs + self.biases
@@ -799,7 +919,7 @@ class Convolution2D(Layer):
         self.dX_cols = self.input_cols.grad
         self.dW_cols = self.filter_cols.grad
 
-        self.dX_padded = col2im(Tensor(self.dX_cols), self.input_padded.shape, self.kernel_size, self.stride)
+        self.dX_padded = col2im(Tensor(self.dX_cols, requires_grad=True), self.input_padded.shape, self.kernel_size, self.stride)
 
         if self.padding == "same":
             (pad_top, pad_bottom, pad_left, pad_right) = self.calculate_padding()
@@ -815,6 +935,13 @@ class Convolution2D(Layer):
         return self.dX
 
     def zero_grad(self):
+        """
+        Zeros the gradients of the Tanh activation function.
+
+        Returns
+        -------
+        None
+        """
         if self.activation is not None:
             self.activation.zero_grad()
         self.output_cols.zero_grad()
@@ -825,6 +952,10 @@ class Pooling2D(Layer):
 
     Attributes
     ----------
+    inputs : Tensor
+        Input data with the shape configuration `(batch size, channels, height, width)`.
+    outputs : Tensor
+        Output data with the shape configuration `(batch size, channels, height, width)`.
     pool_size : int
         Size of the pooling window.
     stride : int
@@ -874,6 +1005,11 @@ class Pooling2D(Layer):
         Tensor
             The output data.
         """
+        check_tensor(self.inputs, "inputs")
+        check_tensor(self.outputs, "outputs")
+        check_input_dims(self.inputs, 4)
+
+        self.inputs.requires_grad = True
         output_height = int((self.inputs.shape[2] - self.pool_size + self.stride) // self.stride)
         output_width = int((self.inputs.shape[3] - self.pool_size + self.stride) // self.stride)
 
@@ -881,12 +1017,12 @@ class Pooling2D(Layer):
 
         self.input_cols = im2col(self.inputs, self.pool_size, self.stride)
         self.input_cols_reshaped = Tensor(
-            np.array(np.hsplit(np.array(np.hsplit(self.input_cols.array, self.inputs.shape[0])), self.inputs.shape[1])))
+            np.array(np.hsplit(np.array(np.hsplit(self.input_cols.array, self.inputs.shape[0])), self.inputs.shape[1])), requires_grad=True)
 
         self.maxima = max(self.input_cols_reshaped, axis=2)
         self.maxima_reshaped = self.maxima.array.reshape(self.inputs.shape[1], -1)
 
-        self.outputs = col2im(Tensor(self.maxima_reshaped), output_shape, 1, 1)
+        self.outputs = col2im(Tensor(self.maxima_reshaped, requires_grad=True), output_shape, 1, 1)
 
         return self.outputs
 
@@ -907,7 +1043,7 @@ class Pooling2D(Layer):
         self.dY = dX
         self.dX = np.zeros_like(self.inputs)
 
-        self.dY_cols = im2col(Tensor(self.dY), 1, 1)
+        self.dY_cols = im2col(Tensor(self.dY, requires_grad=True), 1, 1)
         self.dY_cols_reshaped = np.array(
             np.hsplit(np.array(np.hsplit(self.dY_cols.array, self.dY.shape[0])), self.dY.shape[1]))
 
@@ -915,16 +1051,34 @@ class Pooling2D(Layer):
 
         self.dX_cols = np.concatenate(np.concatenate(self.input_cols_reshaped.grad, axis=1), axis=1)
 
-        self.dX = col2im(Tensor(self.dX_cols), self.inputs.shape, self.pool_size, self.stride).array
+        self.dX = col2im(Tensor(self.dX_cols, requires_grad=True), self.inputs.shape, self.pool_size, self.stride).array
 
         return self.dX
 
     def zero_grad(self):
+        """
+        Zeros the gradients of the Tanh activation function.
+
+        Returns
+        -------
+        None
+        """
         self.maxima.zero_grad()
 
 class Flatten(Layer):
     """
     A class that performs flattening layer operations.
+
+    Attributes
+    ----------
+    inputs : Tensor
+        Input data.
+    outputs : Tensor
+        Output data.
+    dX : ndarray
+        Partial derivative of loss with respect to input data.
+    dY : ndarray
+        Partial derivative of loss with respect to output data.
 
     Methods
     -------
@@ -948,7 +1102,10 @@ class Flatten(Layer):
         Tensor
             The output data.
         """
-        self.outputs = Tensor(self.inputs.array.reshape((self.inputs.shape[0], -1)))
+        check_tensor(self.inputs, "inputs")
+        check_tensor(self.outputs, "outputs")
+        self.inputs.requires_grad = True
+        self.outputs = Tensor(self.inputs.array.reshape((self.inputs.shape[0], -1)), requires_grad=True)
         return self.outputs
 
     def backward(self, dX):
@@ -975,6 +1132,14 @@ class Dropout(Layer):
 
     Attributes
     ----------
+    inputs : Tensor
+        Input data.
+    outputs : Tensor
+        Output data.
+    dX : ndarray
+        Partial derivative of loss with respect to input data.
+    dY : ndarray
+        Partial derivative of loss with respect to output data.
     p : float
         Dropout probability.
     mask : ndarray
@@ -1019,9 +1184,12 @@ class Dropout(Layer):
         Tensor
             The output data.
         """
+        check_tensor(self.inputs, "inputs")
+        check_tensor(self.outputs, "outputs")
+        self.inputs.requires_grad = True
         if self.training:
             self.mask = np.random.binomial(1, 1 - self.p, size=self.inputs.shape)
-            self.outputs = Tensor(self.inputs.array * self.mask * 1.0 / (1.0 - self.p))
+            self.outputs = Tensor(self.inputs.array * self.mask * 1.0 / (1.0 - self.p), requires_grad=True)
         else:
             self.outputs = self.inputs
         return self.outputs
@@ -1052,6 +1220,10 @@ class Linear:
 
     Attributes
     ----------
+    inputs : Tensor
+        Input data.
+    outputs : Tensor
+        Output data.
     weights : ndarray
         Weights of the linear layer.
     biases : ndarray
@@ -1064,19 +1236,19 @@ class Linear:
     backward(lr : float)
         Computes the backward pass of the linear layer.
     """
-    def __init__(self, n_in, n_out):
+    def __init__(self, in_features, out_features):
         """
         Initializes the Linear layer.
 
         Parameters
         ----------
-        n_in : int
+        in_features : int
             Number of input features.
-        n_out : int
+        out_features : int
             Number of output features.
         """
-        self.weights = np.random.rand(n_in, n_out)
-        self.biases = np.random.rand(1, n_out)
+        self.weights = np.random.rand(in_features, out_features)
+        self.biases = np.random.rand(1, out_features)
         self.dW = None
         self.dB = None
 
@@ -1089,6 +1261,9 @@ class Linear:
         ndarray
             The output data.
         """
+        check_tensor(self.inputs, "inputs")
+        check_tensor(self.outputs, "outputs")
+        self.inputs.requires_grad = True
         self.outputs = np.dot(self.inputs, self.weights) + self.biases
         return self.outputs
 
@@ -1109,36 +1284,138 @@ class Linear:
         self.dB *= np.zeros(self.dB.shape, dtype=np.float64)
 
 class LSTMCell(Layer):
-    def __init__(self, input_size, hidden_size, activation = tanh, use_bias=True):
+    """
+    Implements a single Long Short-Term Memory (LSTM) cell.
+
+    Attributes
+    ----------
+    inputs : Tensor
+        Input data with the shape configuration `(batch size, input size)`.
+    outputs : Tensor
+        Output data with the shape configuration `(batch size, hidden size)`.
+    input_size : int
+        Number of input features.
+    hidden_size : int
+        Number of hidden units.
+    activation : Function
+        Activation function for the cell state and output.
+    use_bias : bool
+        Whether to use biases in the cell.
+    input_weights, hidden_weights : Weights
+        Weight matrices for input and hidden states, respectively.
+    biases : Biases, optional
+        Bias terms for input, forget, cell, and output gates.
+    cell_state : Tensor
+        Current cell state.
+    hidden_state : Tensor
+        Current hidden state.
+    input_gate, forget_gate, output_gate, cell_input : Tensor
+        Intermediate gate computations.
+    dH : ndarray
+            Gradient of loss with respect to the previous hidden state.
+    dC : ndarray
+        Gradient of loss with respect to the previous cell state.
+    dX : ndarray
+        Gradient of loss with respect to the input.
+
+    Methods
+    -------
+    forward(hidden_state, cell_state)
+        Computes the forward pass, updating hidden and cell states.
+    backward(hidden_state_grad, cell_state_grad)
+        Computes gradients for inputs and parameters.
+    zero_grad()
+        Resets all gradients to zero.
+    clear_memory()
+        Clears stored intermediate states for a new sequence.
+    """
+
+    def __init__(self, input_size, hidden_size, activation="tanh", use_bias=True):
+        """
+        Initialize the LSTM cell.
+
+        Parameters
+        ----------
+        input_size : int
+            Number of input features.
+        hidden_size : int
+            Number of hidden units.
+        activation : str, optional
+            Activation function for cell state/output. Default is 'tanh'.
+        use_bias : bool, optional
+            Whether to include biases. Default is True.
+        """
         super().__init__()
         self.input_size = input_size
         self.hidden_size = hidden_size
-        self.activation = activation
+        self.activation = initialize_activation(activation, Function)
         self.use_bias = use_bias
 
-        self.gates = None
         self.input_gate = None
         self.output_gate = None
         self.forget_gate = None
+        self.next_forget_gate = None
         self.cell_input = None
-
         self.cell_state = None
         self.previous_cell_state = None
         self.hidden_state = None
         self.previous_hidden_state = None
 
+        self.sequence_hidden_states = []
+        self.sequence_cell_states = []
+        self.sequence_input_gates= []
+        self.sequence_forget_gates = []
+        self.sequence_cell_inputs = []
+        self.sequence_output_gates = []
+        self.sequence_inputs = []
+
         self.input_weights = self.Weights((input_size, hidden_size))
         self.hidden_weights = self.Weights((hidden_size, hidden_size))
         self.biases = self.Biases((1, hidden_size)) if use_bias else None
 
-    def forward(self, hidden_state, cell_state):
+        self.i_input_weights, self.f_input_weights, self.c_input_weights, self.o_input_weights = self.input_weights.split()
+        self.i_hidden_weights, self.f_hidden_weights, self.c_hidden_weights, self.o_hidden_weights = self.hidden_weights.split()
+        self.i_biases, self.f_biases, self.c_biases, self.o_biases = self.biases.split()
+
+        self.dC = None
+        self.dH = None
+
+    def forward(self, inputs, hidden_state, cell_state):
+        """
+        Perform the forward pass of the LSTM cell.
+
+        Parameters
+        ----------
+        hidden_state : Tensor
+            Previous hidden state.
+        cell_state : Tensor
+            Previous cell state.
+
+        Returns
+        -------
+        hidden_state : Tensor
+            Updated hidden state.
+        cell_state : Tensor
+            Updated cell state.
+        """
+        check_tensor(inputs, "inputs")
+        check_tensor(self.outputs, "outputs")
+        check_input_dims(inputs, 2)
+
+        self.inputs = inputs
         self.previous_hidden_state = Tensor(hidden_state.array)
         self.previous_cell_state = Tensor(cell_state.array)
 
-        self.gates = self.inputs @ self.input_weights + self.previous_hidden_state @ self.hidden_weights
+        input_gate = self.inputs @ self.i_input_weights + self.previous_hidden_state @ self.i_hidden_weights
+        output_gate = self.inputs @ self.o_input_weights + self.previous_hidden_state @ self.o_hidden_weights
+        forget_gate = self.inputs @ self.f_input_weights + self.previous_hidden_state @ self.f_hidden_weights
+        cell_input = self.inputs @ self.c_input_weights + self.previous_hidden_state @ self.c_hidden_weights
+
         if self.use_bias:
-            self.gates += self.biases
-        input_gate, forget_gate, cell_input, output_gate = tuple([Tensor(gate) for gate in np.hsplit(self.gates.array, 4)])
+            input_gate += self.i_biases
+            output_gate += self.o_biases
+            forget_gate += self.f_biases
+            cell_input += self.c_biases
 
         self.input_gate = sigmoid(input_gate)
         self.output_gate = sigmoid(output_gate)
@@ -1149,84 +1426,295 @@ class LSTMCell(Layer):
         self.hidden_state = self.output_gate * self.activation(self.cell_state)
         self.outputs = self.hidden_state
 
+        self.sequence_hidden_states.append(self.hidden_state)
+        self.sequence_cell_states.append(self.cell_state)
+        self.sequence_input_gates.append(self.input_gate)
+        self.sequence_forget_gates.append(self.forget_gate)
+        self.sequence_cell_inputs.append(self.cell_input)
+        self.sequence_output_gates.append(self.output_gate)
+        self.sequence_inputs.append(self.inputs)
+
         return self.hidden_state, self.cell_state
 
-    def backward(self, hidden_state_grad):
-        self.dY = hidden_state_grad
-        self.hidden_state.backward(hidden_state_grad)
-        gates_grad = np.hstack(
-            (self.input_gate.x1.grad, self.forget_gate.x1.grad, self.cell_input.x1.grad, self.output_gate.x1.grad))
-        self.gates.backward(gates_grad)
-        self.dX = self.previous_hidden_state.grad
-        return self.dX
+    def backward(self, hidden_state_grad, cell_state_grad):
+        """
+        Perform the backward pass of the LSTM cell.
+
+        Parameters
+        ----------
+        hidden_state_grad : ndarray
+            Gradient of loss with respect to the hidden state.
+        cell_state_grad : ndarray
+            Gradient of loss with respect to the cell state.
+
+        Returns
+        -------
+        dH : ndarray
+            Gradient of loss with respect to the previous hidden state.
+        dC : ndarray
+            Gradient of loss with respect to the previous cell state.
+        dX : ndarray
+            Gradient of loss with respect to the input.
+        """
+        self.dC = (Tensor(hidden_state_grad) * self.output_gate * Tensor(self.activation(self.cell_state).derivative()) +
+                   Tensor(cell_state_grad) * self.next_forget_gate).array
+
+        dI = self.dC * self.cell_input.array
+        dF = self.dC * self.previous_cell_state.array
+        dO = hidden_state_grad * self.activation(self.cell_state).array
+        dTildeC = self.dC * self.input_gate.array
+
+        i_dZ = dI * self.input_gate.array * (1 - self.input_gate.array)
+        f_dZ = dF * self.forget_gate.array * (1 - self.forget_gate.array)
+        o_dZ = dO * self.output_gate.array * (1 - self.output_gate.array)
+        c_dZ = dTildeC * self.cell_input.derivative()
+
+        self.i_input_weights.grad += self.inputs.T.array @ i_dZ
+        self.f_input_weights.grad += self.inputs.T.array @ f_dZ
+        self.o_input_weights.grad += self.inputs.T.array @ o_dZ
+        self.c_input_weights.grad += self.inputs.T.array @ c_dZ
+
+        self.i_hidden_weights.grad += self.previous_hidden_state.T.array @ i_dZ
+        self.f_hidden_weights.grad += self.previous_hidden_state.T.array @ f_dZ
+        self.o_hidden_weights.grad += self.previous_hidden_state.T.array @ o_dZ
+        self.c_hidden_weights.grad += self.previous_hidden_state.T.array @ c_dZ
+
+        if self.use_bias:
+            self.i_biases.grad += np.sum(i_dZ, axis=0, keepdims=True)
+            self.f_biases.grad += np.sum(f_dZ, axis=0, keepdims=True)
+            self.o_biases.grad += np.sum(o_dZ, axis=0, keepdims=True)
+            self.c_biases.grad += np.sum(c_dZ, axis=0, keepdims=True)
+
+        self.dH = i_dZ @ self.i_hidden_weights.T.array + f_dZ @ self.f_hidden_weights.T.array + \
+                  o_dZ @ self.o_hidden_weights.T.array + c_dZ @ self.c_hidden_weights.T.array
+
+        self.dX = i_dZ @ self.i_input_weights.T.array + f_dZ @ self.f_input_weights.T.array + \
+                  o_dZ @ self.o_input_weights.T.array + c_dZ @ self.c_input_weights.T.array
+
+        return  self.dX, self.dH, self.dC
+
+    def clear_memory(self):
+        """
+        Clear stored intermediate states for the cell.
+        """
+        self.sequence_hidden_states = []
+        self.sequence_cell_states = []
+        self.sequence_input_gates= []
+        self.sequence_forget_gates = []
+        self.sequence_cell_inputs = []
+        self.sequence_output_gates = []
+        self.sequence_inputs = []
 
     def zero_grad(self):
-        self.hidden_state.zero_grad()
-        self.gates.zero_grad()
+        """
+        Zeros the gradients of the LSTM cell.
+
+        Returns
+        -------
+        None
+        """
+        self.i_input_weights.zero_grad()
+        self.f_input_weights.zero_grad()
+        self.c_input_weights.zero_grad()
+        self.o_input_weights.zero_grad()
+
+        self.i_hidden_weights.zero_grad()
+        self.f_hidden_weights.zero_grad()
+        self.c_hidden_weights.zero_grad()
+        self.o_hidden_weights.zero_grad()
+
+        self.i_biases.zero_grad()
+        self.f_biases.zero_grad()
+        self.o_biases.zero_grad()
+        self.c_biases.zero_grad()
 
     class Weights(Parameter):
+        """
+        A class that initializes the weights of the LSTM cell.
+
+        Methods
+        -------
+        split()
+            Splits the tensor in 4 parameters of type Parameter.
+        """
         def __init__(self, shape):
             limit = np.sqrt(6 / (shape[0] + 4 * shape[1]))
             array = np.random.uniform(-limit, limit, (shape[0], 4 * shape[1]))
-            super().__init__(object = array)
+            super().__init__(object=array)
 
         def split(self):
+            # Grad not required because it would break direct backward computations
             return tuple(Parameter(W) for W in np.hsplit(self.array, 4))
 
     class Biases(Parameter):
+        """
+
+        A class that initializes the biases of the LSTM cell.
+
+        Methods
+        -------
+        split()
+            Splits the tensor in 4 parameters of type Parameter.
+        """
         def __init__(self, shape):
+            if shape[0] != 1:
+                raise ValueError("The shape at index 0 must be 1.")
             limit = np.sqrt(6 / (shape[0] + 4 * shape[1]))
             array = np.random.uniform(-limit, limit, (shape[0], 4 * shape[1]))
-            super().__init__(object = array)
+            super().__init__(object=array)
 
         def split(self):
-            return tuple(Parameter(W) for W in np.hsplit(self.array, 4))
+            # Grad not required because it would break direct backward computations
+            return tuple(Parameter(W.reshape(1,-1)) for W in np.hsplit(self.array, 4))
 
 class LSTM(Layer):
-    def __init__(self, input_size, hidden_size, activation = tanh, num_layers=1, use_bias=True, dropout=0.0):
+    """
+    Implements a Long Short-Term Memory (LSTM) layer for sequential data.
+
+    Attributes
+    ----------
+    inputs : Tensor
+        Input data with the shape configuration `(batch size, sequence length, input size)`.
+    outputs : Tensor
+        Output data with the shape configuration `(batch size, sequence length, hidden size)`.
+    input_size : int
+        Number of input features.
+    hidden_size : int
+        Number of hidden units in each cell.
+    num_layers : int
+        Number of stacked LSTM layers.
+    use_bias : bool
+        Whether to include biases in the cells.
+    cells : list of LSTMCell
+        List of LSTMCell instances for each layer.
+
+    Methods
+    -------
+    forward()
+        Performs the forward pass for a sequence of inputs.
+    backward(dX)
+        Computes gradients for inputs and parameters.
+    zero_grad()
+        Resets gradients for all LSTM cells.
+    """
+
+
+    def __init__(self, input_size, hidden_size, activation="tanh", num_layers=1, use_bias=True):
+        """
+        Initialize the LSTM layer.
+
+        Parameters
+        ----------
+        input_size : int
+            Number of input features.
+        hidden_size : int
+            Number of hidden units in each cell.
+        activation : str, optional
+            Activation function for the cells. Default is 'tanh'.
+        num_layers : int, optional
+            Number of stacked LSTM layers. Default is 1.
+        use_bias : bool, optional
+            Whether to include biases. Default is True.
+        """
+        check_activation(activation)
+        
         super().__init__()
         self.input_size = input_size
         self.hidden_size = hidden_size
         self.use_bias = use_bias
-        self.dropout = dropout
         self.num_layers = num_layers
 
-        self.cells = ([LSTMCell(input_size, hidden_size, deepcopy(activation), use_bias=use_bias)] +
-                      [LSTMCell(hidden_size, hidden_size, deepcopy(activation), use_bias=use_bias) for _ in range(num_layers-1)])
-        self.states = {}
-
-        self.dY = None
-        self.dX = None
+        self.cells = [
+            LSTMCell(input_size if i == 0 else hidden_size, hidden_size, activation, use_bias=use_bias)
+            for i in range(num_layers)
+        ]
 
     def forward(self):
+        """
+        Performs the forward pass through the LSTM layer.
+
+        For each timestep in the sequence, computes the hidden and cell states for each LSTM cell in the layer.
+
+        Returns
+        -------
+        outputs : Tensor
+            The hidden state output of the last LSTM cell in the last layer.
+        """
+        check_tensor(self.inputs, "inputs")
+        check_tensor(self.outputs, "outputs")
+        check_input_dims(self.inputs, 3)
         batch_size, sequence_length = self.inputs.shape[:2]
-        self.states = {f"cell{i}": [] for i in range(len(self.cells))}
+        for cell in self.cells:
+            cell.clear_memory()
         for t in range(sequence_length):
-            self.cells[0].inputs = Tensor(self.inputs.array[:, t])
             for i, cell in enumerate(self.cells):
-                if t == 0:
-                    hidden_state = zeros((batch_size, self.hidden_size))
-                    cell_state = zeros((batch_size, self.hidden_size))
-                else:
-                    hidden_state, cell_state = self.states[f"cell{i}"][t - 1]
-                hidden_state, cell_state = cell.forward(hidden_state, cell_state)
-                self.states[f"cell{i}"].append((hidden_state, cell_state))
-                if i + 1 < len(self.cells):
-                    self.cells[i + 1].inputs = cell.hidden_state.output
+                inputs = Tensor(self.inputs.array[:, t]) if i == 0 else hidden_state.output
+                hidden_state = zeros((batch_size, self.hidden_size)) if t == 0 else cell.sequence_hidden_states[t-1]
+                cell_state = zeros((batch_size, self.hidden_size)) if t == 0 else cell.sequence_cell_states[t-1]
+                hidden_state, cell_state = cell.forward(inputs, hidden_state, cell_state)
         self.outputs = hidden_state
         return self.outputs
 
     def backward(self, dX):
+        """
+        Performs the backward pass through the LSTM layer.
+
+        Computes gradients for all inputs, weights, biases, and hidden states.
+
+        Parameters
+        ----------
+        dX : ndarray
+            Gradient of loss with respect to the output.
+
+        Returns
+        -------
+        dX : ndarray
+            Gradient of loss with respect to the input.
+        """
+        batch_size, sequence_length, input_size = self.inputs.shape
         self.dY = dX
         hidden_state_grad = dX
-        for t in reversed(range(self.inputs.shape[1])):
-            for i in reversed(range(len(self.cells))):
-                cell_states = self.states[f"cell{i}"][t]
-                self.cells[i].hidden_state = cell_states[0]
-                hidden_state_grad = self.cells[i].backward(hidden_state_grad)
-        self.dX = hidden_state_grad  # Final gradient of the inputs
+        cell_state_grad = np.zeros((batch_size, self.hidden_size))
+        for i in reversed(range(len(self.cells))):
+            for t in reversed(range(sequence_length)):
+                if t < sequence_length-1:
+                    self.cells[i].next_forget_gate = self.cells[i].sequence_forget_gates[t+1]
+                else:
+                    self.cells[i].dH = hidden_state_grad
+                    self.cells[i].dC = cell_state_grad
+                    self.cells[i].next_forget_gate = zeros_like(self.cells[0].forget_gate)
+
+                self.cells[i].input_gate = self.cells[i].sequence_input_gates[t]
+                self.cells[i].output_gate = self.cells[i].sequence_output_gates[t]
+                self.cells[i].forget_gate = self.cells[i].sequence_forget_gates[t]
+                self.cells[i].cell_input = self.cells[i].sequence_cell_inputs[t]
+                self.cells[i].hidden_state = self.cells[i].sequence_hidden_states[t]
+                self.cells[i].cell_state = self.cells[i].sequence_cell_states[t]
+                self.cells[i].inputs = self.cells[i].sequence_inputs[t]
+
+                if t > 0:
+                    self.cells[i].previous_hidden_state = self.cells[i].sequence_hidden_states[t-1]
+                    self.cells[i].previous_cell_state = self.cells[i].sequence_cell_states[t-1]
+                else:
+                    self.cells[i].previous_hidden_state = zeros((batch_size, self.hidden_size))
+                    self.cells[i].previous_cell_state = zeros((batch_size, self.hidden_size))
+
+                dX, hidden_state_grad, cell_state_grad = self.cells[i].backward(hidden_state_grad, cell_state_grad)
+
+                if t < sequence_length-1 and i == 0:
+                    self.dX = np.concatenate((dX.reshape(batch_size, 1, input_size), self.dX), axis=1)
+                elif t == sequence_length-1 and i == 0:
+                    self.dX = dX.reshape(batch_size, 1, input_size)
+
         return self.dX
 
     def zero_grad(self):
+        """
+        Resets the gradients of all LSTM cells in the layer to zero.
+
+        Returns
+        -------
+        None
+        """
         for cell in self.cells:
             cell.zero_grad()
