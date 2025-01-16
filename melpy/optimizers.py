@@ -10,11 +10,13 @@ class Optimizer:
     ----------
     learning_rate : float
         The learning rate for the optimizer.
-    momentum : float
-        The momentum term for the optimizer.
+    gradnorm : float
+        The threshold value for gradient normalization during optimization.
 
     Methods
     -------
+    update_parameter(parameter : Parameter)
+        Updates a given parameter.
     update_layer(layer : Layer)
         Updates the parameters of the given layer.
     """
@@ -23,9 +25,18 @@ class Optimizer:
         Initializes the Optimizer object.
         """
         self.learning_rate = None
+        self.gradnorm = None
         self.step = 1
 
     def update_parameter(self, parameter):
+        """
+        Updates a given parameter.
+
+        Parameters
+        ----------
+        parameter : Parameter
+            The parameter updated.
+        """
         pass
 
     def update_layer(self, layer):
@@ -52,17 +63,25 @@ class SGD(Optimizer):
         """
         Initializes the SGD optimizer.
         """
-        super().__init__()
-        self.learning_rate = learning_rate
-        self.momentum = momentum
-        self.gradnorm = gradnorm
-
         if not isinstance(learning_rate, float):
             raise TypeError("`learning_rate` must be a float")
         if not isinstance(momentum, float) and momentum is not None:
             raise TypeError("`momentum` must be a float or None")
 
+        super().__init__()
+        self.learning_rate = learning_rate
+        self.momentum = momentum
+        self.gradnorm = gradnorm
+
     def update_parameter(self, parameter):
+        """
+        Updates a given parameter using SGD.
+
+        Parameters
+        ----------
+        parameter : Parameter
+            The parameter updated.
+        """
         if np.linalg.norm(parameter.grad) >= self.gradnorm:
             parameter.grad = self.gradnorm * parameter.grad / np.linalg.norm(parameter.grad)
         if self.momentum is not None:
@@ -98,10 +117,21 @@ class SGD(Optimizer):
 
         elif isinstance(layer, LSTM):
             for cell in layer.cells:
-                cell.input_weights = self.update_parameter(cell.input_weights)
-                cell.hidden_weights = self.update_parameter(cell.hidden_weights)
+                cell.i_input_weights = self.update_parameter(cell.i_input_weights)
+                cell.f_input_weights = self.update_parameter(cell.f_input_weights)
+                cell.c_input_weights = self.update_parameter(cell.c_input_weights)
+                cell.o_input_weights = self.update_parameter(cell.o_input_weights)
+
+                cell.i_hidden_weights = self.update_parameter(cell.i_hidden_weights)
+                cell.f_hidden_weights = self.update_parameter(cell.f_hidden_weights)
+                cell.c_hidden_weights = self.update_parameter(cell.c_hidden_weights)
+                cell.o_hidden_weights = self.update_parameter(cell.o_hidden_weights)
+
                 if cell.biases is not None:
-                    cell.biases = self.update_parameter(cell.biases)
+                    cell.i_biases = self.update_parameter(cell.i_biases)
+                    cell.f_biases = self.update_parameter(cell.f_biases)
+                    cell.c_biases = self.update_parameter(cell.c_biases)
+                    cell.o_biases = self.update_parameter(cell.o_biases)
 
         return layer
 
@@ -129,6 +159,13 @@ class Adam(Optimizer):
         """
         Initializes the Adam optimizer.
         """
+        if not isinstance(learning_rate, float):
+            raise TypeError("`learning_rate` must be a float")
+        if not isinstance(beta1, float):
+            raise TypeError("`beta1` must be a float")
+        if not isinstance(beta2, float):
+            raise TypeError("`beta2` must be a float")
+
         super().__init__()
         self.beta1 = beta1
         self.beta2 = beta2
@@ -137,14 +174,15 @@ class Adam(Optimizer):
         self.step = 1
         self.gradnorm = gradnorm
 
-        if not isinstance(learning_rate, float):
-            raise TypeError("`learning_rate` must be a float")
-        if not isinstance(beta1, float):
-            raise TypeError("`beta1` must be a float")
-        if not isinstance(beta2, float):
-            raise TypeError("`beta2` must be a float")
-
     def update_parameter(self, parameter):
+        """
+        Updates a given parameter using Adam.
+
+        Parameters
+        ----------
+        parameter : Parameter
+            The parameter updated.
+        """
         if np.linalg.norm(parameter.grad) >= self.gradnorm:
             parameter.grad = self.gradnorm * parameter.grad / np.linalg.norm(parameter.grad)
 
@@ -184,9 +222,20 @@ class Adam(Optimizer):
 
         elif isinstance(layer, LSTM):
             for cell in layer.cells:
-                cell.input_weights = self.update_parameter(cell.input_weights)
-                cell.hidden_weights = self.update_parameter(cell.hidden_weights)
+                cell.i_input_weights = self.update_parameter(cell.i_input_weights)
+                cell.f_input_weights = self.update_parameter(cell.f_input_weights)
+                cell.c_input_weights = self.update_parameter(cell.c_input_weights)
+                cell.o_input_weights = self.update_parameter(cell.o_input_weights)
+
+                cell.i_hidden_weights = self.update_parameter(cell.i_hidden_weights)
+                cell.f_hidden_weights = self.update_parameter(cell.f_hidden_weights)
+                cell.c_hidden_weights = self.update_parameter(cell.c_hidden_weights)
+                cell.o_hidden_weights = self.update_parameter(cell.o_hidden_weights)
+
                 if cell.biases is not None:
-                    cell.biases = self.update_parameter(cell.biases)
+                    cell.i_biases = self.update_parameter(cell.i_biases)
+                    cell.f_biases = self.update_parameter(cell.f_biases)
+                    cell.c_biases = self.update_parameter(cell.c_biases)
+                    cell.o_biases = self.update_parameter(cell.o_biases)
 
         return layer
