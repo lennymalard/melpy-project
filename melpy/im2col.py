@@ -60,7 +60,7 @@ def im2col(images, window_shape, stride):
         The column matrix representation of the input images.
     """
     k, i, j = get_indices(images.shape, window_shape, stride)
-    columns = Tensor(np.concatenate(images.array[:, k, i, j], axis=-1))
+    columns = Tensor(np.concatenate(images.array[:, k, i, j], axis=-1), requires_grad=True)
     return columns
 
 def col2im(columns, image_shape, window_shape, stride):
@@ -87,4 +87,4 @@ def col2im(columns, image_shape, window_shape, stride):
     k, i, j = get_indices(image_shape, window_shape, stride)
     cols_reshaped = np.array(np.hsplit(columns.array, image_shape[0]))
     np.add.at(images, (slice(None), k, i, j), cols_reshaped)
-    return Tensor(images)
+    return Tensor(images, requires_grad=True)
