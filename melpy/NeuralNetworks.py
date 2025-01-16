@@ -137,16 +137,26 @@ val_targets : ndarray, Tensor
             If `train_inputs` and `train_targets` are not of type ndarray or Tensor.
             If `val_inputs` and `val_targets` are provided and not of type ndarray or Tensor.
         """
-        self.train_inputs = Tensor(train_inputs) if isinstance(train_inputs, np.ndarray) else train_inputs
+        if not isinstance(train_inputs, np.ndarray) and not isinstance(train_inputs, Tensor):
+            raise TypeError('`train_inputs` must be of type ndarray or Tensor.')
+        if not isinstance(train_targets, np.ndarray) and not isinstance(train_targets, Tensor):
+            raise TypeError('`train_targets` must be of type ndarray or Tensor.')
+        if val_inputs is not None and val_targets is not None:
+            if not isinstance(val_inputs, np.ndarray) and not isinstance(val_inputs, Tensor):
+                raise TypeError('`val_targets` must be of type ndarray or Tensor.')
+            if not isinstance(val_targets, np.ndarray) and not isinstance(val_targets, Tensor):
+                raise TypeError('`val_targets` must be of type ndarray or Tensor.')
+
+        self.train_inputs = Tensor(train_inputs, requires_grad=True) if isinstance(train_inputs, np.ndarray) else train_inputs
         self.train_input_batch = None
-        self.train_targets = Tensor(train_targets) if isinstance(train_targets, np.ndarray) else train_targets
+        self.train_targets = Tensor(train_targets, requires_grad=True) if isinstance(train_targets, np.ndarray) else train_targets
         self.train_target_batch = None
         self.train_outputs = None
         self.train_output_batch = None
 
-        self.val_inputs = Tensor(val_inputs) if isinstance(val_inputs, np.ndarray) else val_inputs
+        self.val_inputs = Tensor(val_inputs, requires_grad=True) if isinstance(val_inputs, np.ndarray) else val_inputs
         self.val_input_batch = None
-        self.val_targets = Tensor(val_targets) if isinstance(val_targets, np.ndarray) else val_targets
+        self.val_targets = Tensor(val_targets, requires_grad=True) if isinstance(val_targets, np.ndarray) else val_targets
         self.val_target_batch = None
         self.val_outputs = None
         self.val_output_batch = None
@@ -182,16 +192,6 @@ val_targets : ndarray, Tensor
         if self.val_inputs is not None and self.val_targets is not None:
             self.validation = True
 
-        if not isinstance(train_inputs, np.ndarray) and not isinstance(train_inputs, Tensor):
-            raise TypeError('`train_inputs` must be of type ndarray or Tensor.')
-        if not isinstance(train_targets, np.ndarray) and not isinstance(train_targets, Tensor):
-            raise TypeError('`train_targets` must be of type ndarray or Tensor.')
-        if self.val_inputs is not None and self.val_targets is not None:
-            if not isinstance(val_inputs, np.ndarray) and not isinstance(val_inputs, Tensor):
-                raise TypeError('`val_targets` must be of type ndarray or Tensor.')
-            if not isinstance(val_targets, np.ndarray) and not isinstance(val_targets, Tensor):
-                raise TypeError('`val_targets` must be of type ndarray or Tensor.')
-
     def get_flatten_length(self):
         """
         Computes the length of the flattened output from the `Flatten` layer.
@@ -208,7 +208,7 @@ val_targets : ndarray, Tensor
         ValueError
             If there is no `Flatten` layer in the training layers.
         """
-        self.train_layers[0].inputs = Tensor(self.train_inputs.array[0].reshape(1, *self.train_inputs.array[0].shape))
+        self.train_layers[0].inputs = Tensor(self.train_inputs.array[0].reshape(1, *self.train_inputs.array[0].shape), requires_grad=True)
         for i in range(len(self.train_layers)):
             if isinstance(self.train_layers[i], Flatten):
                 self.train_layers[i].forward()
@@ -300,8 +300,8 @@ val_targets : ndarray, Tensor
         if not isinstance(X, np.ndarray) and not isinstance(X, Tensor):
             raise TypeError("`X` must be of type ndarray or Tensor.")
         if X.ndim != self.train_inputs.ndim:
-            raise TypeError("`X`must have the same number of dimensions as `self.train_inputs`.")
-        self.train_layers[0].inputs = Tensor(X) if isinstance(X, np.ndarray) else X
+            raise TypeError("`X` must have the same number of dimensions as `self.train_inputs`.")
+        self.train_layers[0].inputs = Tensor(X, requires_grad=True) if isinstance(X, np.ndarray) else X
         for i in range(len(self.train_layers)):
             if isinstance(self.train_layers[i], Dropout):
                 self.train_layers[i].training = False
@@ -578,14 +578,14 @@ val_targets : ndarray, Tensor
                         self.val_input_batch = self.val_inputs
                         self.val_target_batch = self.val_targets
                 else:
-                    self.train_input_batch = Tensor(self.train_inputs.array[step * self.batch_size:(step + 1) * self.batch_size])
-                    self.train_target_batch = Tensor(self.train_targets.array[step * self.batch_size:(step + 1) * self.batch_size])
+                    self.train_input_batch = Tensor(self.train_inputs.array[step * self.batch_size:(step + 1) * self.batch_size], requires_grad=True)
+                    self.train_target_batch = Tensor(self.train_targets.array[step * self.batch_size:(step + 1) * self.batch_size], requires_grad=True)
 
                     if self.validation:
                         self.val_input_batch = Tensor(self.val_inputs.array[
-                                               step * self.val_batch_size:(step + 1) * self.val_batch_size])
+                                               step * self.val_batch_size:(step + 1) * self.val_batch_size], requires_grad=True)
                         self.val_target_batch = Tensor(self.val_targets.array[
-                                                step * self.val_batch_size:(step + 1) * self.val_batch_size])
+                                                step * self.val_batch_size:(step + 1) * self.val_batch_size], requires_grad=True)
 
                 self.forward()
 
@@ -645,12 +645,12 @@ val_targets : ndarray, Tensor
 
         if get_output:
             if self.batch_size is not None:
-                self.train_outputs = Tensor(self.predict(self.train_inputs.array[:self.batch_size]))
+                self.train_outputs = Tensor(self.predict(self.train_inputs.array[:self.batch_size]), requires_grad=True)
                 for step in range(1, steps):
                     self.train_outputs = Tensor(np.concatenate((self.train_outputs.array, Tensor(self.predict(
-                        self.train_inputs.array[step * self.batch_size:(step + 1) * self.batch_size]))), axis=0))
+                        self.train_inputs.array[step * self.batch_size:(step + 1) * self.batch_size]), requires_grad=True)), axis=0))
             else:
-                self.train_outputs = Tensor(self.predict(self.train_inputs))
+                self.train_outputs = Tensor(self.predict(self.train_inputs), requires_grad=True)
 
         for callback in callbacks:
             callback.on_train_end(self)
@@ -758,11 +758,13 @@ val_targets : ndarray, Tensor
                     weights.append(np.atleast_1d(layer.weights.array))
                     biases.append(np.atleast_1d(layer.biases.array))
 
-                    weight_momentums.append(np.atleast_1d(layer.weight_momentums.array))
-                    bias_momentums.append(np.atleast_1d(layer.bias_momentums.array))
+                    weight_momentums.append(np.atleast_1d(layer.weights.momentums.array))
+                    bias_momentums.append(np.atleast_1d(layer.biases.momentums.array))
 
-                    weight_cache.append(np.atleast_1d(layer.weight_cache.array))
-                    bias_cache.append(np.atleast_1d(layer.bias_cache.array))
+                    weight_cache.append(np.atleast_1d(layer.weights.cache.array))
+                    bias_cache.append(np.atleast_1d(layer.biases.cache.array))
+                elif isinstance(layer, LSTM):
+                    raise NotImplementedError
                 else:
                     weights.append(np.atleast_1d(0.0))
                     biases.append(np.atleast_1d(0.0))
@@ -856,14 +858,14 @@ val_targets : ndarray, Tensor
                     parameters = pickle.load(f)
             for i in range(len(self.train_layers)):
                 if isinstance(self.train_layers[i], Dense) or isinstance(self.train_layers[i], Convolution2D):
-                    self.train_layers[i].weights = Tensor(parameters["weights"][i])
-                    self.train_layers[i].biases = Tensor(parameters["biases"][i])
+                    self.train_layers[i].weights = Parameter(parameters["weights"][i], requires_grad=True)
+                    self.train_layers[i].biases = Parameter(parameters["biases"][i], requires_grad=True)
 
-                    self.train_layers[i].weight_momentums = Tensor(parameters["weight_momentums"][i])
-                    self.train_layers[i].bias_momentums = Tensor(parameters["bias_momentums"][i])
+                    self.train_layers[i].weights.momentums = Tensor(parameters["weight_momentums"][i])
+                    self.train_layers[i].biases.momentums = Tensor(parameters["bias_momentums"][i])
 
-                    self.train_layers[i].weight_cache = Tensor(parameters["weight_cache"][i])
-                    self.train_layers[i].bias_cache = Tensor(parameters["bias_cache"][i])
+                    self.train_layers[i].weights.cache = Tensor(parameters["weight_cache"][i])
+                    self.train_layers[i].biases.cache = Tensor(parameters["bias_cache"][i])
 
         elif extension == ".h5" and parameters is None:
             with h5py.File(path, 'r') as f:
@@ -878,14 +880,14 @@ val_targets : ndarray, Tensor
 
                 for i in range(len(self.train_layers)):
                     if isinstance(self.train_layers[i], Dense) or isinstance(self.train_layers[i], Convolution2D):
-                        self.train_layers[i].weights = Tensor(weights[f"layer{i}"].astype(np.float64)[:])
-                        self.train_layers[i].biases = Tensor(biases[f"layer{i}"].astype(np.float64)[:])
+                        self.train_layers[i].weights = Parameter(weights[f"layer{i}"].astype(np.float64)[:], requires_grad=True)
+                        self.train_layers[i].biases = Parameter(biases[f"layer{i}"].astype(np.float64)[:], requires_grad=True)
 
-                        self.train_layers[i].weight_momentums = Tensor(weight_momentums[f"layer{i}"].astype(np.float64)[:])
-                        self.train_layers[i].bias_momentums = Tensor(bias_momentums[f"layer{i}"].astype(np.float64)[:])
+                        self.train_layers[i].weights.momentums = Tensor(weight_momentums[f"layer{i}"].astype(np.float64)[:])
+                        self.train_layers[i].biases.momentums = Tensor(bias_momentums[f"layer{i}"].astype(np.float64)[:])
 
-                        self.train_layers[i].weight_cache = Tensor(weight_cache[f"layer{i}"].astype(np.float64)[:])
-                        self.train_layers[i].bias_cache = Tensor(bias_cache[f"layer{i}"].astype(np.float64)[:])
+                        self.train_layers[i].weights.cache = Tensor(weight_cache[f"layer{i}"].astype(np.float64)[:])
+                        self.train_layers[i].biases.cache = Tensor(bias_cache[f"layer{i}"].astype(np.float64)[:])
         else:
             raise TypeError("`parameters` must be a dictionary")
 
@@ -971,6 +973,13 @@ val_targets : ndarray, Tensor
                 params_count += self.train_layers[i].weights.size
                 if self.train_layers[i].biases is not None:
                     params_count += self.train_layers[i].biases.size
-            print(f"{type(self.train_layers[i]).__name__}: {self.train_layers[i].outputs.shape}")
 
+            elif isinstance(self.train_layers[i], LSTM):
+                for cell in self.train_layers[i].cells:
+                    params_count += cell.input_weights.size
+                    params_count += cell.hidden_weights.size
+                    if self.train_layers[i].use_bias:
+                        params_count += cell.biases.size
+
+            print(f"{type(self.train_layers[i]).__name__}: {self.train_layers[i].outputs.shape}")
         print(f"\nNumber of parameters: {params_count}\n")
