@@ -338,7 +338,7 @@ Epoch [5000/5000]: 100%|██████████| 5000/5000 [00:03<00:00, 
 
 Our model achieves 98% accuracy on both training and test datasets, which is good! With further optimization you could potentially reach 100%. Feel free to experiment!
 
-If you look closely, you will notice that the plot on the right closely resembles Figure 2. It’s actually the model’s inputs colored by the predictions, allowing us to visually assess whether the model is well trained and it is actually.
+If you look closely, you will notice that the plot on the right closely resembles Figure 2. It’s actually the model’s inputs colored by the predictions, allowing us to visually assess whether the model is well trained (which it is).
 
 ### Save Your Work
 
