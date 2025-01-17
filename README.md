@@ -48,7 +48,13 @@
         <li><a href="#installation">Installation</a></li>
       </ul>
     </li>
-    <li><a href="#usage">Usage</a></li>
+    <li><a href="#core-features">Core Features</a></li>
+      <ul>
+        <li><a href="#automatic-differentiation-engine">Automatic Differentiation Engine</a></li>
+        <li><a href="#popular-deep-learning-architectures">Popular Deep Learning Architectures</a></li>
+        <li><a href="#modularity-and-extensibility">Modularity and Extensibility</a></li>
+      </ul>
+    <li><a href="#model-creation-and-training">Model Creation and Training</a></li>
       <ul>
         <li><a href="#preprocessing">Preprocessing</a></li>
         <li><a href="#model-creation">Model Creation</a></li>
@@ -72,10 +78,16 @@
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
-The project started in 2022 when I was still in high school. While taking an online machine learning course, I got frustrated with not fully understanding how the algorithms worked. To solve this, I decided to implement them myself to gain a deeper and clearer understanding.
+The project began in 2022 when I was still in high school. While taking an online machine learning course, I found myself frustrated by a lack of clarity in how the algorithms worked. 
+To address this, I decided to build my own implementations to gain a deeper and more intuitive understanding.
 
-What started as a simple Python script has become Melpy, a deep learning library built entirely from scratch using NumPy. Melpy is inspired by the best tools available and makes it easy to create and train models like FNNs and CNNs. It also includes tools for data preprocessing and data visualization, making it a complete solution for deep learning.
- 
+What started as a simple Python script has since grown into Melpy, a deep learning library built entirely from scratch using NumPy. Inspired by leading tools in the field, Melpy allows 
+users to easily create and train models such as FNNs, CNNs, and LSTMs. It also provides essential tools for data preprocessing and visualization, making it a complete solution for deep learning.
+
+But what truly sets Melpy apart is its simplicity. Developed from my own learning journey, it offers an accessible experience for beginners like myself who are eager to explore. 
+This project serves not only as a resource for learning but also as a foundation for others to expand upon. Moreover, while mimicking state-of-the-art libraries, Melpy implements essential 
+functionalities and architectures without unnecessary complexity, providing a solid intuition of their structure and how to use them.
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ### Built With
@@ -103,8 +115,98 @@ Melpy is available on PyPI as melpy. Run the following command to install it in 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+## Core Features
+
+### Automatic Differentiation Engine
+
+Melpy computations are based on an extended version of NumPy arrays called Tensors, along with enhanced operations represented by the Operation type. 
+These components work together to create computational graphs, enabling precise gradient calculations throughout the graph using an automatic differentiation 
+algorithm, which simplifies the backward pass computations for each layer type.
+
+[Tensors](https://github.com/lennymalard/melpy-project/blob/main/melpy/tensor.py#L3) is an object that extends the NumPy array type by adding two key attributes : whether it requires gradient computation and its gradient, determined from the computational graph.
+
+```
+Class Tensor:
+    Function __init__(object, requires_grad, additional arguments):
+        Attributes
+        - array : float64 numpy array
+        - requires_grad : bool
+        - grad : float64 numpy array
+```
+
+[Operation](https://github.com/lennymalard/melpy-project/blob/main/melpy/tensor.py#L154) enhances primitive operations by adding a forward pass that constructs a sub-computational graph 
+and a backward pass that computes their derivatives, updates gradients for the operation and its connected vertices, and propagates gradients to preceding Operations. To ensure intuitive 
+usage while integrating these features, Operation is designed as an object that automatically triggers the forward pass upon creation.
+
+```
+Class Operation:
+    Function __init__(x1, x2, additional arguments):
+        Attributes
+        - x1 : Tensor or Operation
+        - x2 : Tensor or Operation
+        - output : Tensor
+        - forward() 
+```
+
+Here is an example of using Tensor and Operation to compute the derivative of a simple operation :
+
+```python
+x = Tensor([1,2,3,4,5], requires_grad=True)
+y = 5 * x
+```
+
+In this code, we compute the operation  y = 5 * x  and want to find the derivative of y with respect to x.
+
+To do this, we propagate the gradient backward starting with 1, which represents the gradient of y with respect to y :
+
+```python
+y.backward(1)
+
+print(x.grad)
+```
+Output :
+```sh
+Tensor([5., 5., 5., 5., 5.])
+```
+
+The output shows that the derivative of y with respect to x is 5 for each element in the tensor, as expected from the operation  y = 5 * x.
+
+<br>
+<div align="center">
+ <img src="images/graph.drawio.png" alt="Logo" width="auto" height="auto">
+ <p >
+  <em>Figure 1 : Computational graph created during the forward pass and used during the backward pass of the multiplication operation.</em>
+ </p>
+</div>
+
+Together, the Tensor and Operation classes form the foundation of Melpy’s computational framework, making easier the implementation of complex architectures. 
+
+_If you are interested in learning more about automatic differentiation, I recommend checking out the [Wikipedia page](https://en.wikipedia.org/wiki/Automatic_differentiation) for more detailed information._
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+### Popular Deep Learning Architectures
+
+Melpy supports the most common deep learning architectures, including Feedforward Neural Networks (FNNs), Convolutional Neural Networks (CNNs) and Recurrent Neural Networks (RNNs) 
+with the Long Short-Term Memory (LSTM) implementation. These architectures can be built using the provided layers and trained using the Sequential class as their structure.
+
+Future updates aim to expand Melpy’s functionality with additional layers such as the Embedding layer and Batch Normalization layer, as well as generative architectures like auto-regressive models, 
+Generative Adversarial Networks (GANs), and, if supported by NumPy’s computation capabilities, diffusion models.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+### Modularity and Extensibility 
+
+One of Melpy’s greatest strengths is its modularity and extensibility. The library fully leverages object-oriented programming, with specific types defined for every component. 
+This design makes it easy to add or modify layers, loss functions, callbacks, preprocessing tools, and more. The Tensor type, combined with automatic differentiation, 
+simplifies the creation of new components by eliminating the need for manual gradient calculations for non-computationally intensive tasks. For model creation, the Sequential 
+class integrates everything seamlessly, while still allowing for the construction of custom model architectures and training methods. All of this combined makes Melpy highly 
+flexible, adaptable to a wide range of use cases, and easily upgradable to meet future needs.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 <!-- USAGE EXAMPLES -->
-## Usage
+## Model Creation and Training
 
 To demonstrate Melpy’s capabilities, let’s work through a mini-project together. We will classify the Iris dataset, a classic example in machine learning. The dataset contains three classes : Setosa, Versicolor, and Virginica, described by the following features : Sepal Length, Sepal Width, Petal Length, and Petal Width.
 
@@ -131,11 +233,11 @@ plt.show()
 <div align="center">
  <img src="images/iris.png" alt="Logo" width="auto" height="auto">
  <p >
-  <em>Figure 1</em>
+  <em>Figure 2 : Iris dataset visualized with Pyplot.</em>
  </p>
 </div>
 
-As we can see in Figure 1, there is a clear correlation between species and features like Sepal Length and Sepal Width.
+As we can see in Figure 2, there is a clear correlation between species and features like Sepal Length and Sepal Width.
 <br>
 <br>
 
@@ -182,8 +284,8 @@ import melpy.NeuralNetworks as nn
 
 model = nn.Sequential(X_train, y_train, X_test, y_test)
 
-model.add(nn.Dense(X_train.shape[1], 6, activation=nn.ReLU()))
-model.add(nn.Dense(6, y_train.shape[1], activation=nn.Softmax()))
+model.add(nn.Dense(X_train.shape[1], 6, activation="relu"))
+model.add(nn.Dense(6, y_train.shape[1], activation="softmax"))
 
 model.compile(cost_function=nn.CategoricalCrossEntropy(), optimizer=nn.SGD(learning_rate=0.01))
 ```
@@ -220,7 +322,7 @@ model.results()
 <div align="center">
  <img src="images/livemetrics.png" alt="Logo" width="auto" height="auto">
  <p >
-  <em>Figure 2</em>
+  <em>Figure 3 : Plot created and updated during training with LiveMetrics() callback.</em>
  </p>
 </div>
 
@@ -236,7 +338,7 @@ Epoch [5000/5000]: 100%|██████████| 5000/5000 [00:03<00:00, 
 
 Our model achieves 98% accuracy on both training and test datasets, which is good! With further optimization you could potentially reach 100%. Feel free to experiment!
 
-If you look closely, you will notice that the plot on the right closely resembles Figure 1. It’s actually the model’s inputs colored by the predictions, allowing us to visually assess whether the model is well trained.
+If you look closely, you will notice that the plot on the right closely resembles Figure 2. It’s actually the model’s inputs colored by the predictions, allowing us to visually assess whether the model is well trained and it is actually.
 
 ### Save Your Work
 
@@ -267,21 +369,21 @@ The most common errors typically arise from how the number of neurons is defined
 
 Dense :
 ```python
-model.add(nn.Dense(X_train.shape[1], 7), nn.LeakyReLU()) 
-model.add(nn.Dense(6, y_train.shape[1]), nn.Softmax())
+model.add(nn.Dense(X_train.shape[1], 7, activation="relu")) 
+model.add(nn.Dense(6, y_train.shape[1], activation="softmax"))
 ```
 ```sh
 ValueError: shapes (1,7) and (6,2) not aligned: 7 (dim 1) != 6 (dim 0)
 ```
 Convolution2D :
 ```python
-model.add(nn.Convolution2D(in_channels=1, out_channels=32, kernel_size=2, padding="same"), nn.LeakyReLU())
-model.add(nn.Convolution2D(in_channels=12, out_channels=64, kernel_size=2, padding="same"), nn.LeakyReLU())
+model.add(nn.Convolution2D(in_channels=1, out_channels=32, kernel_size=2, padding="same", activation="relu"))
+model.add(nn.Convolution2D(in_channels=12, out_channels=64, kernel_size=2, padding="same", activation="relu"))
 ```
 ```sh
 ValueError: matmul: Input operand 1 has a mismatch in its core dimension 0, with gufunc signature (n?,k),(k,m?)->(n?,m?) (size 128 is different from 48)
 ```
-To resolve this, ensure that the n_in and n_out (in_channels and out_channels for Convolution2D) values match exactly for a layer and the one that follows it.
+To resolve this, ensure that the in_features and out_features (in_channels and out_channels for Convolution2D) values match exactly for a layer and the one that follows it.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

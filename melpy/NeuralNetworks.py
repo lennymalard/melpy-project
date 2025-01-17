@@ -75,8 +75,8 @@ val_targets : ndarray, Tensor
     val_accuracy_history : list
         History of validation accuracy values for each epoch.
 
-    cost_function : Loss
-        Cost function used for training.
+    loss_function : Loss
+        Loss function used for training.
 
     runtime : float
         Total time taken to train the model.
@@ -96,10 +96,10 @@ val_targets : ndarray, Tensor
         Executes the backward pass to compute gradients for training layers.
     verbose(verbose : int, epoch : int, epochs : int, start_time : float)
         Displays training and validation metrics based on the specified verbosity level.
-    compile(cost_function : Loss, optimizer : Optimizer)
-        Compiles the model with the specified cost function and optimizer.
+    compile(loss_function : Loss, optimizer : Optimizer)
+        Compiles the model with the specified Loss function and optimizer.
     fit(epochs : int, batch_size : int, verbose : int, callbacks : list)
-        Trains the model using the provided cost function, optimizer, and other parameters.
+        Trains the model using the provided Loss function, optimizer, and other parameters.
     predict(X : ndarray, Tensor)
         Generates predictions for the input data `X`.
     results()
@@ -181,7 +181,7 @@ val_targets : ndarray, Tensor
         self.train_accuracy_history = []
         self.val_accuracy_history = []
 
-        self.cost_function = None
+        self.loss_function = None
         self.optimizer = None
 
         self.__is_trained__ = False
@@ -260,7 +260,7 @@ val_targets : ndarray, Tensor
         for i in range(len(self.train_layers)):
             if i + 1 == len(self.train_layers):
                 self.train_output_batch = self.train_layers[i].forward()
-                self.cost_function.forward(self.train_target_batch, self.train_output_batch)
+                self.loss_function.forward(self.train_target_batch, self.train_output_batch)
             else:
                 if isinstance(self.train_layers[i], Dropout):
                     self.train_layers[i].training = True
@@ -322,7 +322,7 @@ val_targets : ndarray, Tensor
         -------
         None
         """
-        self.dX = self.cost_function.backward()
+        self.dX = self.loss_function.backward()
         for layer in reversed(self.train_layers):
             self.dX = layer.backward(self.dX)
 
@@ -419,39 +419,39 @@ val_targets : ndarray, Tensor
         else:
             raise ValueError("`verbose` must be 0, 1, or 2.")
 
-    def compile(self, cost_function, optimizer=SGD(learning_rate=0.01)):
+    def compile(self, loss_function, optimizer=SGD(learning_rate=0.01)):
         """
-        Compiles the model with the specified cost function and optimizer.
+        Compiles the model with the specified Loss function and optimizer.
 
         Parameters
         ----------
-        cost_function : Loss
-            The cost function to be used for training.
+        loss_function : Loss
+            The Loss function to be used for training.
         optimizer : Optimizer, optional
             The optimizer to be used for updating the model parameters. Default is SGD with a learning rate of 0.01.
 
         Raises
         ------
         ValueError
-            If `cost_function` is not an instance of Loss.
+            If `loss_function` is not an instance of Loss.
             If `optimizer` is not an instance of Optimizer.
 
         Returns
         -------
         None
         """
-        if not isinstance(cost_function, Loss):
-            raise ValueError("`cost_function` must be of type `Loss`.")
+        if not isinstance(loss_function, Loss):
+            raise ValueError("`loss_function` must be of type `Loss`.")
         if not isinstance(optimizer, Optimizer):
             raise ValueError("`optimizer` must be of type `Optimizer`.")
 
         self.__is_compiled__ = True
         self.optimizer = optimizer
-        self.cost_function = cost_function
+        self.loss_function = loss_function
 
     def fit(self, epochs=1000, batch_size=None, verbose=1, callbacks=[], get_output=False):
         """
-        Trains the model using the provided cost function, optimizer, and other parameters.
+        Trains the model using the provided Loss function, optimizer, and other parameters.
 
         This method performs the training process for the neural network. It includes
         forward and backward passes, loss and accuracy computation and parameter updates
@@ -592,7 +592,7 @@ val_targets : ndarray, Tensor
                 for layer in self.train_layers:
                     layer.zero_grad()
 
-                self.cost_function.zero_grad()
+                self.loss_function.zero_grad()
 
                 self.backward()
 
@@ -606,14 +606,14 @@ val_targets : ndarray, Tensor
 
                 self.optimizer.step += 1
 
-                loss = np.around(self.cost_function.output.array, 5)
+                loss = np.around(self.loss_function.output.array, 5)
                 acc = accuracy(self.train_target_batch, self.train_output_batch)
 
                 train_accumulated_loss += loss
                 train_accumulated_accuracy += acc
 
                 if self.validation:
-                    val_accumulated_loss += self.cost_function.forward(self.val_target_batch, self.val_output_batch)
+                    val_accumulated_loss += self.loss_function.forward(self.val_target_batch, self.val_output_batch)
                     val_accumulated_accuracy += accuracy(self.val_target_batch, self.val_output_batch)
 
                 for callback in callbacks:
