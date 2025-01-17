@@ -135,7 +135,7 @@ Class Tensor:
 ```
 
 [Operation](https://github.com/lennymalard/melpy-project/blob/main/melpy/tensor.py#L154) enhances primitive operations by adding a forward pass that constructs a sub-computational graph 
-and a backward pass that computes their derivatives, updates gradients for the operation and its connected vertices, and propagates gradients to preceding Operations. To ensure intuitive 
+and a backward pass that computes their derivatives, updates gradients for the operation and its edges, and propagates gradients to preceding Operations. To ensure intuitive 
 usage while integrating these features, Operation is designed as an object that automatically triggers the forward pass upon creation.
 
 ```
