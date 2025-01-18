@@ -285,8 +285,11 @@ class LiveMetrics(Callback):
 
                 X1, X2 = np.meshgrid(np.arange(start=X_set[:, self.f1].min() - 1, stop=X_set[:, self.f1].max() + 1, step=0.01),
                                      np.arange(start=X_set[:, self.f2].min() - 1, stop=X_set[:, self.f2].max() + 1, step=0.01))
-                plt.contourf(X1, X2, model.predict(Tensor(np.array([X1.ravel(), X2.ravel()]).T)).reshape(X1.shape),
-                             alpha=0.3, cmap="coolwarm")
+
+                predictions = model.predict(Tensor(np.array([X1.ravel(), X2.ravel()]).T)).reshape(X1.shape)
+
+                plt.contourf(X1, X2, predictions,
+                             alpha=0.3, cmap="coolwarm", c=predictions.ravel())
 
             if len(model.train_input_batch.array[:, 0]) > 1000 and self.row_select == "limited":
                 plt.scatter(model.train_input_batch.array[:1000, self.f1], model.train_input_batch.array[:1000, self.f2], c=model.train_output_batch.array[:1000, :], cmap="coolwarm", alpha=1)
@@ -312,8 +315,11 @@ class LiveMetrics(Callback):
 
                 X1, X2 = np.meshgrid(np.arange(start=X_set[:, self.f1].min() - 1, stop=X_set[:, self.f1].max() + 1, step=0.01),
                                      np.arange(start=X_set[:, self.f2].min() - 1, stop=X_set[:, self.f2].max() + 1, step=0.01))
-                plt.contourf(X1, X2, model.predict(Tensor(np.array([X1.ravel(), X2.ravel()]).T)).reshape(X1.shape),
-                             alpha=0.3, cmap="coolwarm")
+
+                predictions =  model.predict(Tensor(np.array([X1.ravel(), X2.ravel()]).T)).reshape(X1.shape)
+
+                plt.contourf(X1, X2, predictions,
+                             alpha=0.3, cmap="coolwarm", c=predictions.ravel())
 
             if len(model.train_input_batch.array[:, 0]) > 1000 and self.row_select == "limited":
                 plt.scatter(model.train_input_batch.array[:1000, self.f1], model.train_input_batch.array[:1000, self.f2], c=model.train_output_batch.array[:1000, :], cmap="coolwarm", alpha=1)
