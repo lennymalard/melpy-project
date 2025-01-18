@@ -226,8 +226,8 @@ val_targets : ndarray, Tensor
 
         Parameters
         ----------
-        layer : Dense, Convolution2D, Pooling2D, Flatten or Dropout
-            The layer to be added. Must be an instance of Dense, Convolution2D, Pooling2D, Flatten or Dropout.
+        layer : Dense, LSTM, Convolution2D, Pooling2D, Flatten or Dropout
+            The layer to be added. Must be an instance of Dense, LSTM, Convolution2D, Pooling2D, Flatten or Dropout.
 
         Raises
         ------
