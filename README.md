@@ -293,7 +293,7 @@ model.compile(loss_function=nn.CategoricalCrossEntropy(), optimizer=nn.SGD(learn
 We define :
 * The training inputs and the training targets.
 * The validation inputs and the validation targets.
-* A hidden layer with 6 neurons and [ReLU](https://en.wikipedia.org/wiki/Rectifier_(neural_networks)) [activation](https://en.wikipedia.org/wiki/Activation_function).
+* A hidden layer with 6 neurons and [ReLU](https://en.wikipedia.org/wiki/Rectifier_(neural_networks)) [Activation](https://en.wikipedia.org/wiki/Activation_function).
 * The other requierements specified earlier.
 
 <em>These functions together form what we call an architecture. If you are new to deep learning, I highly recommend [3Blue1Brown](https://youtu.be/aircAruvnKk?si=QMDAzU8ThgQ_nmTt)'s excellent video series on the topic. It provides a clear explanation of how and why these functions are used.</em>
