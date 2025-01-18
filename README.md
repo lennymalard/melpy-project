@@ -85,7 +85,7 @@ What started as a simple Python script has since grown into Melpy, a deep learni
 users to easily create and train models such as FNNs, CNNs, and LSTMs. It also provides essential tools for data preprocessing and visualization, making it a complete solution for deep learning.
 
 But what truly sets Melpy apart is its simplicity. Developed from my own learning journey, it offers an accessible experience for beginners like myself who are eager to explore. 
-This project serves not only as a resource for learning but also as a foundation for others to expand upon. Moreover, while mimicking state-of-the-art libraries, Melpy implements essential 
+This project serves not only as a resource for learning but also as a foundation for others to expand upon. Moreover, while imitating state-of-the-art libraries, Melpy implements essential 
 functionalities and architectures without unnecessary complexity, providing a solid intuition of their structure and how to use them.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
