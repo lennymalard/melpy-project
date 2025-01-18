@@ -126,27 +126,26 @@ $\frac{\partial{L}}{\partial{x_{m,n}^{l+1}}} = \delta^{l+1}_{m,n}$
 &= \delta^{l+1}_{i',j'} \star \phi(x^{l}_{i',j'})
 \end{align}}
 
-Calculons ensuite $\frac{\partial L}{\partial x^{l}_{m',n'}}$ : 
+Calculons ensuite $\frac{\partial L}{\partial\phi\left(x^{l}_{m',n'}\right)}$ : 
 
 {\scriptsize
 \begin{align}
-\frac{\partial L}{\partial x^{l}_{m',n'}} &= \sum_{j=0}^{k-1}\sum_{i=0}^{k-1}\frac{\partial L}{\partial x_{m',n'}^{l}}\cdot\frac{\partial x_{m'-i,n'-j}^{l+1}}{\partial x_{m'-i,n'-j}^{l+1}}\\
-&= \sum_{j=0}^{k-1}\sum_{i=0}^{k-1}\frac{\partial L}{\partial x_{m'-i,n'-j}^{l+1}}\cdot\frac{\partial x_{m'-i,n'-j}^{l+1}}{\partial x_{m',n'}^{l}}\\
+\frac{\partial L}{\partial\phi\left(x^{l}_{m',n'}\right)} &= \sum_{j=0}^{k-1}\sum_{i=0}^{k-1}\frac{\partial L}{\partial\phi\left(x^{l}_{m',n'}\right)}\cdot\frac{\partial x_{m'-i,n'-j}^{l+1}}{\partial x_{m'-i,n'-j}^{l+1}}\\
+&= \sum_{j=0}^{k-1}\sum_{i=0}^{k-1}\frac{\partial L}{\partial x_{m'-i,n'-j}^{l+1}}\cdot\frac{\partial x_{m'-i,n'-j}^{l+1}}{\partial\phi\left(x^{l}_{m',n'}\right)}\\
 &=   \sum_{j=0}^{k-1}\sum_{i=0}^{k-1}\delta^{l+1}_{m'-i,n'-j}\cdot\frac{\partial x_{m'-i,n'-j}^{l+1}}{\partial x_{m',n'}^{l}}\\
 \begin{split}
-    \frac{\partial x_{m'-i,n'-j}^{l+1}}{\partial x_{m',n'}^{l}} &= \frac{\partial}{\partial x^{l}_{m',n'}}\left( \sum_{j'=0}^{k-1}\sum_{i'=0}^{k-1}\right.  \\ 
+    \frac{\partial x_{m'-i,n'-j}^{l+1}}{\partial\phi\left(x^{l}_{m',n'}\right)} &= \frac{\partial}{\partial\phi\left(x^{l}_{m',n'}\right)}\left( \sum_{j'=0}^{k-1}\sum_{i'=0}^{k-1}\right.  \\ 
     &  \biggl.\phi(x^{l}_{m'-i+i',n'-j+j'})  \cdot w^{l}_{i',j'}  \bigg)
 \end{split} \\
-&= \frac{\partial}{\partial x^{l}_{m',n'}}\big(\phi(x^{l}_{m',n'})\cdot w^{l}_{i,j}\big)\\
-&= w^{l}_{i,j}\cdot \frac{\partial}{\partial x^{l}_{m',n'}}\big(\phi(x^{l}_{m',n'})\big)\\
-&= w^{l}_{i,j}\cdot \phi'(x^{l}_{m',n'})\\
-\implies \frac{\partial L}{\partial x^{l}_{m',n'}} &=  \sum_{j=0}^{k-1}\sum_{i=0}^{k-1}\delta^{l+1}_{m'-i,n'-j}\cdot w^{l}_{i,j}\cdot \phi'(x^{l}_{m',n'})\\
-&= \sum_{j=0}^{k-1}\sum_{i=0}^{k-1}\delta^{l+1}_{m'-i,n'-j}\cdot w^{l}_{i,j}\\
+&= \frac{\partial}{\partial\phi\left(x^{l}_{m',n'}\right)}\big(\phi(x^{l}_{m',n'})\cdot w^{l}_{i,j}\big)\\
+&= w^{l}_{i,j}\cdot \frac{\partial}{\partial\phi\left(x^{l}_{m',n'}\right)}\big(\phi(x^{l}_{m',n'})\big)\\
+&= w^{l}_{i,j}\\
+\implies \frac{\partial L}{\partial\phi(x^{l}_{m',n'})} &=  \sum_{j=0}^{k-1}\sum_{i=0}^{k-1}\delta^{l+1}_{m'-i,n'-j}\cdot w^{l}_{i,j}\\
 &= rot_{\ang{180}}\left \{ \sum_{j=0}^{k-1}\sum_{i=0}^{k-1}\delta^{l+1}_{m'+i,n'+j}\cdot w^{l}_{i,j} \right \} \\
 & = \delta^{l+1}_{m',n'} \star rot_{\ang{180}}\{w^{l}_{m',n'}\}
 \end{align}}
 
-\textit{Lors du calcul de $\frac{\partial L}{\partial x^{l}_{m’,n’}}$, nous avons éffectué une convolution. 
+\textit{Lors du calcul de $\frac{\partial L}{\partial\phi\left(x^{l}_{m',n'}\right)}$, nous avons éffectué une convolution. 
 Cela vient du fait que les éléments de la dérivée doivent être positionnés à l'emplacement des pixels 
 ayant contribué aux erreurs correspondantes.}\\
 
