@@ -132,7 +132,7 @@ Calculons ensuite $\frac{\partial L}{\partial\phi\left(x^{l}_{m',n'}\right)}$ :
 \begin{align}
 \frac{\partial L}{\partial\phi\left(x^{l}_{m',n'}\right)} &= \sum_{j=0}^{k-1}\sum_{i=0}^{k-1}\frac{\partial L}{\partial\phi\left(x^{l}_{m',n'}\right)}\cdot\frac{\partial x_{m'-i,n'-j}^{l+1}}{\partial x_{m'-i,n'-j}^{l+1}}\\
 &= \sum_{j=0}^{k-1}\sum_{i=0}^{k-1}\frac{\partial L}{\partial x_{m'-i,n'-j}^{l+1}}\cdot\frac{\partial x_{m'-i,n'-j}^{l+1}}{\partial\phi\left(x^{l}_{m',n'}\right)}\\
-&=   \sum_{j=0}^{k-1}\sum_{i=0}^{k-1}\delta^{l+1}_{m'-i,n'-j}\cdot\frac{\partial x_{m'-i,n'-j}^{l+1}}{\partial x_{m',n'}^{l}}\\
+&=   \sum_{j=0}^{k-1}\sum_{i=0}^{k-1}\delta^{l+1}_{m'-i,n'-j}\cdot\frac{\partial x_{m'-i,n'-j}^{l+1}}{\partial\phi\left(x^{l}_{m',n'}\right)}\\
 \begin{split}
     \frac{\partial x_{m'-i,n'-j}^{l+1}}{\partial\phi\left(x^{l}_{m',n'}\right)} &= \frac{\partial}{\partial\phi\left(x^{l}_{m',n'}\right)}\left( \sum_{j'=0}^{k-1}\sum_{i'=0}^{k-1}\right.  \\ 
     &  \biggl.\phi(x^{l}_{m'-i+i',n'-j+j'})  \cdot w^{l}_{i',j'}  \bigg)

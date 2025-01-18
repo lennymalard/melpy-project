@@ -1,13 +1,13 @@
 # Fdb version 4
-["bibtex main"] 1737197175.04819 "main.aux" "main.bbl" "main" 1737197359.9092 0
+["bibtex main"] 1737197175.04819 "main.aux" "main.bbl" "main" 1737197633.2052 0
   "./references.bib" 1736460924.27473 3905 dbf7ab8bbfc9aea31208d5a0716bfb06 ""
   "/Users/lenny/Library/Application Support/MiKTeX/texmfs/install/bibtex/bst/bibtex/plain.bst" 1733568571.37365 20613 bd3fbfa9f64872b81ac57a0dd2ed855f ""
-  "main.aux" 1737197359.15507 8004 6e8eb31e992542b75f6dbd6348b7b550 "pdflatex"
+  "main.aux" 1737197632.46335 8004 6e8eb31e992542b75f6dbd6348b7b550 "pdflatex"
   (generated)
   "main.bbl"
   "main.blg"
   (rewritten before read)
-["pdflatex"] 1737197357.51934 "/Users/lenny/Documents/DEV/git/melpy-project/reports/melpy-CNN/main.tex" "main.pdf" "main" 1737197359.90939 0
+["pdflatex"] 1737197630.85234 "/Users/lenny/Documents/DEV/git/melpy-project/reports/melpy-CNN/main.tex" "main.pdf" "main" 1737197633.20539 0
   "/Users/lenny/Documents/DEV/git/melpy-project/reports/melpy-CNN/main.tex" 1736460924.27459 2924 36a9482a02a4bb49171b1cb45b367892 ""
   "/Users/lenny/Library/Application Support/MiKTeX/texmfs/data/fonts/map/pdftex/pdftex.map" 1734195543.26268 25678 aa7c8fd3909e804e7d85441c21595406 ""
   "/Users/lenny/Library/Application Support/MiKTeX/texmfs/data/fonts/pk/ljfour/jknappen/ec/dpi600/tcrm1200.pk" 1733593486.98001 14064 6f0346852d2c1a32275f0539282d3d90 ""
@@ -151,13 +151,13 @@
   "images/mnist_losses.png" 1736460924.26764 56509 c55395ec0bbb7a70cf4a9b9ed76e30bf ""
   "images/mnist_nn.png" 1736460924.26857 57244 025d9958329f881d19fe095a05e10ec7 ""
   "images/mnist_samples.png" 1736460924.26871 17564 7caa137340cb86165bb957688f7a23dd ""
-  "main.aux" 1737197359.15507 8004 6e8eb31e992542b75f6dbd6348b7b550 "pdflatex"
+  "main.aux" 1737197632.46335 8004 6e8eb31e992542b75f6dbd6348b7b550 "pdflatex"
   "main.bbl" 1737197175.2894 1811 f261a3bf0ffcfa2dcf9c947ba536473d "bibtex main"
-  "main.out" 1737197359.15652 3058 865a07ccca4cdc5fcc7675130b8247c5 "pdflatex"
+  "main.out" 1737197632.46458 3058 865a07ccca4cdc5fcc7675130b8247c5 "pdflatex"
   "main.tex" 1736460924.27459 2924 36a9482a02a4bb49171b1cb45b367892 ""
-  "main.toc" 1737197359.15693 1797 8717ccef31966883337e004ff85b61e2 "pdflatex"
+  "main.toc" 1737197632.46514 1797 8717ccef31966883337e004ff85b61e2 "pdflatex"
   "sections/1_intro.tex" 1736460924.27484 1465 b0c8fec09009d4407e0bf67fb9c35b4e ""
-  "sections/2_section.tex" 1737197356.78789 9699 99956e222dcc0a02465d70fa5dd8a90a ""
+  "sections/2_section.tex" 1737197630.02562 9715 da28f98bbdfe6e78cb96ade5fbf8246c ""
   "sections/3_section.tex" 1736460924.27512 18404 62dbebc44e0232ec5affd00928ac1630 ""
   "sections/4_section.tex" 1737195685.63735 16895 462d23abfacb4e7f6d38e4b9ae112b3f ""
   "sections/5_conclusion.tex" 1736460924.27544 1034 d0daeb05f55389d02ff760565afd5487 ""
