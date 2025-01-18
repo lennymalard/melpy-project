@@ -123,7 +123,7 @@ Melpy computations are based on an extended version of NumPy arrays called Tenso
 These components work together to create computational graphs, enabling precise gradient calculations throughout the graph using an automatic differentiation 
 algorithm, which simplifies the backward pass computations for each layer type.
 
-[Tensors](https://github.com/lennymalard/melpy-project/blob/main/melpy/tensor.py#L3) is an object that extends the NumPy array type by adding two key attributes : whether it requires gradient computation and its gradient, determined from the computational graph.
+[Tensor](https://github.com/lennymalard/melpy-project/blob/main/melpy/tensor.py#L3) is an object that extends the NumPy array type by adding two key attributes : whether it requires gradient computation and its gradient, determined from the computational graph.
 
 ```
 Class Tensor:
@@ -272,8 +272,8 @@ y_test = ohe.transform(y_test)
 
 We’re tackling a multi-class classification problem using tabular data, which requires :
 *	[Fully Connected Layers](https://en.wikipedia.org/wiki/Multilayer_perceptron) (Dense) for feature extraction.
-*	[Softmax](https://en.wikipedia.org/wiki/Softmax_function) [Activation](https://fr.wikipedia.org/wiki/Fonction_d%27activation) to convert outputs into probabilities.
-*	[Categorical Cross-Entropy](https://en.wikipedia.org/wiki/Cross-entropy) as the cost function for optimization.
+*	[Softmax](https://en.wikipedia.org/wiki/Softmax_function) [Activation](https://en.wikipedia.org/wiki/Activation_function) to convert outputs into probabilities.
+*	[Categorical Cross-Entropy](https://en.wikipedia.org/wiki/Cross-entropy) as the loss function for optimization.
 
 Now, let’s build the model using Melpy’s Sequential class :
 
@@ -287,13 +287,13 @@ model = nn.Sequential(X_train, y_train, X_test, y_test)
 model.add(nn.Dense(X_train.shape[1], 6, activation="relu"))
 model.add(nn.Dense(6, y_train.shape[1], activation="softmax"))
 
-model.compile(cost_function=nn.CategoricalCrossEntropy(), optimizer=nn.SGD(learning_rate=0.01))
+model.compile(loss_function=nn.CategoricalCrossEntropy(), optimizer=nn.SGD(learning_rate=0.01))
 ```
 
 We define :
 * The training inputs and the training targets.
 * The validation inputs and the validation targets.
-* A hidden layer with 6 neurons and [ReLU](https://en.wikipedia.org/wiki/Rectifier_(neural_networks)) [activation](https://fr.wikipedia.org/wiki/Fonction_d%27activation).
+* A hidden layer with 6 neurons and [ReLU](https://en.wikipedia.org/wiki/Rectifier_(neural_networks)) [activation](https://en.wikipedia.org/wiki/Activation_function).
 * The other requierements specified earlier.
 
 <em>These functions together form what we call an architecture. If you are new to deep learning, I highly recommend [3Blue1Brown](https://youtu.be/aircAruvnKk?si=QMDAzU8ThgQ_nmTt)'s excellent video series on the topic. It provides a clear explanation of how and why these functions are used.</em>
