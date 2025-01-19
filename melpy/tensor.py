@@ -587,11 +587,13 @@ class Function(Operation):
         self.output.backward(grad)
 
     def derivative(self): # Must be used independently of a computational graph.
-        x1_requires_grad = self.x1.requires_grad
+        x1 = self.x1
+        self.x1 = Tensor(self.x1.array)
         self.update_requires_grad(self.x1, True)
         self.backward(1)
-        self.update_requires_grad(self.x1, x1_requires_grad)
-        return self.x1.grad
+        grad = self.x1.grad
+        self.x1 = x1
+        return grad
 
 class sigmoid(Function):
     def __init__(self, x1):
