@@ -123,9 +123,9 @@ class Dense(Layer):
     Attributes
     ----------
     inputs : Tensor
-        Input data with the shape configuration `(batch size, input size)`.
+        Input data with the shape format `(batch size, input size)`.
     outputs : Tensor
-        Output data with the shape configuration `(batch size, output size)`.
+        Output data with the shape format `(batch size, output size)`.
     dX : ndarray
         Partial derivative of loss with respect to input.
     dY : ndarray
@@ -663,9 +663,9 @@ class Convolution2D(Layer):
     Attributes
     ----------
     inputs : Tensor
-        Input data with the shape configuration `(batch size, input channels, height, width)`.
+        Input data with the shape format `(batch size, input channels, height, width)`.
     outputs : Tensor
-        Output data with the shape configuration `(batch size, output channels, height, width)`.
+        Output data with the shape format `(batch size, output channels, height, width)`.
     in_channels : int
         Number of input channels.
     out_channels : int
@@ -953,9 +953,9 @@ class Pooling2D(Layer):
     Attributes
     ----------
     inputs : Tensor
-        Input data with the shape configuration `(batch size, channels, height, width)`.
+        Input data with the shape format `(batch size, channels, height, width)`.
     outputs : Tensor
-        Output data with the shape configuration `(batch size, channels, height, width)`.
+        Output data with the shape format `(batch size, channels, height, width)`.
     pool_size : int
         Size of the pooling window.
     stride : int
@@ -1290,9 +1290,9 @@ class LSTMCell(Layer):
     Attributes
     ----------
     inputs : Tensor
-        Input data with the shape configuration `(batch size, input size)`.
+        Input data with the shape format `(batch size, input size)`.
     outputs : Tensor
-        Output data with the shape configuration `(batch size, hidden size)`.
+        Output data with the shape format `(batch size, hidden size)`.
     input_size : int
         Number of input features.
     hidden_size : int
@@ -1368,6 +1368,7 @@ class LSTMCell(Layer):
         self.sequence_cell_inputs = []
         self.sequence_output_gates = []
         self.sequence_inputs = []
+        self.sequence_inputs_grads = []
 
         self.input_weights = self.Weights((input_size, hidden_size))
         self.hidden_weights = self.Weights((hidden_size, hidden_size))
@@ -1491,6 +1492,8 @@ class LSTMCell(Layer):
         self.dX = i_dZ @ self.i_input_weights.T.array + f_dZ @ self.f_input_weights.T.array + \
                   o_dZ @ self.o_input_weights.T.array + c_dZ @ self.c_input_weights.T.array
 
+        self.sequence_inputs_grads.append(self.dX)
+
         return  self.dX, self.dH, self.dC
 
     def clear_memory(self):
@@ -1527,6 +1530,8 @@ class LSTMCell(Layer):
         self.f_biases.zero_grad()
         self.o_biases.zero_grad()
         self.c_biases.zero_grad()
+
+        self.sequence_inputs_grads = []
 
     class Weights(Parameter):
         """
@@ -1574,9 +1579,9 @@ class LSTM(Layer):
     Attributes
     ----------
     inputs : Tensor
-        Input data with the shape configuration `(batch size, sequence length, input size)`.
+        Input data with the shape format `(batch size, sequence length, input size)`.
     outputs : Tensor
-        Output data with the shape configuration `(batch size, sequence length, hidden size)`.
+        Output data with the shape format `(batch size, sequence length, hidden size)`.
     input_size : int
         Number of input features.
     hidden_size : int
@@ -1598,8 +1603,7 @@ class LSTM(Layer):
         Resets gradients for all LSTM cells.
     """
 
-
-    def __init__(self, input_size, hidden_size, activation="tanh", num_layers=1, use_bias=True):
+    def __init__(self, input_size, hidden_size, activation="tanh", num_layers=1, use_bias=True, return_sequences=False):
         """
         Initialize the LSTM layer.
 
@@ -1623,11 +1627,17 @@ class LSTM(Layer):
         self.hidden_size = hidden_size
         self.use_bias = use_bias
         self.num_layers = num_layers
+        self.return_sequences = return_sequences
 
         self.cells = [
             LSTMCell(input_size if i == 0 else hidden_size, hidden_size, activation, use_bias=use_bias)
             for i in range(num_layers)
         ]
+
+    def sequence_to_tensor(self, sequence):
+        if not isinstance(sequence, list):
+            raise TypeError("'sequence' must be a list.")
+        return Tensor(np.stack([e.array if (isinstance(e, Tensor) or isinstance(e, Operation)) else e for e in sequence], axis=1))
 
     def forward(self):
         """
@@ -1644,15 +1654,25 @@ class LSTM(Layer):
         check_tensor(self.outputs, "outputs")
         check_input_dims(self.inputs, 3)
         batch_size, sequence_length = self.inputs.shape[:2]
+
         for cell in self.cells:
             cell.clear_memory()
-        for t in range(sequence_length):
-            for i, cell in enumerate(self.cells):
-                inputs = Tensor(self.inputs.array[:, t]) if i == 0 else hidden_state.output
+
+        inputs = self.inputs
+
+        for i, cell in enumerate(self.cells):
+            inputs = self.sequence_to_tensor(self.cells[i-1].sequence_hidden_states) if i > 0 else inputs
+            for t in range(sequence_length):
+                input_sequence = Tensor(inputs.array[:, t])
                 hidden_state = zeros((batch_size, self.hidden_size)) if t == 0 else cell.sequence_hidden_states[t-1]
                 cell_state = zeros((batch_size, self.hidden_size)) if t == 0 else cell.sequence_cell_states[t-1]
-                hidden_state, cell_state = cell.forward(inputs, hidden_state, cell_state)
+                hidden_state, cell_state = cell.forward(input_sequence, hidden_state, cell_state)
+
         self.outputs = hidden_state
+
+        if self.return_sequences:
+            self.outputs = self.sequence_to_tensor(self.cells[-1].sequence_hidden_states)
+
         return self.outputs
 
     def backward(self, dX):
@@ -1674,15 +1694,16 @@ class LSTM(Layer):
         batch_size, sequence_length, input_size = self.inputs.shape
         self.dY = dX
         hidden_state_grad = dX
-        cell_state_grad = np.zeros((batch_size, self.hidden_size))
         for i in reversed(range(len(self.cells))):
+            if i < len(self.cells) - 1 or self.return_sequences:
+                hidden_state_grad = np.zeros_like(self.cells[i].hidden_state.array)
+            cell_state_grad = np.zeros((batch_size, self.hidden_size))
+
             for t in reversed(range(sequence_length)):
                 if t < sequence_length-1:
                     self.cells[i].next_forget_gate = self.cells[i].sequence_forget_gates[t+1]
                 else:
-                    self.cells[i].dH = hidden_state_grad
-                    self.cells[i].dC = cell_state_grad
-                    self.cells[i].next_forget_gate = zeros_like(self.cells[0].forget_gate)
+                    self.cells[i].next_forget_gate = zeros_like(self.cells[i].forget_gate)
 
                 self.cells[i].input_gate = self.cells[i].sequence_input_gates[t]
                 self.cells[i].output_gate = self.cells[i].sequence_output_gates[t]
@@ -1699,12 +1720,24 @@ class LSTM(Layer):
                     self.cells[i].previous_hidden_state = zeros((batch_size, self.hidden_size))
                     self.cells[i].previous_cell_state = zeros((batch_size, self.hidden_size))
 
+                if i < len(self.cells) - 1:
+                    hidden_state_grad += self.sequence_to_tensor(
+                        list(reversed(self.cells[i + 1].sequence_inputs_grads))).array[:, t, :]
+
+                elif i == len(self.cells) - 1 and self.return_sequences:
+                    hidden_state_grad += self.dY[:, t, :]
+
+                self.cells[i].sequence_hidden_states[t].grad = hidden_state_grad
+                self.cells[i].sequence_cell_states[t].grad = cell_state_grad
+
                 dX, hidden_state_grad, cell_state_grad = self.cells[i].backward(hidden_state_grad, cell_state_grad)
 
-                if t < sequence_length-1 and i == 0:
-                    self.dX = np.concatenate((dX.reshape(batch_size, 1, input_size), self.dX), axis=1)
-                elif t == sequence_length-1 and i == 0:
-                    self.dX = dX.reshape(batch_size, 1, input_size)
+                self.cells[i].sequence_inputs[t].grad = dX
+
+        self.dX = self.sequence_to_tensor(list(reversed(self.cells[0].sequence_inputs_grads)))
+
+        self.inputs.grad = self.dX
+        self.outputs.grad = self.dY
 
         return self.dX
 
