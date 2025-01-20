@@ -50,7 +50,7 @@ model.add(nn.Flatten())
 model.add(nn.Dense(model.get_flatten_length(), 128, activation="leaky_relu"))
 model.add(nn.Dense(128, 10, weight_initializer="glorot_normal", activation="softmax"))
 
-model.compile(optimizer= nn.Adam(learning_rate = 1e-3), cost_function=nn.CategoricalCrossEntropy())
+model.compile(optimizer= nn.Adam(learning_rate = 1e-3), loss_function=nn.CategoricalCrossEntropy())
 model.summary()
 # %% Parameters loading
 model.load_params("results/mnist_parameters_01_16_2025-21_39_58.h5")
