@@ -12,14 +12,18 @@ class Callback:
 
     Methods
     -------
-    on_loop_start(model : Sequential, *args, **kwargs)
+    on_train_start(model : Sequential, *args, **kwargs)
         Called at the start of the training loop.
-    on_loop_end(model : Sequential, *args, **kwargs)
+    on_train_end(model : Sequential, *args, **kwargs)
         Called at the end of the training loop.
-    on_iteration_start(model : Sequential, *args, **kwargs)
+    on_epoch_start(model : Sequential, *args, **kwargs)
         Called at the start of each epoch.
-    on_iteration_end(model : Sequential, *args, **kwargs)
+    on_epoch_end(model : Sequential, *args, **kwargs)
         Called at the end of each epoch.
+    on_step_start(model : Sequential, *args, **kwargs)
+        Called at the start of each step.
+    on_step_end(model : Sequential, *args, **kwargs)
+        Called at the end of each step.
     """
 
     def __init__(self):
