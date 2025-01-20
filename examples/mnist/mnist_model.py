@@ -92,8 +92,8 @@ for i in range(1,10,3):
 
     plt.subplot(3, 3, i+1)
     plt.title("conv2d")
-    plt.imshow(model.train_layers[1].outputs.array[rand_n, rand_channel1,  :, :], cmap="gray")
+    plt.imshow(model.train_layers[0].outputs.array[rand_n, rand_channel1,  :, :], cmap="gray")
 
     plt.subplot(3, 3, i+2)
     plt.title("pooling2d")
-    plt.imshow(model.train_layers[2].outputs.array[rand_n, rand_channel2,  :, :], cmap="gray")
+    plt.imshow(model.train_layers[1].outputs.array[rand_n, rand_channel2,  :, :], cmap="gray")
