@@ -21,8 +21,8 @@ def check_input_dims(inputs, ndim):
     if inputs.ndim != ndim:
         raise ValueError(f"`inputs` must have {ndim} dimensions.")
 
-def check_tensor(obj, name):
-    if not isinstance(obj, Tensor) and not isinstance(obj, Operation) and obj is not None:
+def check_tensor(obj, name, none_allowed=False):
+    if not isinstance(obj, Tensor) and not isinstance(obj, Operation) and not none_allowed:
         raise TypeError(f"`{name}` must be a Tensor.")
 
 class Layer:
@@ -221,8 +221,8 @@ class Dense(Layer):
             The output data.
         """
         check_tensor(self.inputs, "inputs")
-        check_tensor(self.outputs, "outputs")
-        check_input_dims(self.inputs, 2)
+        check_tensor(self.outputs, "outputs", True)
+
         self.inputs.requires_grad = True
         self.weights.requires_grad = True
         self.biases.requires_grad = True
@@ -322,7 +322,7 @@ class ReLU(Layer, Activation):
             The output data.
         """
         check_tensor(self.inputs, "inputs")
-        check_tensor(self.outputs, "outputs")
+        check_tensor(self.outputs, "outputs", True)
         self.inputs.requires_grad = True
         self.outputs = Tensor(np.maximum(0, self.inputs.array), requires_grad=True)
         return self.outputs
@@ -398,7 +398,7 @@ class LeakyReLU(Layer, Activation):
             The output data.
         """
         check_tensor(self.inputs, "inputs")
-        check_tensor(self.outputs, "outputs")
+        check_tensor(self.outputs, "outputs", True)
         self.inputs.requires_grad = True
         self.outputs = Tensor(np.where(self.inputs.array > 0, self.inputs.array, self.inputs.array * 0.01), requires_grad=True)
         return self.outputs
@@ -472,7 +472,7 @@ class Sigmoid(Layer, Activation):
             The output data.
         """
         check_tensor(self.inputs, "inputs")
-        check_tensor(self.outputs, "outputs")
+        check_tensor(self.outputs, "outputs", True)
         self.inputs.requires_grad = True
         self.outputs = 1 / (1 + exp(-self.inputs))
         return self.outputs
@@ -547,7 +547,7 @@ class Tanh(Layer, Activation):
             The output data.
         """
         check_tensor(self.inputs, "inputs")
-        check_tensor(self.outputs, "outputs")
+        check_tensor(self.outputs, "outputs", True)
         self.inputs.requires_grad = True
         self.outputs = (exp(self.inputs) - exp(-self.inputs)) / (exp(self.inputs) + exp(-self.inputs))
         return self.outputs
@@ -620,7 +620,7 @@ class Softmax(Layer, Activation):
             The output data.
         """
         check_tensor(self.inputs, "inputs")
-        check_tensor(self.outputs, "outputs")
+        check_tensor(self.outputs, "outputs", True)
         self.inputs.requires_grad = True
         exp_values = exp(self.inputs - max(self.inputs, axis=1, keepdims=True))
         probabilities = exp_values / sum(exp_values, axis=1, keepdims=True)
@@ -864,7 +864,7 @@ class Convolution2D(Layer):
             The output data.
         """
         check_tensor(self.inputs, "inputs")
-        check_tensor(self.outputs, "outputs")
+        check_tensor(self.outputs, "outputs", True)
         check_input_dims(self.inputs, 4)
         self.inputs.requires_grad = True
         self.weights.requires_grad = True
@@ -1006,7 +1006,7 @@ class Pooling2D(Layer):
             The output data.
         """
         check_tensor(self.inputs, "inputs")
-        check_tensor(self.outputs, "outputs")
+        check_tensor(self.outputs, "outputs", True)
         check_input_dims(self.inputs, 4)
 
         self.inputs.requires_grad = True
@@ -1103,7 +1103,7 @@ class Flatten(Layer):
             The output data.
         """
         check_tensor(self.inputs, "inputs")
-        check_tensor(self.outputs, "outputs")
+        check_tensor(self.outputs, "outputs", True)
         self.inputs.requires_grad = True
         self.outputs = Tensor(self.inputs.array.reshape((self.inputs.shape[0], -1)), requires_grad=True)
         return self.outputs
@@ -1185,7 +1185,7 @@ class Dropout(Layer):
             The output data.
         """
         check_tensor(self.inputs, "inputs")
-        check_tensor(self.outputs, "outputs")
+        check_tensor(self.outputs, "outputs", True)
         self.inputs.requires_grad = True
         if self.training:
             self.mask = np.random.binomial(1, 1 - self.p, size=self.inputs.shape)
@@ -1262,7 +1262,7 @@ class Linear:
             The output data.
         """
         check_tensor(self.inputs, "inputs")
-        check_tensor(self.outputs, "outputs")
+        check_tensor(self.outputs, "outputs", True)
         self.inputs.requires_grad = True
         self.outputs = np.dot(self.inputs, self.weights) + self.biases
         return self.outputs
@@ -1400,7 +1400,7 @@ class LSTMCell(Layer):
             Updated cell state.
         """
         check_tensor(inputs, "inputs")
-        check_tensor(self.outputs, "outputs")
+        check_tensor(self.outputs, "outputs", True)
         check_input_dims(inputs, 2)
 
         self.inputs = inputs
@@ -1592,6 +1592,8 @@ class LSTM(Layer):
         Whether to include biases in the cells.
     cells : list of LSTMCell
         List of LSTMCell instances for each layer.
+    return_sequences : bool
+        Whether to return the full sequence of hidden states.
 
     Methods
     -------
@@ -1619,6 +1621,8 @@ class LSTM(Layer):
             Number of stacked LSTM layers. Default is 1.
         use_bias : bool, optional
             Whether to include biases. Default is True.
+        return_sequences : bool, optional
+             Whether to return the full sequence of hidden states.
         """
         check_activation(activation)
         
@@ -1651,7 +1655,7 @@ class LSTM(Layer):
             The hidden state output of the last LSTM cell in the last layer.
         """
         check_tensor(self.inputs, "inputs")
-        check_tensor(self.outputs, "outputs")
+        check_tensor(self.outputs, "outputs", True)
         check_input_dims(self.inputs, 3)
         batch_size, sequence_length = self.inputs.shape[:2]
 
