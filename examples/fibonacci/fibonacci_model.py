@@ -55,6 +55,6 @@ model.results()
 test_data = Tensor([144, 233, 377, 610, 987]).reshape(1, 5, 1)
 predicted_fib = model.predict(test_data)
 
-print("The predicted next fibonacci number (the 17th): ", predicted_fib)
+print("\nThe predicted next fibonacci number (the 17th): ", predicted_fib)
 print("The actual 17th fibonacci number:", fibonacci(17))
 print("Difference is", abs(predicted_fib - fibonacci(17)))
