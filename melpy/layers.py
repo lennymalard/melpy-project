@@ -5,7 +5,7 @@ from .tensor import *
 def check_activation(activation):
     if not isinstance(activation, str) and activation is not None:
         raise TypeError("`activation` must be of type str.")
-    if activation.lower() not in ("sigmoid", "tanh", "softmax", "tanh", "relu", "leaky_relu"):
+    if activation is not None and activation.lower() not in ("sigmoid", "tanh", "softmax", "tanh", "relu", "leaky_relu"):
         raise ValueError("'activation' must be one of 'sigmoid', 'softmax', 'tanh', 'relu', 'leaky_relu'.'")
     
 def initialize_activation(activation, type):
@@ -24,6 +24,16 @@ def check_input_dims(inputs, ndim):
 def check_tensor(obj, name, none_allowed=False):
     if not isinstance(obj, Tensor) and not isinstance(obj, Operation) and not none_allowed:
         raise TypeError(f"`{name}` must be a Tensor.")
+
+def check_ohe(obj, name):
+    if not np.unique(obj.array).all() == np.array([0, 1]).all():
+        raise ValueError(f"`{name}` must be one-hot encoded.")
+
+def flatten_tensor(tensor):
+    return tensor.reshape(-1, tensor.shape[-1])
+
+def restore_flattened(tensor, shape):
+    return tensor.reshape(shape)
 
 class Layer:
     """
@@ -209,6 +219,12 @@ class Dense(Layer):
         self.dW = np.zeros_like(self.weights.array)
         self.dB = np.zeros_like(self.biases.array)
 
+        self.in_features = in_features
+        self.out_features = out_features
+        self.leading_dims = ()
+
+        self.flattened_input = False
+
         self.activation = initialize_activation(activation, Layer)
 
     def forward(self):
@@ -223,6 +239,11 @@ class Dense(Layer):
         check_tensor(self.inputs, "inputs")
         check_tensor(self.outputs, "outputs", True)
 
+        if self.inputs.ndim > 2:
+            self.leading_dims = self.inputs.shape[:-1]
+            self.flattened_input = True
+            self.inputs = flatten_tensor(self.inputs)
+
         self.inputs.requires_grad = True
         self.weights.requires_grad = True
         self.biases.requires_grad = True
@@ -231,6 +252,10 @@ class Dense(Layer):
         if self.activation is not None:
             self.activation.inputs = self.outputs
             return self.activation.forward()
+
+        if self.flattened_input:
+            shape = (*self.leading_dims, self.out_features)
+            self.outputs = restore_flattened(self.outputs, shape)
 
         return self.outputs
 
@@ -252,9 +277,18 @@ class Dense(Layer):
             dX = self.activation.backward(dX)
 
         self.dY = dX
-        self.outputs.backward(self.dY)
+
+        if self.flattened_input:
+            dX = flatten_tensor(dX)
+
+        self.outputs.backward(dX)
         self.dX = self.inputs.grad
         self.dW = self.weights.grad
+
+        if self.flattened_input:
+            shape = (*self.leading_dims, self.in_features)
+            self.dX = restore_flattened(self.dX, shape)
+
         return self.dX
 
     def zero_grad(self):
@@ -1669,7 +1703,7 @@ class LSTM(Layer):
 
                 self.cells[i].sequence_inputs[t].grad = dX
 
-        self.dX = self.sequence_to_tensor(list(reversed(self.cells[0].sequence_inputs_grads)))
+        self.dX = self.sequence_to_tensor(list(reversed(self.cells[0].sequence_inputs_grads))).array
 
         self.inputs.grad = self.dX
         self.outputs.grad = self.dY
@@ -1686,3 +1720,94 @@ class LSTM(Layer):
         """
         for cell in self.cells:
             cell.zero_grad()
+
+class Embedding(Layer):
+    def __init__(self, input_dim, output_dim, weight_initializer="he_uniform"):
+        super().__init__()
+
+        def initialize_weights(weight_init, input_dim, output_dim):
+            """
+            Initializes the weights based on the specified method.
+
+            Parameters
+            ----------
+            weight_init : str
+                Weight initialization method.
+            input_dim : int
+                Size of the vocabulary.
+            output_dim : int
+                Dimension of the embedding.
+
+            Returns
+            -------
+            Tensor
+                Initialized weights.
+            """
+            if weight_init.lower() == "he_normal":
+                weights = Parameter(np.random.randn(input_dim, output_dim) * np.sqrt(2.0 / input_dim),
+                                    requires_grad=True)
+            elif weight_init.lower() == "he_uniform":
+                limit = np.sqrt(6 / input_dim)
+                weights = Parameter(np.random.uniform(-limit, limit, (input_dim, output_dim)), requires_grad=True)
+            elif weight_init.lower() == "glorot_normal":
+                weights = Parameter(np.random.randn(input_dim, output_dim) * np.sqrt(2.0 / (input_dim + output_dim)),
+                                    requires_grad=True)
+            elif weight_init.lower() == "glorot_uniform":
+                limit = np.sqrt(6 / (input_dim + output_dim))
+                weights = Parameter(np.random.uniform(-limit, limit, (input_dim, output_dim)), requires_grad=True)
+            else:
+                raise ValueError(
+                    "`weight_init` must be either 'he_uniform', 'he_normal', 'glorot_uniform' or 'glorot_normal'.")
+            return weights
+
+        self.input_dim = input_dim
+        self.output_dim = output_dim
+        self.leading_dims = ()
+
+        self.inputs = None
+        self.outputs = None
+        self.weights = initialize_weights(weight_initializer, input_dim, output_dim)
+        self.dW = None
+
+        self.flattened_input = False
+
+    def forward(self):
+        check_tensor(self.inputs, "inputs")
+        check_tensor(self.outputs, "outputs", True)
+        check_ohe(self.inputs, "inputs")
+
+        if self.inputs.ndim > 2:
+            self.leading_dims = self.inputs.shape[:-1]
+            self.flattened_input = True
+            self.inputs = flatten_tensor(self.inputs)
+
+        self.inputs.requires_grad = True
+        self.weights.requires_grad = True
+
+        self.outputs = dot(self.inputs, self.weights)
+
+        if self.flattened_input:
+            shape = (*self.leading_dims, self.output_dim)
+            self.outputs = restore_flattened(self.outputs, shape)
+
+        return self.outputs
+
+    def backward(self, dX):
+        self.dY = dX
+
+        if self.flattened_input:
+            dX = flatten_tensor(dX)
+
+        self.outputs.backward(dX)
+        self.dX = self.inputs.grad
+        self.dW = self.weights.grad
+
+        if self.flattened_input:
+            shape = (*self.leading_dims, self.input_dim)
+            self.dX = restore_flattened(self.dX, shape)
+
+        return self.dX
+
+    def zero_grad(self):
+        self.outputs.zero_grad()
+
