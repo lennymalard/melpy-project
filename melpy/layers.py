@@ -1767,6 +1767,8 @@ class Embedding(Layer):
         self.inputs = None
         self.outputs = None
         self.weights = initialize_weights(weight_initializer, input_dim, output_dim)
+        self.biases = None
+        self.dX = None
         self.dW = None
 
         self.flattened_input = False
