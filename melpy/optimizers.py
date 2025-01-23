@@ -110,7 +110,7 @@ class SGD(Optimizer):
         if not isinstance(layer, Layer):
             raise TypeError("'layer' must be of type 'Layer'.")
 
-        if isinstance(layer, Dense) or isinstance(layer, Convolution2D):
+        if isinstance(layer, (Dense, Convolution2D, Embedding)):
             layer.weights = self.update_parameter(layer.weights)
             if layer.biases is not None:
                 layer.biases = self.update_parameter(layer.biases)
@@ -215,7 +215,7 @@ class Adam(Optimizer):
         """
         if not isinstance(layer, Layer):
             raise TypeError("'layer' must be of type 'Layer'.")
-        if isinstance(layer, Dense) or isinstance(layer, Convolution2D):
+        if isinstance(layer, (Dense, Convolution2D, Embedding)):
             layer.weights = self.update_parameter(layer.weights)
             if layer.biases is not None:
                 layer.biases = self.update_parameter(layer.biases)
