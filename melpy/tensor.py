@@ -114,6 +114,7 @@ class Tensor:
 
     def reshape(self, *args, **kwargs):
         self.array = self.array.reshape(*args, **kwargs)
+        self.grad = self.grad.reshape(*args, **kwargs)
         return self
 
     def zero_grad(self):
@@ -166,12 +167,18 @@ class Operation:
 
     @grad.setter
     def grad(self, value):
-        self.output.grad = value
+        if self.output is not None:
+            self.output.grad = value
 
     @property
     def array(self):
         if self.output is not None:
             return self.output.array
+
+    @array.setter
+    def array(self, value):
+        if self.output is not None:
+            self.output.array = value
 
     @property
     def shape(self):
@@ -252,6 +259,11 @@ class Operation:
 
     def backward(self, grad):
         pass
+
+    def reshape(self, *args, **kwargs):
+        self.array = self.array.reshape(*args, **kwargs)
+        self.grad = self.grad.reshape(*args, **kwargs)
+        return self
 
     def zero_grad(self):
         if isinstance(self.x1, Operation) or isinstance(self.x1, Tensor) and self.x1.requires_grad:
