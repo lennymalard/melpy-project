@@ -1,4 +1,6 @@
 import numpy as np
+import re
+import itertools
 
 class RobustScaler:
     """
@@ -401,3 +403,79 @@ class SimpleImputer:
 
         X_copy[mask, column] = mean
         return X_copy
+
+
+class Tokenizer:
+    def __init__(self, strategy="word", lower=True):
+        if not isinstance(strategy, str):
+            raise TypeError("'strategy' must be of type str.")
+
+        if strategy.lower() not in ['word', 'character']:
+            raise ValueError(f"'strategy' must be {', '.join([str(e) for e in ['word', 'character']])}.")
+
+        self.strategy = strategy.lower()
+        self.lower = lower
+        self.value_index = {}
+        self.index_value = {}
+        self.fitted = False
+
+    def merge_lists(self, lists):
+        if not isinstance(lists, list) and not isinstance(lists[0], list):
+            raise TypeError("'lists' must be a list of lists.")
+
+        return list(itertools.chain.from_iterable(lists))
+
+    def word_tokenize(self, text):
+        if not isinstance(text, str):
+            raise TypeError("'text' must be of type str.")
+
+        text = text.lower() if self.lower else text
+
+        return re.findall(r"[\w']+|[.,!?;'-]", text)
+
+    def char_tokenize(self, text):
+        if not isinstance(text, str):
+            raise TypeError("'text' must be of type str.")
+
+        text = text.lower() if self.lower else text
+
+        return list(text)
+
+    def mapping(self, tokens):
+        if not isinstance(tokens, list):
+            raise TypeError("'tokens' must be of type list.")
+
+        index_value = {index: value for index, value in enumerate(set(tokens))}
+        value_index = {value: index for index, value in enumerate(set(tokens))}
+
+        return index_value, value_index
+
+    def fit_on_texts(self, texts):
+        if not isinstance(texts, list):
+            raise TypeError("'texts' must be of type list.")
+
+        self.fitted = True
+        if self.strategy == "word":
+            word_tokens = self.merge_lists([self.word_tokenize(text) for text in texts])
+            self.index_value, self.value_index = self.mapping(word_tokens)
+
+        elif self.strategy == "character":
+            char_tokens = self.merge_lists([self.char_tokenize(text) for text in texts])
+            self.index_value, self.value_index = self.mapping(char_tokens)
+
+    def texts_to_sequences(self, texts):
+        if not isinstance(texts, list) and isinstance(texts, str):
+            texts = [texts]
+        elif not isinstance(texts, list) and not isinstance(texts, str):
+            raise TypeError("'texts' must be either a string or a list of strings.")
+
+        if not self.fitted:
+            self.fit_on_texts(texts)
+
+        if self.strategy == "word":
+            texts_tokenized = [self.word_tokenize(text) for text in texts]
+
+        elif self.strategy == "character":
+            texts_tokenized = [self.char_tokenize(text) for text in texts]
+
+        return [[self.value_index[word] for word in text] for text in texts_tokenized]
