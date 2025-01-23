@@ -88,7 +88,7 @@ val_targets : ndarray, Tensor
 
     Methods
     -------
-    add(layer : layer, activation : Activation)
+    add(layer : layer)
         Adds a new layer to the model.
     forward()
         Performs the forward pass for both training and validation layers.
@@ -227,15 +227,15 @@ val_targets : ndarray, Tensor
         Parameters
         ----------
         layer : Dense, LSTM, Convolution2D, Pooling2D, Flatten or Dropout
-            The layer to be added. Must be an instance of Dense, LSTM, Convolution2D, Pooling2D, Flatten or Dropout.
+            The layer to be added. Must be an instance of Dense, LSTM, Embedding, Convolution2D, Pooling2D, Flatten or Dropout.
 
         Raises
         ------
         TypeError
-            If `layer` is not an instance of Dense, Convolution2D, Pooling2D, Flatten or Dropout.
+            If `layer` is not an instance of Dense, LSTM, Embedding, Convolution2D, Pooling2D, Flatten or Dropout.
         """
-        if not isinstance(layer, (Dense, Convolution2D, Pooling2D, Flatten, Dropout, LSTM)):
-            raise TypeError("`layer` must be of type `Dense`, `Convolution2D`, `LSTM`, `Pooling2D`, `Flatten` or `Dropout`.")
+        if not isinstance(layer, (Dense, Convolution2D, Pooling2D, Flatten, Dropout, LSTM, Embedding)):
+            raise TypeError("`layer` must be of type `Dense`, `Convolution2D`, `Pooling2D`, `LSTM`, `Embedding`, `Flatten` or `Dropout`.")
 
         self.train_layers.append(layer)
 
@@ -254,7 +254,7 @@ val_targets : ndarray, Tensor
         -------
         None
         """
-        self.train_layers[0].inputs = self.train_input_batch
+        self.train_layers[0].inputs = Tensor(self.train_input_batch.array, requires_grad=True)
         if self.validation:
             self.val_layers[0].inputs = self.val_input_batch
         for i in range(len(self.train_layers)):
