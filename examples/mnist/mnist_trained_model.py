@@ -52,6 +52,7 @@ model.add(nn.Dense(128, 10, weight_initializer="glorot_normal", activation="soft
 
 model.compile(optimizer= nn.Adam(learning_rate = 1e-3), loss_function=nn.CategoricalCrossEntropy())
 model.summary()
+
 # %% Parameters loading
 model.load_params("results/mnist_parameters_01_16_2025-21_39_58.h5")
 
