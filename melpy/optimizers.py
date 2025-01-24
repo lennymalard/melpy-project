@@ -85,11 +85,11 @@ class SGD(Optimizer):
         if np.linalg.norm(parameter.grad) >= self.gradnorm:
             parameter.grad = self.gradnorm * parameter.grad / np.linalg.norm(parameter.grad)
         if self.momentum is not None:
-            update_value = Tensor(self.momentum * parameter.momentums.array - parameter.grad * self.learning_rate)
-            parameter.momentums = update_value
-            parameter += update_value
+            update_value = self.momentum * parameter.momentums.array - parameter.grad * self.learning_rate
+            parameter.momentums = Tensor(update_value)
+            parameter.array += update_value
         else:
-            parameter -= Tensor(parameter.grad * self.learning_rate)
+            parameter.array -= parameter.grad * self.learning_rate
 
         return parameter
 
@@ -110,29 +110,13 @@ class SGD(Optimizer):
         if not isinstance(layer, Layer):
             raise TypeError("'layer' must be of type 'Layer'.")
 
-        if isinstance(layer, (Dense, Convolution2D, Embedding)):
-            layer.weights = self.update_parameter(layer.weights)
-            if layer.biases is not None:
-                layer.biases = self.update_parameter(layer.biases)
-
+        if hasattr(layer, 'parameters'):
+            for i in range(len(layer.parameters)):
+                layer.parameters[i] = self.update_parameter(layer.parameters[i])
         elif isinstance(layer, LSTM):
             for cell in layer.cells:
-                cell.i_input_weights = self.update_parameter(cell.i_input_weights)
-                cell.f_input_weights = self.update_parameter(cell.f_input_weights)
-                cell.c_input_weights = self.update_parameter(cell.c_input_weights)
-                cell.o_input_weights = self.update_parameter(cell.o_input_weights)
-
-                cell.i_hidden_weights = self.update_parameter(cell.i_hidden_weights)
-                cell.f_hidden_weights = self.update_parameter(cell.f_hidden_weights)
-                cell.c_hidden_weights = self.update_parameter(cell.c_hidden_weights)
-                cell.o_hidden_weights = self.update_parameter(cell.o_hidden_weights)
-
-                if cell.biases is not None:
-                    cell.i_biases = self.update_parameter(cell.i_biases)
-                    cell.f_biases = self.update_parameter(cell.f_biases)
-                    cell.c_biases = self.update_parameter(cell.c_biases)
-                    cell.o_biases = self.update_parameter(cell.o_biases)
-
+                for i in range(len(cell.parameters)):
+                    cell.parameters[i] = self.update_parameter(cell.parameters[i])
         return layer
 
 class Adam(Optimizer):
@@ -192,10 +176,10 @@ class Adam(Optimizer):
         parameter.cache = Tensor(self.beta2 * parameter.cache.array + (1 - self.beta2) * parameter.grad ** 2)
         cache_corrected = Tensor(parameter.cache.array / (1 - self.beta2 ** self.step))
 
-        update_value = Tensor(- self.learning_rate * momentums_corrected.array / (
-                    np.sqrt(cache_corrected.array) + self.epsilon))
+        update_value = - self.learning_rate * momentums_corrected.array / (
+                    np.sqrt(cache_corrected.array) + self.epsilon)
 
-        parameter += update_value
+        parameter.array += update_value
 
         return parameter
 
@@ -215,27 +199,14 @@ class Adam(Optimizer):
         """
         if not isinstance(layer, Layer):
             raise TypeError("'layer' must be of type 'Layer'.")
-        if isinstance(layer, (Dense, Convolution2D, Embedding)):
-            layer.weights = self.update_parameter(layer.weights)
-            if layer.biases is not None:
-                layer.biases = self.update_parameter(layer.biases)
+
+        if hasattr(layer, 'parameters'):
+            for i in range(len(layer.parameters)):
+                layer.parameters[i] = self.update_parameter(layer.parameters[i])
 
         elif isinstance(layer, LSTM):
             for cell in layer.cells:
-                cell.i_input_weights = self.update_parameter(cell.i_input_weights)
-                cell.f_input_weights = self.update_parameter(cell.f_input_weights)
-                cell.c_input_weights = self.update_parameter(cell.c_input_weights)
-                cell.o_input_weights = self.update_parameter(cell.o_input_weights)
-
-                cell.i_hidden_weights = self.update_parameter(cell.i_hidden_weights)
-                cell.f_hidden_weights = self.update_parameter(cell.f_hidden_weights)
-                cell.c_hidden_weights = self.update_parameter(cell.c_hidden_weights)
-                cell.o_hidden_weights = self.update_parameter(cell.o_hidden_weights)
-
-                if cell.biases is not None:
-                    cell.i_biases = self.update_parameter(cell.i_biases)
-                    cell.f_biases = self.update_parameter(cell.f_biases)
-                    cell.c_biases = self.update_parameter(cell.c_biases)
-                    cell.o_biases = self.update_parameter(cell.o_biases)
+                for i in range(len(cell.parameters)):
+                    cell.parameters[i] = self.update_parameter(cell.parameters[i])
 
         return layer
