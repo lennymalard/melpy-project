@@ -697,7 +697,7 @@ val_targets : ndarray, Tensor
         else:
             raise RuntimeError("The model has not been trained yet.")
 
-    def save_params(self, name="parameters", extension="h5"):
+    def save_params(self, name="parameters"):
         """
         Saves the trained model parameters (weights and biases) to a file.
 
@@ -709,15 +709,6 @@ val_targets : ndarray, Tensor
         ----------
         name : str, optional
             The base name of the file to save the parameters. Default is "parameters".
-        extension : str, optional
-            The file extension to use for saving the parameters. The default is "h5".
-
-        Returns
-        -------
-        parameters : dict
-            A dictionary containing the model's weights and biases. The dictionary includes the following keys:
-            - "weights": List of weights for each layer.
-            - "biases": List of biases for each layer.
 
         Raises
         ------
@@ -727,113 +718,65 @@ val_targets : ndarray, Tensor
             If `name` is not a string.
             If `extension` is not a string.
         ValueError
-            If `extension` is not either 'h5' or 'pkl'.
+            If `extension` is not 'h5'.
 
         Notes
         -----
-        The parameters are saved in a file with a timestamp appended to the base name. The file format can be either HDF5 (.h5) or pickle (.pkl).
+        The parameters are saved in a file with a timestamp appended to the base name.
         """
         if not isinstance(name, str):
-            raise TypeError("`name` must be a string")
-        if not isinstance(extension, str):
-            raise TypeError("`extension` must be a string")
-        if extension not in ("h5", "pkl"):
-            raise ValueError("`extension` must be either 'h5' or 'pkl'")
+            raise TypeError("`name` must be a string.")
 
         if self.__is_trained__:
             date_time = datetime.now().strftime("%m_%d_%Y-%H_%M_%S")
-            parameters = {"weights": None, "biases": None, "weight_momentums": None, "bias_momentums": None, "weight_cache": None, "bias_cache": None}
 
-            weights = []
-            biases = []
+            with h5py.File(name + f"_{date_time}.h5", 'w') as f:
+                for i in range(len(self.train_layers)):
+                    f.create_group(f"layer{i}")
+                    if hasattr(self.train_layers[i], 'parameters'):
+                        for j in range(len(self.train_layers[i].parameters)):
+                            f[f"layer{i}"].create_group(f"parameter{j}")
+                            f[f"layer{i}/parameter{j}"].create_dataset(f"value", data=
+                            self.train_layers[i].parameters[j].array)
+                            f[f"layer{i}/parameter{j}"].create_dataset(f"momentums", data=
+                            self.train_layers[i].parameters[j].momentums.array)
+                            f[f"layer{i}/parameter{j}"].create_dataset(f"cache", data=
+                            self.train_layers[i].parameters[j].cache.array)
 
-            weight_momentums = []
-            bias_momentums = []
+                    elif isinstance(self.train_layers[i], LSTM):
+                        for j in range(len(self.train_layers[i].cells)):
+                            f[f"layer{i}"].create_group(f"cell{j}")
+                            for k in range(len(self.train_layers[i].cells[j].parameters)):
+                                f[f"layer{i}/cell{j}"].create_group(f"parameter{k}")
+                                f[f"layer{i}/cell{j}/parameter{k}"].create_dataset(f"value", data=
+                                self.train_layers[i].cells[j].parameters[k].array)
+                                f[f"layer{i}/cell{j}/parameter{k}"].create_dataset(f"momentums", data=
+                                self.train_layers[i].cells[j].parameters[k].momentums.array)
+                                f[f"layer{i}/cell{j}/parameter{k}"].create_dataset(f"cache", data=
+                                self.train_layers[i].cells[j].parameters[k].cache.array)
+        else:
+            raise RuntimeError("The model has not been trained yet.")
 
-            weight_cache = []
-            bias_cache = []
-
-            for layer in self.train_layers:
-                if isinstance(layer, Dense) or isinstance(layer, Convolution2D):
-                    weights.append(np.atleast_1d(layer.weights.array))
-                    biases.append(np.atleast_1d(layer.biases.array))
-
-                    weight_momentums.append(np.atleast_1d(layer.weights.momentums.array))
-                    bias_momentums.append(np.atleast_1d(layer.biases.momentums.array))
-
-                    weight_cache.append(np.atleast_1d(layer.weights.cache.array))
-                    bias_cache.append(np.atleast_1d(layer.biases.cache.array))
-                elif isinstance(layer, LSTM):
-                    raise NotImplementedError
-                else:
-                    weights.append(np.atleast_1d(0.0))
-                    biases.append(np.atleast_1d(0.0))
-
-                    weight_momentums.append(np.atleast_1d(0.0))
-                    bias_momentums.append(np.atleast_1d(0.0))
-
-                    weight_cache.append(np.atleast_1d(0.0))
-                    bias_cache.append(np.atleast_1d(0.0))
-
-            parameters["weights"] = weights
-            parameters["biases"] = biases
-
-            parameters["weight_momentums"] = weight_momentums
-            parameters["bias_momentums"] = bias_momentums
-
-            parameters["weight_cache"] = weight_cache
-            parameters["bias_cache"] = bias_cache
-
-            if extension == "pkl":
-                with open(name + f"_{date_time}.pkl", 'wb') as f:
-                    pickle.dump(parameters, f)
-
-            elif extension == "h5":
-                with h5py.File(name + f"_{date_time}.h5", 'w') as f:
-                    weights_group = f.create_group("weights", track_order=True)
-                    biases_group = f.create_group("biases", track_order=True)
-
-                    weight_momentums_group = f.create_group("weight_momentums", track_order=True)
-                    bias_momentums_group = f.create_group("bias_momentums", track_order=True)
-
-                    weight_cache_group = f.create_group("weight_cache", track_order=True)
-                    bias_cache_group = f.create_group("bias_cache", track_order=True)
-
-                    for i in range(len(self.train_layers)):
-                        weights_group.create_dataset(f"layer{i}", data=weights[i])
-                        biases_group.create_dataset(f"layer{i}", data=biases[i])
-
-                        weight_momentums_group.create_dataset(f"layer{i}", data=weight_momentums[i])
-                        bias_momentums_group.create_dataset(f"layer{i}", data=bias_momentums[i])
-
-                        weight_cache_group.create_dataset(f"layer{i}", data=weight_cache[i])
-                        bias_cache_group.create_dataset(f"layer{i}", data=bias_cache[i])
-
-            return parameters
-        raise RuntimeError("The model has not been trained yet.")
-
-    def load_params(self, path="parameters.h5", parameters=None):
+    def load_params(self, path):
         """
-        Loads the model parameters (weights and biases) from a file or a given dictionary.
+        Loads the model parameters from a file.
 
-        This method loads the weights and biases from a file (either HDF5 or pickle format) or a dictionary
+        This method loads the parameters from a file
         and restores them to the corresponding layers in the model.
         This is useful for continuing training or evaluating a previously trained model.
 
         Parameters
         ----------
-        path : str, optional
-            The file path from which to load the parameters. Default is "parameters.h5".
-        parameters : dict, optional
-            A dictionary containing the model's weights and biases. Default is None.
+        path : str
+            The file path from which to load the parameters.
 
         Raises
         ------
         TypeError
             If `path` is not a string.
-            If `parameters` is not a dictionary.
+
         ValueError
-            If the file extension is not either '.pkl' or '.h5'.
+            If the file extension is not '.h5'.
 
         Returns
         -------
@@ -841,55 +784,30 @@ val_targets : ndarray, Tensor
 
         Notes
         -----
-        If `parameters` is provided, it will be used directly.
-        Otherwise, the method will attempt to load the parameters from the file specified by `path`.
-        The file format can be either HDF5 (.h5) or pickle (.pkl).
+        The file format is HDF5 (.h5).
         """
         if not isinstance(path, str):
             raise TypeError("`path` must be a string")
 
         _, extension = os.path.splitext(path)
-        if extension not in (".pkl", ".h5"):
-            raise ValueError("`extension` must be either '.pkl' or '.h5'")
 
-        if (type(parameters) == dict or parameters is None) and extension == ".pkl":
-            if parameters is None:
-                with open(path, 'rb') as f:
-                    parameters = pickle.load(f)
+        if extension != ".h5":
+            raise ValueError("`extension` must be '.h5'")
+
+        with h5py.File(path, 'r') as f:
             for i in range(len(self.train_layers)):
-                if isinstance(self.train_layers[i], Dense) or isinstance(self.train_layers[i], Convolution2D):
-                    self.train_layers[i].weights = Parameter(parameters["weights"][i], requires_grad=True)
-                    self.train_layers[i].biases = Parameter(parameters["biases"][i], requires_grad=True)
+                if hasattr(self.train_layers[i], 'parameters'):
+                    for j in range(len(self.train_layers[i].parameters)):
+                        self.train_layers[i].parameters[j] = Parameter(f[f"layer{i}/parameter{j}/value"].astype(np.float64)[:], requires_grad=True)
+                        self.train_layers[i].parameters[j].momentums = Tensor(f[f"layer{i}/parameter{j}/momentums"].astype(np.float64)[:])
+                        self.train_layers[i].parameters[j].cache = Tensor(f[f"layer{i}/parameter{j}/cache"].astype(np.float64)[:])
 
-                    self.train_layers[i].weights.momentums = Tensor(parameters["weight_momentums"][i])
-                    self.train_layers[i].biases.momentums = Tensor(parameters["bias_momentums"][i])
-
-                    self.train_layers[i].weights.cache = Tensor(parameters["weight_cache"][i])
-                    self.train_layers[i].biases.cache = Tensor(parameters["bias_cache"][i])
-
-        elif extension == ".h5" and parameters is None:
-            with h5py.File(path, 'r') as f:
-                weights = f["weights"]
-                biases = f["biases"]
-
-                weight_momentums = f["weight_momentums"]
-                bias_momentums = f["bias_momentums"]
-
-                weight_cache = f["weight_cache"]
-                bias_cache = f["bias_cache"]
-
-                for i in range(len(self.train_layers)):
-                    if isinstance(self.train_layers[i], Dense) or isinstance(self.train_layers[i], Convolution2D):
-                        self.train_layers[i].weights = Parameter(weights[f"layer{i}"].astype(np.float64)[:], requires_grad=True)
-                        self.train_layers[i].biases = Parameter(biases[f"layer{i}"].astype(np.float64)[:], requires_grad=True)
-
-                        self.train_layers[i].weights.momentums = Tensor(weight_momentums[f"layer{i}"].astype(np.float64)[:])
-                        self.train_layers[i].biases.momentums = Tensor(bias_momentums[f"layer{i}"].astype(np.float64)[:])
-
-                        self.train_layers[i].weights.cache = Tensor(weight_cache[f"layer{i}"].astype(np.float64)[:])
-                        self.train_layers[i].biases.cache = Tensor(bias_cache[f"layer{i}"].astype(np.float64)[:])
-        else:
-            raise TypeError("`parameters` must be a dictionary")
+                elif isinstance(self.train_layers[i], LSTM):
+                    for j in range(len(self.train_layers[i].cells)):
+                        for k in range(len(self.train_layers[i].cells[j].parameters)):
+                            self.train_layers[i].cells[j].parameters[k] = Parameter(f[f"layer{i}/cell{j}/parameter{k}/value"].astype(np.float64)[:], requires_grad=True)
+                            self.train_layers[i].cells[j].parameters[k].momentums = Tensor(f[f"layer{i}/cell{j}/parameter{k}/momentums"].astype(np.float64)[:])
+                            self.train_layers[i].cells[j].parameters[k].cache = Tensor(f[f"layer{i}/cell{j}/parameter{k}/cache"].astype(np.float64)[:])
 
     def save_histories(self, name="metrics_history", extension="h5"):
         """
