@@ -54,7 +54,7 @@ model.compile(optimizer= nn.Adam(learning_rate = 1e-3), loss_function=nn.Categor
 model.summary()
 
 # %% Parameters loading
-model.load_params("results/mnist_parameters_01_16_2025-21_39_58.h5")
+model.load_params("results/mnist_parameters_01_24_2025-19_07_07.h5")
 
 # %% Test
 predictions = model.predict(X_test[:1000])
