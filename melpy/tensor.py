@@ -35,8 +35,7 @@ class Tensor:
         return self.__add__(value)
 
     def __iadd__(self, value):
-        self.array += value.array if isinstance(value, Tensor) else value
-        return self
+        return self.__add__(value)
 
     def __sub__(self, value):
         return subtract(self, value)
@@ -45,8 +44,7 @@ class Tensor:
         return subtract(value, self)
 
     def __isub__(self, value):
-        self.array -= value.array if isinstance(value, Tensor) else value
-        return self
+        return self.__sub__(value)
 
     def __neg__(self):
         return subtract(0, self)
@@ -58,8 +56,7 @@ class Tensor:
         return self.__mul__(value)
 
     def __imul__(self, value):
-        self.array *= value.array if isinstance(value, Tensor) else value
-        return self
+        return self.__mul__(value)
 
     def __truediv__(self, value):
         return divide(self.array, value)
@@ -68,8 +65,7 @@ class Tensor:
         return divide(value, self)
 
     def __itruediv__(self, value):
-        self.array /= value.array if isinstance(value, Tensor) else value
-        return self
+        return divide(self.array, value)
 
     def __floordiv__(self, value):
         return floor_divide(self, value)
@@ -81,15 +77,13 @@ class Tensor:
         return self.__matmul__(value)
 
     def __imatmul__(self, value):
-        self.array @= value.array if isinstance(value, Tensor) else value
-        return self
+        return matmul(self, value)
 
     def __pow__(self, value):
         return power(self, value)
 
     def __ipow__(self, value):
-        self.array **= value.array if isinstance(value, Tensor) else value
-        return self
+       return self.__pow__(value)
 
     def __eq__(self, value):
         return Tensor(self.array == (value.array if isinstance(value, Tensor) else value))
@@ -116,6 +110,7 @@ class Tensor:
         self.array = self.array.reshape(*args, **kwargs)
         self.grad = self.grad.reshape(*args, **kwargs)
         return self
+
 
     def zero_grad(self):
         self.grad = np.zeros_like(self.array)
