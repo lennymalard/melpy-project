@@ -667,7 +667,7 @@ class Sequential:
         ----------
         name : str, optional
             The base name for the file. The actual filename will include a timestamp and .h5
-            extension (e.g., "parameters_DD_MM_YYYY-HH_MM_SS.h5"). Default is "parameters".
+            extension (e.g., "parameters_MM_DD_YYYY-HH_MM_SS.h5"). Default is "parameters".
 
         Raises
         ------
@@ -852,7 +852,7 @@ class Sequential:
 
             elif isinstance(self.train_layers[i], LSTM):
                 for cell in self.train_layers[i].cells:
-                    for param in self.train_layers[i].parameters:
+                    for param in cell.parameters:
                         params_count += param.size
 
             print(f"{type(self.train_layers[i]).__name__}: {self.train_layers[i].outputs.shape}")
