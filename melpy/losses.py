@@ -189,19 +189,31 @@ class CategoricalCrossEntropy(Loss):
 
     def forward(self, targets, predictions, from_logits=False):
         """
-        Computes the categorical cross-entropy loss.
+        Computes the categorical cross-entropy loss between target and prediction distributions.
 
         Parameters
         ----------
         targets : Tensor
-            Target data. Can be one-hot encoded or integer labels.
+            Target data. Can be one-hot encoded (2D) or integer class labels (1D).
         predictions : Tensor
-            Output probabilities (e.g., softmax predictions).
+            Model outputs. Either probability distributions (if from_logits=False)
+            or unscaled logits (if from_logits=True).
+        from_logits : bool, optional
+            Whether predictions are raw logits (unscaled log probabilities).
+            If True, applies softmax transformation to predictions before
+            calculating cross-entropy. Default is False.
 
         Returns
         -------
         float
-            The categorical cross-entropy loss.
+            The computed cross-entropy loss value
+
+        Notes
+        -----
+        - For numerical stability when from_logits=True, uses log_softmax internally
+        - Use from_logits=True when working with outputs from linear layers without softmax
+        - Targets must be one-hot encoded if using probability predictions (from_logits=False)
+        - Targets can be class indices (integers) if using logits (from_logits=True)
         """
         check_tensor(targets, "targets")
         check_tensor(predictions, "predictions")
