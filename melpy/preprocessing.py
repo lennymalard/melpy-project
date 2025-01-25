@@ -343,7 +343,7 @@ class StringEncoder:
         X_encoded : ndarray
             The encoded data.
         """
-        for i, encoder in zip(self.feature_indices, self.encoders):
+        for i, encoder in zip(reversed(self.feature_indices), reversed(self.encoders)):
             transformed = encoder.transform(X[:, i])
             X = np.delete(X, i, axis=1)
             X = np.hstack((X[:, :i], transformed, X[:, i:]))
@@ -406,7 +406,41 @@ class SimpleImputer:
 
 
 class Tokenizer:
+    """
+    A text tokenizer supporting word-level and character-level tokenization.
+
+    Parameters
+    ----------
+    strategy : str, optional
+        Tokenization strategy - 'word' or 'character'. Default is 'word'.
+    lower : bool, optional
+        Whether to convert text to lowercase. Default is True.
+
+    Attributes
+    ----------
+    strategy : str
+        Active tokenization strategy ('word' or 'character').
+    lower : bool
+        Lowercasing status.
+    value_index : dict
+        Mapping from token values to indices.
+    index_value : dict
+        Mapping from indices to token values.
+    fitted : bool
+        Whether the tokenizer has been fitted on data.
+
+    Raises
+    ------
+    TypeError
+        If strategy is not a string.
+    ValueError
+        If strategy is not 'word' or 'character'.
+    """
     def __init__(self, strategy="word", lower=True):
+        """
+       Initialize tokenizer with specified strategy and text processing options.
+       """
+
         if not isinstance(strategy, str):
             raise TypeError("'strategy' must be of type str.")
 
@@ -420,20 +454,93 @@ class Tokenizer:
         self.fitted = False
 
     def merge_lists(self, lists):
+        """
+        Flatten a list of lists into a single list.
+
+        Parameters
+        ----------
+        lists : list of lists
+            Nested list structure to flatten
+
+        Returns
+        -------
+        list
+            Flattened list containing all elements
+
+        Raises
+        ------
+        TypeError
+            If input is not a list of lists
+        """
         if not isinstance(lists, list) and not isinstance(lists[0], list):
             raise TypeError("'lists' must be a list of lists.")
 
         return list(itertools.chain.from_iterable(lists))
 
     def word_tokenize(self, text):
+        """
+        Tokenize text into words with advanced pattern matching.
+
+        Parameters
+        ----------
+        text : str
+            Input text to tokenize
+
+        Returns
+        -------
+        list
+            List of word tokens
+
+        Raises
+        ------
+        TypeError
+            If input is not a string
+
+        Notes
+        -----
+        Handles:
+        - Abbreviations (including accented characters)
+        - Currency/numbers/percentages
+        - Hyphenated numbers and words
+        - Words with apostrophes and accents
+        - Special characters and whitespace
+        """
+
         if not isinstance(text, str):
             raise TypeError("'text' must be of type str.")
 
         text = text.lower() if self.lower else text
-
-        return re.findall(r"[\w']+|[.,!?;'-]", text)
+        pattern = r"""
+                (?:[A-Z\xC0-\xD6\xD8-\xDE]\.)+   # Abbreviations (including accented uppercase)
+                | \$?\d+(?:[.,]\d+)*%?            # Currency, numbers, percentages
+                | \d+(?:-\d+)+                    # Hyphenated numbers (e.g., dates)
+                | [a-zA-Z\xC0-\xFF]+(?:[-'’][a-zA-Z\xC0-\xFF]*)* # Words with accents, hyphens, apostrophes
+                | [_]                             # Underscores
+                | [\n\t\r\f\v]                    # Whitespace characters
+                | [^\w\s]                         # Punctuation
+            """
+        tokens = re.findall(pattern, text, re.VERBOSE | re.IGNORECASE)
+        return tokens
 
     def char_tokenize(self, text):
+        """
+        Tokenize text into individual characters.
+
+        Parameters
+        ----------
+        text : str
+            Input text to tokenize
+
+        Returns
+        -------
+        list
+            List of character tokens
+
+        Raises
+        ------
+        TypeError
+            If input is not a string
+        """
         if not isinstance(text, str):
             raise TypeError("'text' must be of type str.")
 
@@ -442,6 +549,24 @@ class Tokenizer:
         return list(text)
 
     def mapping(self, tokens):
+        """
+        Create bidirectional token-index mappings.
+
+        Parameters
+        ----------
+        tokens : list
+           List of tokens to create mappings from
+
+        Returns
+        -------
+        tuple
+           (index_value mapping, value_index mapping)
+
+        Raises
+        ------
+        TypeError
+           If tokens is not a list
+        """
         if not isinstance(tokens, list):
             raise TypeError("'tokens' must be of type list.")
 
@@ -451,6 +576,25 @@ class Tokenizer:
         return index_value, value_index
 
     def fit_on_texts(self, texts):
+        """
+        Learn vocabulary from list of texts.
+
+        Parameters
+        ----------
+        texts : list of str
+            Training texts to learn vocabulary from
+
+        Raises
+        ------
+        TypeError
+            If input is not a list of strings
+
+        Notes
+        -----
+        - Creates vocabulary based on selected strategy
+        - Stores mappings in index_value and value_index attributes
+        - Sets fitted flag to True
+        """
         if not isinstance(texts, list):
             raise TypeError("'texts' must be of type list.")
 
@@ -464,6 +608,29 @@ class Tokenizer:
             self.index_value, self.value_index = self.mapping(char_tokens)
 
     def texts_to_sequences(self, texts):
+        """
+        Convert input texts to sequences of indices.
+
+        Parameters
+        ----------
+        texts : str or list of str
+            Text(s) to convert to indices
+
+        Returns
+        -------
+        list of lists
+            Sequence(s) of token indices
+
+        Raises
+        ------
+        TypeError
+            If input is not string or list of strings
+
+        Notes
+        -----
+        - Automatically fits tokenizer if not already fitted
+        - Handles both single strings and lists of strings
+        """
         if not isinstance(texts, list) and isinstance(texts, str):
             texts = [texts]
         elif not isinstance(texts, list) and not isinstance(texts, str):
@@ -479,3 +646,12 @@ class Tokenizer:
             texts_tokenized = [self.char_tokenize(text) for text in texts]
 
         return [[self.value_index[word] for word in text] for text in texts_tokenized]
+
+def generate_textual_dataset(tokens, context_window=2):
+    x = []
+    y = []
+    for i in range(context_window, len(tokens)-context_window-1):
+        sequence = tokens[i-context_window:i+context_window+1]
+        x.append(sequence)
+        y.append(tokens[i+context_window+1])
+    return np.array(x), np.array(y)
