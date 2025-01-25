@@ -158,7 +158,7 @@ class Dense(Layer):
     backward(dX : ndarray)
         Computes the backward pass of the dense layer.
     """
-    def __init__(self, in_features, out_features, weight_initializer="he_uniform", activation=None):
+    def __init__(self, in_features, out_features, activation=None, weight_initializer="he_uniform"):
         """
         Initializes the Dense layer.
 
@@ -744,7 +744,7 @@ class Convolution2D(Layer):
     backward(dX : ndarray)
         Computes the backward pass of the convolution layer.
     """
-    def __init__(self, in_channels, out_channels, kernel_size, padding="valid", stride=1, weight_initializer="he_uniform", use_bias=True, activation=None):
+    def __init__(self, in_channels, out_channels, kernel_size, activation=None, padding="valid", stride=1, weight_initializer="he_uniform", use_bias=True):
         """
         Initializes the Convolution2D layer.
 
