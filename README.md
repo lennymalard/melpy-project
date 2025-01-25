@@ -107,11 +107,10 @@ All other dependencies will be installed automatically during the library instal
 
 ### Installation
 
-Melpy is available on PyPI as melpy. Run the following command to install it in your environment :
+Melpy is available on PyPI as melpy. Run the following command to install the latest version in your environment :
    ```sh
    pip3 install melpy --upgrade
    ```
-
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -153,6 +152,14 @@ Here is an example of using Tensor and Operation to compute the derivative of a 
 ```python
 x = Tensor([1,2,3,4,5], requires_grad=True)
 y = 5 * x
+
+print(y)
+````
+
+Output :
+
+```sh
+Tensor([5., 10., 15., 20., 25.])
 ```
 
 In this code, we compute the operation  y = 5 * x  and want to find the derivative of y with respect to x.
