@@ -1,6 +1,7 @@
 import numpy as np
 import re
 import itertools
+import json
 
 class RobustScaler:
     """
@@ -646,6 +647,67 @@ class Tokenizer:
             texts_tokenized = [self.char_tokenize(text) for text in texts]
 
         return [[self.value_index[word] for word in text] for text in texts_tokenized]
+
+    def save_vocabulary(self, filename):
+        """
+        Serialize the vocabulary mappings to a JSON file.
+
+        Saves both index-to-value (index_value) and value-to-index (value_index)
+        mappings to a human-readable JSON file. Useful for preserving vocabulary state
+        between sessions.
+
+        Arguments:
+        ----------
+            filename (str): Path/filename where vocabulary will be saved (.json recommended)
+
+        Example:
+        --------
+            > vocab.save_vocabulary("vocab.json")
+
+        Note:
+        -----
+            - Creates the file if it doesn't exist, overwrites if it does
+            - Uses JSON format with 4-space indentation for readability
+        """
+        data = {"index_value": self.index_value, "value_index": self.value_index}
+        with open(filename, 'w') as file:
+            json.dump(data, file, indent=4)
+        print(f"Data saved to {filename}")
+
+    def load_vocabulary(self, path):
+        """
+        Deserialize vocabulary mappings from a JSON file.
+
+        Restores vocabulary state from a previously saved file, including:
+        - index-to-value mapping
+        - value-to-index mapping
+        - Sets 'fitted' flag to True
+
+        Arguments:
+        ----------
+            path (str): Path to valid vocabulary JSON file
+
+        Example:
+        --------
+            > vocab.load_vocabulary("vocab.json")
+
+        Raises:
+        -------
+            FileNotFoundError: If specified file doesn't exist
+            JSONDecodeError: If file contains invalid JSON
+            KeyError: If required fields are missing in the JSON
+
+        Note:
+        -----
+            - Requires file format matching save_vocabulary() output
+            - Overwrites any existing vocabulary mappings in memory
+        """
+        with open(path, 'r') as file:
+            data = json.load(file)
+            self.index_value = data["index_value"]
+            self.value_index = data["value_index"]
+            self.fitted = True
+        print(f"Data loaded from {path}")
 
 def generate_textual_dataset(tokens, context_window=2):
     x = []

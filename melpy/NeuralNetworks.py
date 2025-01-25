@@ -65,11 +65,11 @@ class Sequential:
         Generate predictions for input data.
     evaluate()
         Calculate loss and accuracy metrics on current parameters.
-    save_params(name)
+    save_params(filename)
         Save model parameters to HDF5 file.
     load_params(path)
         Load parameters from HDF5 file.
-    save_histories(name, extension)
+    save_histories(filename, extension)
         Save training metrics history to file.
     summary()
         Print model architecture summary.
@@ -655,18 +655,18 @@ class Sequential:
         else:
             raise RuntimeError("The model has not been trained yet.")
 
-    def save_params(self, name="parameters"):
+    def save_params(self, filename="parameters"):
         """
         Saves the trained model parameters (weights and biases) to an HDF5 file.
 
         This method saves the weights and biases of all layers into an HDF5 file. The filename
-        is constructed by appending a timestamp to the specified base name, followed by the .h5
+        is constructed by appending a timestamp to the specified base filename, followed by the .h5
         extension, ensuring unique filenames for each save.
 
         Parameters
         ----------
-        name : str, optional
-            The base name for the file. The actual filename will include a timestamp and .h5
+        filename : str, optional
+            The base filename for the file. The actual filename will include a timestamp and .h5
             extension (e.g., "parameters_MM_DD_YYYY-HH_MM_SS.h5"). Default is "parameters".
 
         Raises
@@ -674,20 +674,20 @@ class Sequential:
         RuntimeError
             If the model has not been trained yet.
         TypeError
-            If `name` is not a string.
+            If `filename` is not a string.
 
         Notes
         -----
         The saved file uses the HDF5 format (.h5) and includes parameters, momentums, and cache
         values for each layer. Timestamping prevents accidental overwrites of previous saves.
         """
-        if not isinstance(name, str):
-            raise TypeError("`name` must be a string.")
+        if not isinstance(filename, str):
+            raise TypeError("`filename` must be a string.")
 
         if self.__is_trained__:
             date_time = datetime.now().strftime("%m_%d_%Y-%H_%M_%S")
 
-            with h5py.File(name + f"_{date_time}.h5", 'w') as f:
+            with h5py.File(filename + f"_{date_time}.h5", 'w') as f:
                 for i in range(len(self.train_layers)):
                     f.create_group(f"layer{i}")
                     if hasattr(self.train_layers[i], 'parameters'):
@@ -711,6 +711,9 @@ class Sequential:
                                 self.train_layers[i].cells[j].parameters[k].momentums.array)
                                 f[f"layer{i}/cell{j}/parameter{k}"].create_dataset(f"cache", data=
                                 self.train_layers[i].cells[j].parameters[k].cache.array)
+
+            print(f"Data saved to {filename}")
+
         else:
             raise RuntimeError("The model has not been trained yet.")
 
@@ -767,17 +770,19 @@ class Sequential:
                             self.train_layers[i].cells[j].parameters[k].cache = Tensor(
                                 f[f"layer{i}/cell{j}/parameter{k}/cache"].astype(np.float64)[:])
 
-    def save_histories(self, name="metrics_history", extension="h5"):
+        print(f"Data loaded from {path}")
+
+    def save_histories(self, filename="metrics_history", extension="h5"):
         """
         Saves the training and validation histories to a file.
 
-        This method saves the training and validation histories (loss and accuracy) to a file with the specified name and extension.
-        The histories are saved with a timestamp appended to the base name.
+        This method saves the training and validation histories (loss and accuracy) to a file with the specified filename and extension.
+        The histories are saved with a timestamp appended to the base filename.
 
         Parameters
         ----------
-        name : str, optional
-            The base name of the file to save the histories. The default is "metrics_history".
+        filename : str, optional
+            The base filename of the file to save the histories. The default is "metrics_history".
         extension : str, optional
             The file extension to use for saving the histories. The default is "h5".
 
@@ -793,17 +798,17 @@ class Sequential:
         Raises
         ------
         TypeError
-            If `name` is not a string.
+            If `filename` is not a string.
             If `extension` is not a string.
         ValueError
             If `extension` is not either 'h5' or 'pkl'.
 
         Notes
         -----
-        The histories are saved in a file with a timestamp appended to the base name. The file format can be either HDF5 (.h5) or pickle (.pkl).
+        The histories are saved in a file with a timestamp appended to the base filename. The file format can be either HDF5 (.h5) or pickle (.pkl).
         """
-        if not isinstance(name, str):
-            raise TypeError("`name` must be a string")
+        if not isinstance(filename, str):
+            raise TypeError("`filename` must be a string")
         if not isinstance(extension, str):
             raise TypeError("`extension` must be a string")
         if extension not in ("h5", "pkl"):
@@ -819,17 +824,17 @@ class Sequential:
             histories["val_accuracy"] = self.val_accuracy_history
 
         if extension == "pkl":
-            with open(name + f"_{date_time}.pkl", 'wb') as f:
+            with open(filename + f"_{date_time}.pkl", 'wb') as f:
                 pickle.dump(histories, f)
         elif extension == "h5":
-            with h5py.File(name + f"_{date_time}.h5", 'w') as f:
+            with h5py.File(filename + f"_{date_time}.h5", 'w') as f:
                 f.create_dataset(f"train_loss", data=histories["train_loss"])
                 f.create_dataset(f"train_accuracy", data=histories["train_accuracy"])
                 if self.validation:
                     f.create_dataset(f"val_loss", data=histories["val_loss"])
                     f.create_dataset(f"val_accuracy", data=histories["val_accuracy"])
 
-        return histories
+        print(f"Data saved to {filename}")
 
     def summary(self):
         """

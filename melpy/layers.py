@@ -1793,14 +1793,12 @@ class Embedding(Layer):
                 Initialized weights.
             """
             if weight_init.lower() == "he_normal":
-                weights = Parameter(np.random.randn(input_dim, output_dim) * np.sqrt(2.0 / input_dim),
-                                    requires_grad=True)
+                weights = Parameter(np.random.randn(input_dim, output_dim) * np.sqrt(2.0 / input_dim), requires_grad=True)
             elif weight_init.lower() == "he_uniform":
                 limit = np.sqrt(6 / input_dim)
                 weights = Parameter(np.random.uniform(-limit, limit, (input_dim, output_dim)), requires_grad=True)
             elif weight_init.lower() == "glorot_normal":
-                weights = Parameter(np.random.randn(input_dim, output_dim) * np.sqrt(2.0 / (input_dim + output_dim)),
-                                    requires_grad=True)
+                weights = Parameter(np.random.randn(input_dim, output_dim) * np.sqrt(2.0 / (input_dim + output_dim)), requires_grad=True)
             elif weight_init.lower() == "glorot_uniform":
                 limit = np.sqrt(6 / (input_dim + output_dim))
                 weights = Parameter(np.random.uniform(-limit, limit, (input_dim, output_dim)), requires_grad=True)
