@@ -216,16 +216,15 @@ class Sequential:
         Parameters
         ----------
         layer : Layer
-            Must be one of: Dense, Convolution2D, Pooling2D,
-            Flatten, Dropout, LSTM, Embedding
+            Layer to be added.
 
         Raises
         ------
         TypeError
             If layer is not of supported type
         """
-        if not isinstance(layer, (Dense, Convolution2D, Pooling2D, Flatten, Dropout, LSTM, Embedding)):
-            raise TypeError("`layer` must be of type `Dense`, `Convolution2D`, `Pooling2D`, `LSTM`, `Embedding`, `Flatten` or `Dropout`.")
+        if not isinstance(layer, Layer):
+            raise TypeError("`layer` must be of type Layer.")
 
         self.layers.append(layer)
 
