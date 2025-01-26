@@ -60,7 +60,7 @@ import melpy.NeuralNetworks as nn
 
 model = nn.Sequential(X_train, y_train, X_val, y_val)
 
-model.train_layers= [nn.Dense(X_train.shape[1], 12),
+model.layers= [nn.Dense(X_train.shape[1], 12),
                     nn.ReLU(),
                     nn.Dense(12,y_train.shape[1]),
                     nn.Sigmoid()]
