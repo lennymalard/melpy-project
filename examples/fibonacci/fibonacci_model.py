@@ -1,26 +1,9 @@
 # Library imports
 import melpy.NeuralNetworks as nn
 from melpy.tensor import *
+from melpy.preprocessing import generate_sequence_dataset
 
 # Function definitions
-def split_sequence(sequence: list, n_steps: int):
-    x, y = [], []
-
-    for i in range(len(sequence)):
-        last_index = i + n_steps
-
-        if last_index > len(sequence) - 1:
-            break
-        sequence_x, sequence_y = sequence[i:last_index], sequence[last_index]
-
-        x.append(sequence_x)
-        y.append(sequence_y)
-
-    x = np.array(x, dtype=np.float32)
-    y = np.array(y, dtype=np.float32)
-
-    return x, y
-
 def fibonacci(n: int):
     if n == 0:
         return 0
@@ -31,8 +14,7 @@ def fibonacci(n: int):
 
 # Dataset creation
 data = [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233]
-n_steps = 5
-inputs, targets = split_sequence(data, n_steps)
+inputs, targets = generate_sequence_dataset(data, 2)
 
 inputs = Tensor(inputs.reshape(*inputs.shape, 1))
 targets = Tensor(targets.reshape(-1, 1))
