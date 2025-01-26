@@ -437,7 +437,7 @@ class Tokenizer:
     ValueError
         If strategy is not 'word' or 'character'.
     """
-    def __init__(self, strategy="word", lower=True):
+    def __init__(self, strategy, lower=True):
         """
        Initialize tokenizer with specified strategy and text processing options.
        """
@@ -452,6 +452,7 @@ class Tokenizer:
         self.lower = lower
         self.value_index = {}
         self.index_value = {}
+        self.encoder = OneHotEncoder()
         self.fitted = False
 
     def merge_lists(self, lists):
@@ -646,7 +647,7 @@ class Tokenizer:
         elif self.strategy == "character":
             texts_tokenized = [self.char_tokenize(text) for text in texts]
 
-        return [[self.value_index[word] for word in text] for text in texts_tokenized]
+        return [[self.value_index[value] for value in text] for text in texts_tokenized]
 
     def save_vocabulary(self, filename):
         """
@@ -704,12 +705,111 @@ class Tokenizer:
         """
         with open(path, 'r') as file:
             data = json.load(file)
-            self.index_value = data["index_value"]
-            self.value_index = data["value_index"]
+            self.index_value = {int(index): value for index, value in data["index_value"].items()}
+            self.value_index = {value: int(index) for value, index in data["value_index"].items()}
             self.fitted = True
         print(f"Data loaded from {path}")
 
-def generate_textual_dataset(tokens, context_window=2):
+    def one_hot_encode(self, token):
+        """
+        One-hot encode the given token(s).
+
+        This method converts the input token(s) into their corresponding one-hot encoded
+        representation using a fitted encoder. If the encoder is not already fitted, it
+        is fitted using the keys from the `index_value` dictionary.
+
+        Parameters
+        ----------
+        token : int, str, list, or numpy.ndarray
+            The token(s) to be one-hot encoded. If the token is a string, it is first
+            converted into a numpy array before encoding. Lists and numpy arrays are
+            processed element-wise.
+
+        Returns
+        -------
+        numpy.ndarray
+            A 2D numpy array where each row corresponds to the one-hot encoded
+            representation of the input token(s).
+
+        Raises
+        ------
+        TypeError
+            If the input `token` is not of type `int`, `str`, `list`, or `numpy.ndarray`.
+
+        Notes
+        -----
+        - The encoder is fitted on the keys of the `index_value` dictionary if it has not
+          been fitted previously.
+        - For string tokens, the method assumes the encoder is compatible with the values
+          derived from `index_value` keys. Ensure the encoder's categories match the
+          expected input tokens.
+
+        Examples
+        --------
+        Assuming `self.index_value` is properly initialized and the encoder is compatible:
+
+        > Tokenizer.encoder.one_hot_encode(5)
+        array([[0., 0., 0., 0., 1.]])
+
+        > Tokenizer.encoder.one_hot_encode("apple")
+        array([[1., 0., 0., 0., 0.]])
+
+        > Tokenizer.encoder.one_hot_encode([1, 2, 3])
+        array([[0., 1., 0.],
+               [0., 0., 1.],
+               [1., 0., 0.]])
+        """
+        if not self.encoder.fitted:
+            self.encoder.fit(np.array(list(self.index_value.keys())))
+
+        if isinstance(token, (int, str, list, np.ndarray)):
+            return self.encoder.transform(np.array(token))
+        elif isinstance(token, str):
+            return self.encoder.transform(self.value_index[token])
+        else:
+            raise TypeError("'token' must be of type int or str.")
+
+def generate_sequence_dataset(tokens, context_window=2):
+    """
+    Generate input sequences and target tokens for a sequence prediction task.
+
+    Creates sliding windows of tokens as input sequences (X) and the subsequent token
+    after each window as the target (Y). Used to prepare training data for models
+    predicting the next token in a sequence (e.g., language modeling).
+
+    Parameters
+    ----------
+    tokens : list or array-like
+        A 1D sequence of tokens (integers, strings, or other hashable types).
+    context_window : int, default=2
+        Number of tokens to include on both sides of the center token in each input sequence.
+        Total sequence length = 2 * context_window + 1.
+
+    Returns
+    -------
+    x : numpy.ndarray
+        A 2D array of shape (n_samples, sequence_length) where each row is a context window.
+    y : numpy.ndarray
+        A 1D array of shape (n_samples,) where each element is the target token following its sequence.
+
+    Notes
+    -----
+    - The first valid sequence starts at index `context_window`.
+    - The last valid sequence ends at index `len(tokens) - context_window - 2`.
+    - If `len(tokens) < 2 * context_window + 2`, returns empty arrays.
+
+    Example
+    -------
+    > tokens = [0, 1, 2, 3, 4, 5]
+    > context_window = 1
+    > x, y = generate_sequence_dataset(tokens, context_window)
+    > x  # Input sequences (length = 2*1 + 1 = 3)
+    array([[0, 1, 2],
+           [1, 2, 3],
+           [2, 3, 4]])
+    > y  # Targets (next token after each sequence)
+    array([3, 4, 5])
+    """
     x = []
     y = []
     for i in range(context_window, len(tokens)-context_window-1):
