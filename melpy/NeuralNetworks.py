@@ -16,6 +16,7 @@ import h5py
 import sys
 from datetime import datetime
 import os
+import warnings
 
 class Sequential:
     """
@@ -75,7 +76,7 @@ class Sequential:
         Print model architecture summary.
     """
 
-    def __init__(self, train_inputs, train_targets, val_inputs=None, val_targets=None):
+    def __init__(self, train_inputs=None, train_targets=None, val_inputs=None, val_targets=None, input_shape=None):
         """
         Initialize model with training data and optional validation data.
 
@@ -95,16 +96,34 @@ class Sequential:
         TypeError
             If inputs are not numpy arrays or Tensors
         """
+        if (any(value is None for value in (train_inputs, train_targets)) and
+                any(value is not None for value in (train_inputs, train_targets))):
+            raise TypeError("`train_inputs` and `train_targets` must be provided together.`")
 
-        if not isinstance(train_inputs, np.ndarray) and not isinstance(train_inputs, Tensor):
-            raise TypeError('`train_inputs` must be of type ndarray or Tensor.')
-        if not isinstance(train_targets, np.ndarray) and not isinstance(train_targets, Tensor):
-            raise TypeError('`train_targets` must be of type ndarray or Tensor.')
+        if (any(value is None for value in (val_inputs, val_targets)) and
+                any(value is not None for value in (val_inputs, val_targets))):
+            raise TypeError("`val_inputs` and `val_targets` must be provided together.`")
+
+        if train_inputs is not None and train_targets is not None:
+            if not isinstance(train_inputs, np.ndarray) and not isinstance(train_inputs, Tensor):
+                raise TypeError('`train_inputs` must be of type ndarray or Tensor.')
+            if not isinstance(train_targets, np.ndarray) and not isinstance(train_targets, Tensor):
+                raise TypeError('`train_targets` must be of type ndarray or Tensor.')
+
         if val_inputs is not None and val_targets is not None:
             if not isinstance(val_inputs, np.ndarray) and not isinstance(val_inputs, Tensor):
                 raise TypeError('`val_targets` must be of type ndarray or Tensor.')
             if not isinstance(val_targets, np.ndarray) and not isinstance(val_targets, Tensor):
                 raise TypeError('`val_targets` must be of type ndarray or Tensor.')
+
+        if input_shape is not None:
+            if not isinstance(input_shape, tuple):
+                raise TypeError('`input_shape` must be of type tuple.')
+
+        if input_shape is not None and input_shape[0] != 1:
+            warnings.warn('`input_shape` must have its batch dimension equal to 1.')
+            input_shape = (1,*input_shape[1:])
+            print("New input shape:", input_shape)
 
         self.train_inputs = Tensor(train_inputs, requires_grad=True) if isinstance(train_inputs, np.ndarray) else train_inputs
         self.train_input_batch = None
@@ -125,7 +144,7 @@ class Sequential:
 
         self.predictions = None
 
-        self.train_layers = []
+        self.layers = []
         self.val_layers = []
 
         self.train_loss = 0.0
@@ -143,13 +162,26 @@ class Sequential:
         self.loss_function = None
         self.optimizer = None
 
-        self.__is_trained__ = False
+        self.is_trained = False
         self.__is_compiled__ = False
         self.runtime = 0.0
         self.validation = False
 
-        if self.val_inputs is not None and self.val_targets is not None:
+        if (self.val_inputs is not None and
+                self.val_targets is not None):
             self.validation = True
+
+        self.input_shape = (1, *self.train_inputs.shape[1:]) if self.training else input_shape
+
+        if not self.training and input_shape is None:
+           raise ValueError('`input_shape` must be provided if not in training mode.')
+
+    @property
+    def training(self):
+        if (self.train_inputs is not None and
+                self.train_targets is not None):
+            return True
+        return False
 
     def get_flatten_length(self):
         """
@@ -165,17 +197,17 @@ class Sequential:
         ValueError
             If no Flatten layer exists in the model
         """
-        self.train_layers[0].inputs = Tensor(self.train_inputs.array[0].reshape(1, *self.train_inputs.array[0].shape), requires_grad=True)
-        for i in range(len(self.train_layers)):
-            if isinstance(self.train_layers[i], Flatten):
-                self.train_layers[i].forward()
-                self.train_layers[0].inputs = self.train_inputs
-                return self.train_layers[i].outputs.shape[1]
-            elif i == len(self.train_layers) - 1:
-                self.train_layers[0].inputs = self.train_inputs
+        self.layers[0].inputs = Tensor(np.random.uniform(size=self.input_shape))
+        for i in range(len(self.layers)):
+            if isinstance(self.layers[i], Flatten):
+                self.layers[i].forward()
+                self.layers[0].inputs = self.train_inputs
+                return self.layers[i].outputs.shape[1]
+            elif i == len(self.layers) - 1:
+                self.layers[0].inputs = self.train_inputs
                 raise ValueError("There is no `Flatten` layer.")
             else:
-                self.train_layers[i + 1].inputs = self.train_layers[i].forward()
+                self.layers[i + 1].inputs = self.layers[i].forward()
 
     def add(self, layer):
         """
@@ -195,7 +227,7 @@ class Sequential:
         if not isinstance(layer, (Dense, Convolution2D, Pooling2D, Flatten, Dropout, LSTM, Embedding)):
             raise TypeError("`layer` must be of type `Dense`, `Convolution2D`, `Pooling2D`, `LSTM`, `Embedding`, `Flatten` or `Dropout`.")
 
-        self.train_layers.append(layer)
+        self.layers.append(layer)
 
     def forward(self):
         """
@@ -212,22 +244,25 @@ class Sequential:
         -------
         None
         """
-        self.train_layers[0].inputs = Tensor(self.train_input_batch.array, requires_grad=True)
-        if self.validation:
-            self.val_layers[0].inputs = self.val_input_batch
-        for i in range(len(self.train_layers)):
-            if i + 1 == len(self.train_layers):
-                self.train_output_batch = self.train_layers[i].forward()
-                self.loss_function.forward(self.train_target_batch, self.train_output_batch)
-            else:
-                if isinstance(self.train_layers[i], Dropout):
-                    self.train_layers[i].training = True
-                self.train_layers[i + 1].inputs = self.train_layers[i].forward()
+        if self.training:
+            self.layers[0].inputs = Tensor(self.train_input_batch.array, requires_grad=True)
             if self.validation:
-                if i + 1 == len(self.val_layers):
-                    self.val_output_batch = self.val_layers[i].forward()
+                self.val_layers[0].inputs = self.val_input_batch
+            for i in range(len(self.layers)):
+                if i + 1 == len(self.layers):
+                    self.train_output_batch = self.layers[i].forward()
+                    self.loss_function.forward(self.train_target_batch, self.train_output_batch)
                 else:
-                    self.val_layers[i + 1].inputs = self.val_layers[i].forward()
+                    if isinstance(self.layers[i], Dropout):
+                        self.layers[i].training = True
+                    self.layers[i + 1].inputs = self.layers[i].forward()
+                if self.validation:
+                    if i + 1 == len(self.val_layers):
+                        self.val_output_batch = self.val_layers[i].forward()
+                    else:
+                        self.val_layers[i + 1].inputs = self.val_layers[i].forward()
+        else:
+            raise RuntimeError("The model is not in training mode.")
 
 
     def predict(self, X):
@@ -257,16 +292,16 @@ class Sequential:
         """
         if not isinstance(X, np.ndarray) and not isinstance(X, Tensor):
             raise TypeError("`X` must be of type ndarray or Tensor.")
-        if X.ndim != self.train_inputs.ndim:
-            raise TypeError("`X` must have the same number of dimensions as `self.train_inputs`.")
-        self.train_layers[0].inputs = Tensor(X, requires_grad=True) if isinstance(X, np.ndarray) else X
-        for i in range(len(self.train_layers)):
-            if isinstance(self.train_layers[i], Dropout):
-                self.train_layers[i].training = False
-            if i + 1 == len(self.train_layers):
-                self.predictions = self.train_layers[i].forward()
+        if X.ndim != len(self.input_shape):
+            raise TypeError("`X` must have the same number of dimensions as input_shape.")
+        self.layers[0].inputs = Tensor(X, requires_grad=True) if isinstance(X, np.ndarray) else X
+        for i in range(len(self.layers)):
+            if isinstance(self.layers[i], Dropout):
+                self.layers[i].training = False
+            if i + 1 == len(self.layers):
+                self.predictions = self.layers[i].forward()
                 return self.predictions.array
-            self.train_layers[i + 1].inputs = self.train_layers[i].forward()
+            self.layers[i + 1].inputs = self.layers[i].forward()
 
     def backward(self):
         """
@@ -280,9 +315,12 @@ class Sequential:
         -------
         None
         """
-        self.dX = self.loss_function.backward()
-        for layer in reversed(self.train_layers):
-            self.dX = layer.backward(self.dX)
+        if self.training:
+            self.dX = self.loss_function.backward()
+            for layer in reversed(self.layers):
+                self.dX = layer.backward(self.dX)
+        else:
+            raise RuntimeError("The model is not in training mode.")
 
     def verbose(self, verbose, epoch, epochs, start_time):
         """
@@ -324,58 +362,61 @@ class Sequential:
             raise TypeError('`epochs` must be of type int.')
         if not isinstance(start_time, float):
             raise TypeError('`start_time` must be of type float.')
-
-        if verbose == 2:
-            if epoch + 1 < epochs:
-                if self.validation:
-                    print(f"[TRAINING METRICS] train_loss: {np.around(self.train_loss, 5)} · "
-                          f"train_accuracy: {np.around(self.train_accuracy, 5)}\n" +
-                          f"[VALIDATION METRICS] val_loss: {np.around(self.val_loss, 5)} · "
-                          f"val_accuracy: {np.around(self.val_accuracy, 5)}\n\n")
-                else:
-                    print(f"[TRAINING METRICS] train_loss: {np.around(self.train_loss, 5)} | " +
-                          f"train_accuracy: {np.around(self.train_accuracy, 5)}\n\n")
-            elif epoch + 1 == epochs:
-                if self.validation:
-                    self.runtime = time.time() - start_time
-                    string1 = f"| [TRAINING METRICS] train_loss: {np.around(self.train_loss, 5)} · " + \
-                              f"train_accuracy: {np.around(self.train_accuracy, 5)} |"
-                    string2 = f"| [VALIDATION METRICS] val_loss: {np.around(self.val_loss, 5)} · " + \
-                              f"val_accuracy: {np.around(self.val_accuracy, 5)} |"
-                    string1_length = len(string1)
-                    string2_length = len(string2)
-                    print("\n" + string1_length * "-" + "\n" + string1 + "\n" +
-                          string1_length * "-" + "\n" +
-                          string2 + (string1_length - string2_length - 1) * " " + "\n" +
-                          string1_length * "-")
-                    print(f"{round(self.runtime, 5)} seconds")
-                else:
-                    self.runtime = time.time() - start_time
-                    string = f"| [TRAINING METRICS] train_loss: {np.around(self.train_loss, 5)} · " + \
-                             f"train_accuracy: {np.around(self.train_accuracy, 5)} |"
-                    string_length = len(string)
-                    print("\n" + string_length * "-" + "\n" + string + "\n" + string_length * "-")
-                    print(f"{round(self.runtime, 5)} seconds")
-        elif verbose == 1:
-            if epoch + 1 == epochs:
-                if self.validation:
-                    string1 = f"| [TRAINING METRICS] train_loss: {np.around(self.train_loss, 5)} · " + \
-                              f"train_accuracy: {np.around(self.train_accuracy, 5)} |"
-                    string2 = f"| [VALIDATION METRICS] val_loss: {np.around(self.val_loss, 5)} · " + \
-                              f"val_accuracy: {np.around(self.val_accuracy, 5)} |"
-                    string1_length = len(string1)
-                    string2_length = len(string2)
-                    print("\n" + string1_length * "-" + "\n" + string1 + "\n" + string1_length * "-" + "\n" +
-                          string2 + (string1_length - string2_length - 1) * " " + "\n" + string1_length * "-")
-                else:
-                    string = f"| [TRAINING METRICS] train_loss: {np.around(self.train_loss, 5)} · " + \
-                             f"train_accuracy: {np.around(self.train_accuracy, 5)} |"
-                    string_length = len(string)
-                    print("\n" + string_length * "-" + "\n" + string + "\n" + string_length * "-")
-        elif verbose == 0 or verbose is None:
-            return
+        
+        if self.training:
+            if verbose == 2:
+                if epoch + 1 < epochs:
+                    if self.validation:
+                        print(f"[TRAINING METRICS] train_loss: {np.around(self.train_loss, 5)} · "
+                              f"train_accuracy: {np.around(self.train_accuracy, 5)}\n" +
+                              f"[VALIDATION METRICS] val_loss: {np.around(self.val_loss, 5)} · "
+                              f"val_accuracy: {np.around(self.val_accuracy, 5)}\n\n")
+                    else:
+                        print(f"[TRAINING METRICS] train_loss: {np.around(self.train_loss, 5)} | " +
+                              f"train_accuracy: {np.around(self.train_accuracy, 5)}\n\n")
+                elif epoch + 1 == epochs:
+                    if self.validation:
+                        self.runtime = time.time() - start_time
+                        string1 = f"| [TRAINING METRICS] train_loss: {np.around(self.train_loss, 5)} · " + \
+                                  f"train_accuracy: {np.around(self.train_accuracy, 5)} |"
+                        string2 = f"| [VALIDATION METRICS] val_loss: {np.around(self.val_loss, 5)} · " + \
+                                  f"val_accuracy: {np.around(self.val_accuracy, 5)} |"
+                        string1_length = len(string1)
+                        string2_length = len(string2)
+                        print("\n" + string1_length * "-" + "\n" + string1 + "\n" +
+                              string1_length * "-" + "\n" +
+                              string2 + (string1_length - string2_length - 1) * " " + "\n" +
+                              string1_length * "-")
+                        print(f"{round(self.runtime, 5)} seconds")
+                    else:
+                        self.runtime = time.time() - start_time
+                        string = f"| [TRAINING METRICS] train_loss: {np.around(self.train_loss, 5)} · " + \
+                                 f"train_accuracy: {np.around(self.train_accuracy, 5)} |"
+                        string_length = len(string)
+                        print("\n" + string_length * "-" + "\n" + string + "\n" + string_length * "-")
+                        print(f"{round(self.runtime, 5)} seconds")
+            elif verbose == 1:
+                if epoch + 1 == epochs:
+                    if self.validation:
+                        string1 = f"| [TRAINING METRICS] train_loss: {np.around(self.train_loss, 5)} · " + \
+                                  f"train_accuracy: {np.around(self.train_accuracy, 5)} |"
+                        string2 = f"| [VALIDATION METRICS] val_loss: {np.around(self.val_loss, 5)} · " + \
+                                  f"val_accuracy: {np.around(self.val_accuracy, 5)} |"
+                        string1_length = len(string1)
+                        string2_length = len(string2)
+                        print("\n" + string1_length * "-" + "\n" + string1 + "\n" + string1_length * "-" + "\n" +
+                              string2 + (string1_length - string2_length - 1) * " " + "\n" + string1_length * "-")
+                    else:
+                        string = f"| [TRAINING METRICS] train_loss: {np.around(self.train_loss, 5)} · " + \
+                                 f"train_accuracy: {np.around(self.train_accuracy, 5)} |"
+                        string_length = len(string)
+                        print("\n" + string_length * "-" + "\n" + string + "\n" + string_length * "-")
+            elif verbose == 0 or verbose is None:
+                return
+            else:
+                raise ValueError("`verbose` must be 0, 1, or 2.")
         else:
-            raise ValueError("`verbose` must be 0, 1, or 2.")
+            raise RuntimeError("The model is not in training mode.")
 
     def compile(self, loss_function, optimizer=SGD(learning_rate=0.01)):
         """
@@ -460,158 +501,161 @@ class Sequential:
             raise ValueError("`verbose` must be of type `int` or `None`.")
         if not isinstance(callbacks, list) or not all(isinstance(callback, Callback) for callback in callbacks):
             raise TypeError("`callbacks` must be a list of Callback objects.")
-
-        self.__is_trained__ = True
-
-        start_time = time.time()
-
-        if self.validation:
-            self.val_layers = deepcopy(self.train_layers)
-
-        self.batch_size = batch_size
-
-        if self.batch_size is None:
-            steps = 1
-        else:
-            steps = self.train_inputs.shape[0] // self.batch_size
-            if steps * self.batch_size < self.train_inputs.shape[0]:
-                steps += 1
+        
+        if self.training:
+            self.is_trained = True
+    
+            start_time = time.time()
+    
             if self.validation:
-                self.val_batch_size = self.val_inputs.shape[0] // steps
-                if self.val_batch_size <= 0:
-                    raise ValueError(
-                        f"Validation batch size must be at least 1. (currently {self.val_batch_size}). "
-                        f"Ensure validation input size is greater than {steps} or increase training batch size to "
-                        f"{self.train_inputs.shape[0] // self.val_inputs.shape[0]}."
-                    )
-
-        if epochs > 1000:
-            update = 25
-        elif 1000 >= epochs > 100:
-            update = 10
-        elif epochs <= 100:
-            update = 1
-
-        loss = 0.0
-        acc = 0.0
-
-        tqdm_epochs = False
-        tqdm_steps = False
-
-        if verbose == 1:
-            tqdm_epochs = True
-        elif verbose is not None and verbose != 0 and verbose != 1:
-            tqdm_steps = True
-
-        for callback in callbacks:
-            if isinstance(callback, LiveMetrics):
-                figure = plt.figure()
-            callback.on_train_start(self)
-
-        for epoch in (epoch_bar := tqdm(range(epochs), disable=not tqdm_epochs, file=sys.stdout)):
-            epoch_bar.set_description(f"Epoch [{epoch + 1}/{epochs}]")
-            epoch_bar.set_postfix({"loss": loss, "accuracy": acc})
-
-            for callback in callbacks:
-                callback.on_epoch_start(self)
-
-            train_accumulated_loss = 0
-            train_accumulated_accuracy = 0
-
-            val_accumulated_loss = 0
-            val_accumulated_accuracy = 0
-
-            for step in (step_bar := tqdm(range(steps), disable=not tqdm_steps, file=sys.stdout)):
-                step_bar.set_description(f"Epoch [{epoch + 1}/{epochs}]")
-                step_bar.set_postfix({"loss": loss, "accuracy": acc})
-
-                for callback in callbacks:
-                    callback.on_step_start(self)
-
-                if self.batch_size is None:
-                    self.train_input_batch = self.train_inputs
-                    self.train_target_batch = self.train_targets
-
-                    if self.validation:
-                        self.val_input_batch = self.val_inputs
-                        self.val_target_batch = self.val_targets
-                else:
-                    self.train_input_batch = Tensor(self.train_inputs.array[step * self.batch_size:(step + 1) * self.batch_size], requires_grad=True)
-                    self.train_target_batch = Tensor(self.train_targets.array[step * self.batch_size:(step + 1) * self.batch_size], requires_grad=True)
-
-                    if self.validation:
-                        self.val_input_batch = Tensor(self.val_inputs.array[
-                                               step * self.val_batch_size:(step + 1) * self.val_batch_size], requires_grad=True)
-                        self.val_target_batch = Tensor(self.val_targets.array[
-                                                step * self.val_batch_size:(step + 1) * self.val_batch_size], requires_grad=True)
-
-                self.forward()
-
-                for layer in self.train_layers:
-                    layer.zero_grad()
-
-                self.loss_function.zero_grad()
-
-                self.backward()
-
-                for i in range(len(self.train_layers)):
-                    self.train_layers[i] = self.optimizer.update_layer(self.train_layers[i])
-
-                    if self.validation:
-                        if isinstance(self.val_layers[i], Dense) or isinstance(self.val_layers[i], Convolution2D):
-                            self.val_layers[i].weights = self.train_layers[i].weights
-                            self.val_layers[i].biases = self.train_layers[i].biases
-
-                self.optimizer.step += 1
-
-                loss = np.around(self.loss_function.output.array, 5)
-                acc = accuracy(self.train_target_batch, self.train_output_batch)
-
-                train_accumulated_loss += loss
-                train_accumulated_accuracy += acc
-
+                self.val_layers = deepcopy(self.layers)
+    
+            self.batch_size = batch_size
+    
+            if self.batch_size is None:
+                steps = 1
+            else:
+                steps = self.train_inputs.shape[0] // self.batch_size
+                if steps * self.batch_size < self.train_inputs.shape[0]:
+                    steps += 1
                 if self.validation:
-                    val_accumulated_loss += self.loss_function.forward(self.val_target_batch, self.val_output_batch)
-                    val_accumulated_accuracy += accuracy(self.val_target_batch, self.val_output_batch)
-
-                for callback in callbacks:
-                    callback.on_step_end(self)
-
-            self.train_loss = train_accumulated_loss / steps
-            self.train_accuracy = train_accumulated_accuracy / steps
-
-            if epoch % update == 0 or epoch == 1:
-                self.train_loss_history.append(self.train_loss)
-                self.train_accuracy_history.append(self.train_accuracy)
-
-            if self.validation:
-                self.val_loss = (val_accumulated_loss / steps).array
-                self.val_accuracy = val_accumulated_accuracy / steps
-
-                if epoch % update == 0 or epoch == 1:
-                    self.val_loss_history.append(self.val_loss)
-                    self.val_accuracy_history.append(self.val_accuracy)
-
-            self.verbose(verbose, epoch, epochs, start_time)
-
+                    self.val_batch_size = self.val_inputs.shape[0] // steps
+                    if self.val_batch_size <= 0:
+                        raise ValueError(
+                            f"Validation batch size must be at least 1. (currently {self.val_batch_size}). "
+                            f"Ensure validation input size is greater than {steps} or increase training batch size to "
+                            f"{self.train_inputs.shape[0] // self.val_inputs.shape[0]}."
+                        )
+    
+            if epochs > 1000:
+                update = 25
+            elif 1000 >= epochs > 100:
+                update = 10
+            elif epochs <= 100:
+                update = 1
+    
+            loss = 0.0
+            acc = 0.0
+    
+            tqdm_epochs = False
+            tqdm_steps = False
+    
+            if verbose == 1:
+                tqdm_epochs = True
+            elif verbose is not None and verbose != 0 and verbose != 1:
+                tqdm_steps = True
+    
             for callback in callbacks:
                 if isinstance(callback, LiveMetrics):
+                    figure = plt.figure()
+                callback.on_train_start(self)
+    
+            for epoch in (epoch_bar := tqdm(range(epochs), disable=not tqdm_epochs, file=sys.stdout)):
+                epoch_bar.set_description(f"Epoch [{epoch + 1}/{epochs}]")
+                epoch_bar.set_postfix({"loss": loss, "accuracy": acc})
+    
+                for callback in callbacks:
+                    callback.on_epoch_start(self)
+    
+                train_accumulated_loss = 0
+                train_accumulated_accuracy = 0
+    
+                val_accumulated_loss = 0
+                val_accumulated_accuracy = 0
+    
+                for step in (step_bar := tqdm(range(steps), disable=not tqdm_steps, file=sys.stdout)):
+                    step_bar.set_description(f"Epoch [{epoch + 1}/{epochs}]")
+                    step_bar.set_postfix({"loss": loss, "accuracy": acc})
+    
+                    for callback in callbacks:
+                        callback.on_step_start(self)
+    
+                    if self.batch_size is None:
+                        self.train_input_batch = self.train_inputs
+                        self.train_target_batch = self.train_targets
+    
+                        if self.validation:
+                            self.val_input_batch = self.val_inputs
+                            self.val_target_batch = self.val_targets
+                    else:
+                        self.train_input_batch = Tensor(self.train_inputs.array[step * self.batch_size:(step + 1) * self.batch_size], requires_grad=True)
+                        self.train_target_batch = Tensor(self.train_targets.array[step * self.batch_size:(step + 1) * self.batch_size], requires_grad=True)
+    
+                        if self.validation:
+                            self.val_input_batch = Tensor(self.val_inputs.array[
+                                                   step * self.val_batch_size:(step + 1) * self.val_batch_size], requires_grad=True)
+                            self.val_target_batch = Tensor(self.val_targets.array[
+                                                    step * self.val_batch_size:(step + 1) * self.val_batch_size], requires_grad=True)
+    
+                    self.forward()
+    
+                    for layer in self.layers:
+                        layer.zero_grad()
+    
+                    self.loss_function.zero_grad()
+    
+                    self.backward()
+    
+                    for i in range(len(self.layers)):
+                        self.layers[i] = self.optimizer.update_layer(self.layers[i])
+    
+                        if self.validation:
+                            if isinstance(self.val_layers[i], Dense) or isinstance(self.val_layers[i], Convolution2D):
+                                self.val_layers[i].weights = self.layers[i].weights
+                                self.val_layers[i].biases = self.layers[i].biases
+    
+                    self.optimizer.step += 1
+    
+                    loss = np.around(self.loss_function.output.array, 5)
+                    acc = accuracy(self.train_target_batch, self.train_output_batch)
+    
+                    train_accumulated_loss += loss
+                    train_accumulated_accuracy += acc
+    
+                    if self.validation:
+                        val_accumulated_loss += self.loss_function.forward(self.val_target_batch, self.val_output_batch)
+                        val_accumulated_accuracy += accuracy(self.val_target_batch, self.val_output_batch)
+    
+                    for callback in callbacks:
+                        callback.on_step_end(self)
+    
+                self.train_loss = train_accumulated_loss / steps
+                self.train_accuracy = train_accumulated_accuracy / steps
+    
+                if epoch % update == 0 or epoch == 1:
+                    self.train_loss_history.append(self.train_loss)
+                    self.train_accuracy_history.append(self.train_accuracy)
+    
+                if self.validation:
+                    self.val_loss = (val_accumulated_loss / steps).array
+                    self.val_accuracy = val_accumulated_accuracy / steps
+    
                     if epoch % update == 0 or epoch == 1:
-                        callback.on_epoch_end(self, figure)
+                        self.val_loss_history.append(self.val_loss)
+                        self.val_accuracy_history.append(self.val_accuracy)
+    
+                self.verbose(verbose, epoch, epochs, start_time)
+    
+                for callback in callbacks:
+                    if isinstance(callback, LiveMetrics):
+                        if epoch % update == 0 or epoch == 1:
+                            callback.on_epoch_end(self, figure)
+                    else:
+                        callback.on_epoch_end(self)
+    
+            if get_output:
+                if self.batch_size is not None:
+                    self.train_outputs = Tensor(self.predict(self.train_inputs.array[:self.batch_size]), requires_grad=True)
+                    for step in range(1, steps):
+                        self.train_outputs = Tensor(np.concatenate((self.train_outputs.array, Tensor(self.predict(
+                            self.train_inputs.array[step * self.batch_size:(step + 1) * self.batch_size]), requires_grad=True)), axis=0))
                 else:
-                    callback.on_epoch_end(self)
-
-        if get_output:
-            if self.batch_size is not None:
-                self.train_outputs = Tensor(self.predict(self.train_inputs.array[:self.batch_size]), requires_grad=True)
-                for step in range(1, steps):
-                    self.train_outputs = Tensor(np.concatenate((self.train_outputs.array, Tensor(self.predict(
-                        self.train_inputs.array[step * self.batch_size:(step + 1) * self.batch_size]), requires_grad=True)), axis=0))
-            else:
-                self.train_outputs = Tensor(self.predict(self.train_inputs), requires_grad=True)
-
-        for callback in callbacks:
-            callback.on_train_end(self)
+                    self.train_outputs = Tensor(self.predict(self.train_inputs), requires_grad=True)
+    
+            for callback in callbacks:
+                callback.on_train_end(self)
+        else:
+            raise RuntimeError("The model is not in training mode.")
 
     def results(self):
         """
@@ -631,7 +675,7 @@ class Sequential:
         -------
         None
         """
-        if self.__is_trained__:
+        if self.is_trained:
             figure, axs = plt.subplots(1, 2)
 
             axs[0].set_title("Loss Evolution")
@@ -684,33 +728,33 @@ class Sequential:
         if not isinstance(filename, str):
             raise TypeError("`filename` must be a string.")
 
-        if self.__is_trained__:
+        if self.is_trained:
             date_time = datetime.now().strftime("%m_%d_%Y-%H_%M_%S")
 
             with h5py.File(filename + f"_{date_time}.h5", 'w') as f:
-                for i in range(len(self.train_layers)):
+                for i in range(len(self.layers)):
                     f.create_group(f"layer{i}")
-                    if hasattr(self.train_layers[i], 'parameters'):
-                        for j in range(len(self.train_layers[i].parameters)):
+                    if hasattr(self.layers[i], 'parameters'):
+                        for j in range(len(self.layers[i].parameters)):
                             f[f"layer{i}"].create_group(f"parameter{j}")
                             f[f"layer{i}/parameter{j}"].create_dataset(f"value", data=
-                            self.train_layers[i].parameters[j].array)
+                            self.layers[i].parameters[j].array)
                             f[f"layer{i}/parameter{j}"].create_dataset(f"momentums", data=
-                            self.train_layers[i].parameters[j].momentums.array)
+                            self.layers[i].parameters[j].momentums.array)
                             f[f"layer{i}/parameter{j}"].create_dataset(f"cache", data=
-                            self.train_layers[i].parameters[j].cache.array)
+                            self.layers[i].parameters[j].cache.array)
 
-                    elif isinstance(self.train_layers[i], LSTM):
-                        for j in range(len(self.train_layers[i].cells)):
+                    elif isinstance(self.layers[i], LSTM):
+                        for j in range(len(self.layers[i].cells)):
                             f[f"layer{i}"].create_group(f"cell{j}")
-                            for k in range(len(self.train_layers[i].cells[j].parameters)):
+                            for k in range(len(self.layers[i].cells[j].parameters)):
                                 f[f"layer{i}/cell{j}"].create_group(f"parameter{k}")
                                 f[f"layer{i}/cell{j}/parameter{k}"].create_dataset(f"value", data=
-                                self.train_layers[i].cells[j].parameters[k].array)
+                                self.layers[i].cells[j].parameters[k].array)
                                 f[f"layer{i}/cell{j}/parameter{k}"].create_dataset(f"momentums", data=
-                                self.train_layers[i].cells[j].parameters[k].momentums.array)
+                                self.layers[i].cells[j].parameters[k].momentums.array)
                                 f[f"layer{i}/cell{j}/parameter{k}"].create_dataset(f"cache", data=
-                                self.train_layers[i].cells[j].parameters[k].cache.array)
+                                self.layers[i].cells[j].parameters[k].cache.array)
 
             print(f"Data saved to {filename}")
 
@@ -750,24 +794,24 @@ class Sequential:
             raise ValueError("`extension` must be '.h5'")
 
         with h5py.File(path, 'r') as f:
-            for i in range(len(self.train_layers)):
-                if hasattr(self.train_layers[i], 'parameters'):
-                    for j in range(len(self.train_layers[i].parameters)):
-                        self.train_layers[i].parameters[j] = Parameter(
+            for i in range(len(self.layers)):
+                if hasattr(self.layers[i], 'parameters'):
+                    for j in range(len(self.layers[i].parameters)):
+                        self.layers[i].parameters[j] = Parameter(
                             f[f"layer{i}/parameter{j}/value"].astype(np.float64)[:], requires_grad=True)
-                        self.train_layers[i].parameters[j].momentums = Tensor(
+                        self.layers[i].parameters[j].momentums = Tensor(
                             f[f"layer{i}/parameter{j}/momentums"].astype(np.float64)[:])
-                        self.train_layers[i].parameters[j].cache = Tensor(
+                        self.layers[i].parameters[j].cache = Tensor(
                             f[f"layer{i}/parameter{j}/cache"].astype(np.float64)[:])
 
-                elif isinstance(self.train_layers[i], LSTM):
-                    for j in range(len(self.train_layers[i].cells)):
-                        for k in range(len(self.train_layers[i].cells[j].parameters)):
-                            self.train_layers[i].cells[j].parameters[k] = Parameter(
+                elif isinstance(self.layers[i], LSTM):
+                    for j in range(len(self.layers[i].cells)):
+                        for k in range(len(self.layers[i].cells[j].parameters)):
+                            self.layers[i].cells[j].parameters[k] = Parameter(
                                 f[f"layer{i}/cell{j}/parameter{k}/value"].astype(np.float64)[:], requires_grad=True)
-                            self.train_layers[i].cells[j].parameters[k].momentums = Tensor(
+                            self.layers[i].cells[j].parameters[k].momentums = Tensor(
                                 f[f"layer{i}/cell{j}/parameter{k}/momentums"].astype(np.float64)[:])
-                            self.train_layers[i].cells[j].parameters[k].cache = Tensor(
+                            self.layers[i].cells[j].parameters[k].cache = Tensor(
                                 f[f"layer{i}/cell{j}/parameter{k}/cache"].astype(np.float64)[:])
 
         print(f"Data loaded from {path}")
@@ -813,28 +857,31 @@ class Sequential:
             raise TypeError("`extension` must be a string")
         if extension not in ("h5", "pkl"):
             raise ValueError("`extension` must be either 'h5' or 'pkl'")
-
-        date_time = datetime.now().strftime("%m_%d_%Y-%H_%M_%S")
-        histories = {
-            "train_loss": self.train_loss_history,
-            "train_accuracy": self.train_accuracy_history
-        }
-        if self.validation:
-            histories["val_loss"] = self.val_loss_history
-            histories["val_accuracy"] = self.val_accuracy_history
-
-        if extension == "pkl":
-            with open(filename + f"_{date_time}.pkl", 'wb') as f:
-                pickle.dump(histories, f)
-        elif extension == "h5":
-            with h5py.File(filename + f"_{date_time}.h5", 'w') as f:
-                f.create_dataset(f"train_loss", data=histories["train_loss"])
-                f.create_dataset(f"train_accuracy", data=histories["train_accuracy"])
-                if self.validation:
-                    f.create_dataset(f"val_loss", data=histories["val_loss"])
-                    f.create_dataset(f"val_accuracy", data=histories["val_accuracy"])
-
-        print(f"Data saved to {filename}")
+        
+        if self.is_trained:
+            date_time = datetime.now().strftime("%m_%d_%Y-%H_%M_%S")
+            histories = {
+                "train_loss": self.train_loss_history,
+                "train_accuracy": self.train_accuracy_history
+            }
+            if self.validation:
+                histories["val_loss"] = self.val_loss_history
+                histories["val_accuracy"] = self.val_accuracy_history
+    
+            if extension == "pkl":
+                with open(filename + f"_{date_time}.pkl", 'wb') as f:
+                    pickle.dump(histories, f)
+            elif extension == "h5":
+                with h5py.File(filename + f"_{date_time}.h5", 'w') as f:
+                    f.create_dataset(f"train_loss", data=histories["train_loss"])
+                    f.create_dataset(f"train_accuracy", data=histories["train_accuracy"])
+                    if self.validation:
+                        f.create_dataset(f"val_loss", data=histories["val_loss"])
+                        f.create_dataset(f"val_accuracy", data=histories["val_accuracy"])
+    
+            print(f"Data saved to {filename}")
+        else:
+            raise RuntimeError("The model has not been trained yet.") 
 
     def summary(self):
         """
@@ -847,18 +894,17 @@ class Sequential:
         None
         """
         params_count = 0
-
-        self.predict(self.train_inputs.array[0].reshape(1, *self.train_inputs.array[0].shape))
-        for i in range(len(self.train_layers)):
-
-            if hasattr(self.train_layers[i], 'parameters'):
-                for param in self.train_layers[i].parameters:
+        pseudo_sample = np.random.randint(0, 2, size=self.input_shape)
+        self.predict(pseudo_sample)
+        for i in range(len(self.layers)):
+            if hasattr(self.layers[i], 'parameters'):
+                for param in self.layers[i].parameters:
                     params_count += param.size
 
-            elif isinstance(self.train_layers[i], LSTM):
-                for cell in self.train_layers[i].cells:
+            elif isinstance(self.layers[i], LSTM):
+                for cell in self.layers[i].cells:
                     for param in cell.parameters:
                         params_count += param.size
 
-            print(f"{type(self.train_layers[i]).__name__}: {self.train_layers[i].outputs.shape}")
+            print(f"{type(self.layers[i]).__name__}: {self.layers[i].outputs.shape}")
         print(f"\nNumber of parameters: {params_count}\n")
