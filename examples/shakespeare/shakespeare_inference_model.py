@@ -36,10 +36,13 @@ def predict_next_token(text, temperature=1.0):
 
 def generate_text(seed, length=500, context_window=50, temperature=0.8):
     generated = seed
+    print(seed, end="", flush=True)
     for _ in range(length):
         context = generated[-context_window:] if len(generated) > context_window else generated
         next_token_id = predict_next_token(context, temperature)
-        generated += tokenizer.index_value[next_token_id]
+        next_token = tokenizer.index_value[next_token_id]
+        generated += next_token
+        print(next_token, end="", flush=True)
     return generated
 
 text_generated = generate_text(
@@ -48,5 +51,3 @@ text_generated = generate_text(
     context_window=64,
     temperature=0.6
 )
-
-print(text_generated)
