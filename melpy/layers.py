@@ -1431,12 +1431,12 @@ class LSTMCell(Layer):
         self.previous_hidden_state = Tensor(hidden_state.array)
         self.previous_cell_state = Tensor(cell_state.array)
 
-        self.gates = self.inputs @ self.input_weights + self.previous_hidden_state @ self.hidden_weights
+        gates = self.inputs @ self.input_weights + self.previous_hidden_state @ self.hidden_weights
 
         if self.use_bias:
-            self.gates += self.biases
+            gates += self.biases
 
-        input_gate, forget_gate, cell_input, output_gate = np.hsplit(self.gates.array, 4)
+        input_gate, forget_gate, cell_input, output_gate = np.hsplit(gates.array, 4)
 
         self.input_gate = sigmoid(Tensor(input_gate))
         self.forget_gate = sigmoid(Tensor(forget_gate))
@@ -1478,9 +1478,9 @@ class LSTMCell(Layer):
             Gradient of loss with respect to the input.
         """
 
-        self.i_input_weights, self.f_input_weights, self.c_input_weights, self.o_input_weights = self.input_weights.split()
-        self.i_hidden_weights, self.f_hidden_weights, self.c_hidden_weights, self.o_hidden_weights = self.hidden_weights.split()
-        self.i_biases, self.f_biases, self.c_biases, self.o_biases = self.biases.split()
+        i_input_weights, f_input_weights, c_input_weights, o_input_weights = self.input_weights.split()
+        i_hidden_weights, f_hidden_weights, c_hidden_weights, o_hidden_weights = self.hidden_weights.split()
+        i_biases, f_biases, c_biases, o_biases = self.biases.split()
 
         self.dC = (Tensor(hidden_state_grad) * self.output_gate * Tensor(self.activation(self.cell_state).derivative()) +
                    Tensor(cell_state_grad) * self.next_forget_gate).array
@@ -1509,15 +1509,15 @@ class LSTMCell(Layer):
         if self.use_bias:
             self.biases.grad += np.sum(gates_grad, axis=0, keepdims=True)
 
-        self.dH = i_dZ @ self.i_hidden_weights.T.array + f_dZ @ self.f_hidden_weights.T.array + \
-                  o_dZ @ self.o_hidden_weights.T.array + c_dZ @ self.c_hidden_weights.T.array
+        self.dH = i_dZ @ i_hidden_weights.T.array + f_dZ @ f_hidden_weights.T.array + \
+                  o_dZ @ o_hidden_weights.T.array + c_dZ @ c_hidden_weights.T.array
 
-        self.dX = i_dZ @ self.i_input_weights.T.array + f_dZ @ self.f_input_weights.T.array + \
-                  o_dZ @ self.o_input_weights.T.array + c_dZ @ self.c_input_weights.T.array
+        self.dX = i_dZ @ i_input_weights.T.array + f_dZ @ f_input_weights.T.array + \
+                  o_dZ @ o_input_weights.T.array + c_dZ @ c_input_weights.T.array
 
         self.sequence_inputs_grads.append(self.dX)
 
-        return  self.dX, self.dH, self.dC
+        return self.dX, self.dH, self.dC
 
     def clear_memory(self):
         """
