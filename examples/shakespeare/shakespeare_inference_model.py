@@ -3,7 +3,7 @@ from melpy.tensor import *
 from melpy.preprocessing import Tokenizer
 
 # %%
-tokenizer = Tokenizer(strategy="character", lower=False)
+tokenizer = Tokenizer(strategy="char", lower=False)
 tokenizer.load_vocabulary("inference_ressources/shakespeare_vocab")
 
 vocab_size = len(tokenizer.value_index)
@@ -27,7 +27,7 @@ def temperature_scaling(probabilities, temperature):
     exp_logits = np.exp(scaled_logits)
     return exp_logits / np.sum(exp_logits)
 
-def predict_next_token(text, temperature=1.0):
+def predict_next_token(text, temperature=0.8):
     tokens = tokenizer.texts_to_sequences(text)[0]
     encoded_tokens = tokenizer.one_hot_encode(tokens).reshape(1, -1, vocab_size)
     probs = model.predict(encoded_tokens)[0]
