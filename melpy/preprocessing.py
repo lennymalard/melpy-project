@@ -445,8 +445,8 @@ class Tokenizer:
         if not isinstance(strategy, str):
             raise TypeError("'strategy' must be of type str.")
 
-        if strategy.lower() not in ['word', 'character']:
-            raise ValueError(f"'strategy' must be {', '.join([str(e) for e in ['word', 'character']])}.")
+        if strategy.lower() not in ['word', 'character', 'char']:
+            raise ValueError(f"'strategy' must be {', '.join([str(e) for e in ['word', 'character', 'char']])}.")
 
         self.strategy = strategy.lower()
         self.lower = lower
@@ -547,7 +547,6 @@ class Tokenizer:
             raise TypeError("'text' must be of type str.")
 
         text = text.lower() if self.lower else text
-
         return list(text)
 
     def mapping(self, tokens):
@@ -572,8 +571,8 @@ class Tokenizer:
         if not isinstance(tokens, list):
             raise TypeError("'tokens' must be of type list.")
 
-        index_value = {index: value for index, value in enumerate(set(tokens))}
-        value_index = {value: index for index, value in enumerate(set(tokens))}
+        index_value = {index: value for index, value in enumerate(sorted(set(tokens)))}
+        value_index = {value: index for index, value in enumerate(sorted(set(tokens)))}
 
         return index_value, value_index
 
@@ -644,7 +643,7 @@ class Tokenizer:
         if self.strategy == "word":
             texts_tokenized = [self.word_tokenize(text) for text in texts]
 
-        elif self.strategy == "character":
+        elif self.strategy in ("character", "char"):
             texts_tokenized = [self.char_tokenize(text) for text in texts]
 
         return [[self.value_index[value] for value in text] for text in texts_tokenized]
