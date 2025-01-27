@@ -1405,7 +1405,7 @@ class LSTMCell(Layer):
         if self.use_bias:
             self.parameters[2] = value
 
-    def forward(self, inputs, hidden_state, cell_state):
+    def forward(self, precomputed_input_part, hidden_state, cell_state):
         """
         Perform the forward pass of the LSTM cell.
 
@@ -1423,15 +1423,14 @@ class LSTMCell(Layer):
         cell_state : Tensor
             Updated cell state.
         """
-        check_tensor(inputs, "inputs")
+        check_tensor(precomputed_input_part, "inputs")
         check_tensor(self.outputs, "outputs", True)
-        check_input_dims(inputs, 2)
+        check_input_dims(precomputed_input_part, 2)
 
-        self.inputs = inputs
         self.previous_hidden_state = Tensor(hidden_state.array)
         self.previous_cell_state = Tensor(cell_state.array)
 
-        gates = self.inputs @ self.input_weights + self.previous_hidden_state @ self.hidden_weights
+        gates = precomputed_input_part + self.previous_hidden_state @ self.hidden_weights
 
         if self.use_bias:
             gates += self.biases
@@ -1453,7 +1452,6 @@ class LSTMCell(Layer):
         self.sequence_forget_gates.append(self.forget_gate)
         self.sequence_cell_inputs.append(self.cell_input)
         self.sequence_output_gates.append(self.output_gate)
-        self.sequence_inputs.append(self.inputs)
 
         return self.hidden_state, self.cell_state
 
@@ -1477,11 +1475,6 @@ class LSTMCell(Layer):
         dX : ndarray
             Gradient of loss with respect to the input.
         """
-
-        i_input_weights, f_input_weights, c_input_weights, o_input_weights = self.input_weights.split()
-        i_hidden_weights, f_hidden_weights, c_hidden_weights, o_hidden_weights = self.hidden_weights.split()
-        i_biases, f_biases, c_biases, o_biases = self.biases.split()
-
         self.dC = (Tensor(hidden_state_grad) * self.output_gate * Tensor(self.activation(self.cell_state).derivative()) +
                    Tensor(cell_state_grad) * self.next_forget_gate).array
 
@@ -1490,16 +1483,11 @@ class LSTMCell(Layer):
         dO = hidden_state_grad * self.activation(self.cell_state).array
         dTildeC = self.dC * self.input_gate.array
 
-        i_dZ = dI * self.input_gate.array * (1 - self.input_gate.array)
-        f_dZ = dF * self.forget_gate.array * (1 - self.forget_gate.array)
-        o_dZ = dO * self.output_gate.array * (1 - self.output_gate.array)
-        c_dZ = dTildeC * self.cell_input.derivative()
-
         gates_grad = np.hstack(
-            [i_dZ,
-             f_dZ,
-             c_dZ,
-             o_dZ
+            [dI * self.input_gate.array * (1 - self.input_gate.array),
+             dF * self.forget_gate.array * (1 - self.forget_gate.array),
+             dTildeC * self.cell_input.derivative(),
+             dO * self.output_gate.array * (1 - self.output_gate.array)
              ]
         )
 
@@ -1509,11 +1497,15 @@ class LSTMCell(Layer):
         if self.use_bias:
             self.biases.grad += np.sum(gates_grad, axis=0, keepdims=True)
 
-        self.dH = i_dZ @ i_hidden_weights.T.array + f_dZ @ f_hidden_weights.T.array + \
-                  o_dZ @ o_hidden_weights.T.array + c_dZ @ c_hidden_weights.T.array
+        self.dH = (gates_grad[:, :self.hidden_size] @ self.hidden_weights.array[:, :self.hidden_size].T +
+                   gates_grad[:, self.hidden_size:2*self.hidden_size] @ self.hidden_weights.array[:, self.hidden_size:2*self.hidden_size].T +
+                   gates_grad[:, 2*self.hidden_size:3*self.hidden_size] @ self.hidden_weights.array[:, 2*self.hidden_size:3*self.hidden_size].T +
+                   gates_grad[:, 3*self.hidden_size:4*self.hidden_size] @ self.hidden_weights.array[:, 3*self.hidden_size:4*self.hidden_size].T)
 
-        self.dX = i_dZ @ i_input_weights.T.array + f_dZ @ f_input_weights.T.array + \
-                  o_dZ @ o_input_weights.T.array + c_dZ @ c_input_weights.T.array
+        self.dX = (gates_grad[:, :self.hidden_size] @ self.input_weights.array[:, :self.hidden_size].T +
+                   gates_grad[:, self.hidden_size:2*self.hidden_size] @ self.input_weights.array[:, self.hidden_size:2*self.hidden_size].T +
+                   gates_grad[:, 2*self.hidden_size:3*self.hidden_size] @ self.input_weights.array[:, 2*self.hidden_size:3*self.hidden_size].T +
+                   gates_grad[:, 3*self.hidden_size:4*self.hidden_size] @ self.input_weights.array[:, 3*self.hidden_size:4*self.hidden_size].T)
 
         self.sequence_inputs_grads.append(self.dX)
 
@@ -1680,11 +1672,12 @@ class LSTM(Layer):
 
         for i, cell in enumerate(self.cells):
             inputs = self.sequence_to_tensor(self.cells[i-1].sequence_hidden_states) if i > 0 else inputs
+            precomputed_input_part = inputs @ cell.input_weights
             for t in range(sequence_length):
-                input_sequence = Tensor(inputs.array[:, t])
+                cell.sequence_inputs.append(Tensor(inputs.array[:, t]))
                 hidden_state = zeros((batch_size, self.hidden_size)) if t == 0 else cell.sequence_hidden_states[t-1]
                 cell_state = zeros((batch_size, self.hidden_size)) if t == 0 else cell.sequence_cell_states[t-1]
-                hidden_state, cell_state = cell.forward(input_sequence, hidden_state, cell_state)
+                hidden_state, cell_state = cell.forward(Tensor(precomputed_input_part.array[:, t]), hidden_state, cell_state)
 
         self.outputs = hidden_state
 
@@ -1771,6 +1764,53 @@ class LSTM(Layer):
             cell.zero_grad()
 
 class Embedding(Layer):
+    """
+    A layer that maps positive integers (indices) into dense vectors of fixed size.
+
+    This layer converts one-hot encoded vectors into dense embeddings via a learned
+    weight matrix. The forward pass computes a matrix multiplication between the
+    one-hot inputs and the embedding weights, effectively performing an embedding lookup.
+
+    Parameters
+    ----------
+    input_dim : int
+       Size of the vocabulary.
+    output_dim : int
+       Dimension of the dense embedding (size of each embedding vector).
+    weight_initializer : str, optional (default="he_uniform")
+       Weight initialization strategy. One of:
+       - "he_uniform": Uniform distribution scaled by sqrt(6 / input_dim)
+       - "he_normal": Normal distribution scaled by sqrt(2 / input_dim)
+       - "glorot_uniform": Uniform distribution scaled by sqrt(6 / (input_dim + output_dim))
+       - "glorot_normal": Normal distribution scaled by sqrt(2 / (input_dim + output_dim))
+
+    Attributes
+    ----------
+    input_dim : int
+       Size of the vocabulary.
+    output_dim : int
+       Embedding dimension.
+    weights : Tensor
+       Learnable embedding matrix of shape (input_dim, output_dim).
+    inputs : Tensor
+       Input tensor (one-hot encoded) from the last forward pass.
+    outputs : Tensor
+       Output tensor (dense embeddings) from the last forward pass.
+    dX : ndarray
+       Gradient of the loss with respect to the inputs.
+    dW : ndarray
+       Gradient of the loss with respect to the weights.
+
+    Notes
+    -----
+    - Inputs are expected to be one-hot encoded along the last dimension.
+    - For batched inputs or higher-dimensional inputs (e.g., sequences of one-hot vectors),
+     the layer automatically flattens leading dimensions during computation and restores
+     them in the output.
+    - The embedding operation is implemented via matrix multiplication with one-hot vectors,
+     which is mathematically equivalent to an embedding lookup but less efficient. In practice,
+     frameworks often optimize this by using direct indexing.
+    """
     def __init__(self, input_dim, output_dim, weight_initializer="he_uniform"):
         super().__init__()
 
@@ -1828,6 +1868,14 @@ class Embedding(Layer):
         self.parameters[0] = value
 
     def forward(self):
+        """
+        Convert one-hot encoded inputs to dense embeddings via matrix multiplication.
+
+        Returns
+        -------
+        Tensor
+           Embedding vectors with shape `(*leading_dims, output_dim)`
+        """
         check_tensor(self.inputs, "inputs")
         check_tensor(self.outputs, "outputs", True)
         check_ohe(self.inputs, "inputs")
@@ -1849,6 +1897,19 @@ class Embedding(Layer):
         return self.outputs
 
     def backward(self, dX):
+        """
+        Compute gradients through the embedding layer.
+
+        Parameters
+        ----------
+        dX : Tensor
+            Gradient of loss with respect to layer outputs (shape matches `outputs`)
+
+        Returns
+        -------
+        ndarray
+            Gradient of loss with respect to layer inputs (shape matches `inputs`)
+        """
         self.dY = dX
 
         if self.flattened_input:
