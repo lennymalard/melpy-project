@@ -139,7 +139,7 @@ class Adam(Optimizer):
     update_layer(layer : Layer)
         Updates the parameters of the given layer using Adam.
     """
-    def __init__(self, learning_rate=0.001, beta1=0.9, beta2=0.999, gradnorm=1e15):
+    def __init__(self, learning_rate=0.001, beta1=0.9, beta2=0.999, gradnorm=1e15, initial_step=1):
         """
         Initializes the Adam optimizer.
         """
@@ -155,7 +155,7 @@ class Adam(Optimizer):
         self.beta2 = beta2
         self.learning_rate = learning_rate
         self.epsilon = 1e-7
-        self.step = 1
+        self.step = initial_step
         self.gradnorm = gradnorm
 
     def update_parameter(self, parameter):

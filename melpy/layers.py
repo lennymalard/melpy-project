@@ -1790,7 +1790,7 @@ class Embedding(Layer):
        Size of the vocabulary.
     output_dim : int
        Embedding dimension.
-    weights : Tensor
+    weights : Parameter
        Learnable embedding matrix of shape (input_dim, output_dim).
     inputs : Tensor
        Input tensor (one-hot encoded) from the last forward pass.

@@ -520,6 +520,7 @@ class Tokenizer:
                 | [_]                             # Underscores
                 | [\n\t\r\f\v]                    # Whitespace characters
                 | [^\w\s]                         # Punctuation
+                | <[A-Z0-9_]+>                    # Special tokens like <PAD>, <EOS>
             """
         tokens = re.findall(pattern, text, re.VERBOSE | re.IGNORECASE)
         return tokens

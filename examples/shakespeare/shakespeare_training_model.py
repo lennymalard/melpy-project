@@ -15,7 +15,7 @@ dataset_file_path = tf.keras.utils.get_file(
 from melpy.preprocessing import Tokenizer, generate_sequence_dataset
 
 # Reading the database file.
-text = open(dataset_file_path, mode='r').read()[:15000]
+text = open(dataset_file_path, mode='r').read()
 
 print('Length of text: {} characters'.format(len(text)))
 
@@ -24,7 +24,7 @@ print(text[:250])
 tokenizer = Tokenizer(strategy="character", lower=False)
 tokens = tokenizer.texts_to_sequences(text)[0]
 
-X_train, y_train = generate_sequence_dataset(tokens, 32)
+X_train, y_train = generate_sequence_dataset(tokens, 16)
 
 vocab_size = len(tokenizer.value_index)
 batch_size = X_train.shape[0]
@@ -41,14 +41,14 @@ from melpy.tensor import *
 model = nn.Sequential(X_train, y_train)
 
 model.add(nn.Embedding(X_train.shape[-1], 128))
-model.add(nn.LSTM(128, 256, activation="tanh", num_layers=1))
+model.add(nn.LSTM(128, 256, activation="tanh", num_layers=2))
 model.add(nn.Dense(256, y_train.shape[-1], activation="softmax"))
 
-model.compile(nn.CategoricalCrossEntropy(), nn.Adam(learning_rate= 0.001))
+model.compile(nn.CategoricalCrossEntropy(), nn.Adam(learning_rate= 0.01))
 model.summary()
 
 # %%
-model.fit(epochs=1, batch_size=256, verbose=2)
+model.fit(epochs=5, batch_size=256, verbose=2)
 model.results()
 
 model.save_params("shakespeare_parameters")
