@@ -15,7 +15,7 @@ dataset_file_path = tf.keras.utils.get_file(
 from melpy.preprocessing import Tokenizer, generate_sequence_dataset
 
 # Reading the database file.
-text = open(dataset_file_path, mode='r').read()
+text = open(dataset_file_path, mode='r').read()[:10000]
 
 print('Length of text: {} characters'.format(len(text)))
 
@@ -34,6 +34,8 @@ y_train = tokenizer.one_hot_encode(y_train)
 
 X_train = X_train.reshape(batch_size,-1, vocab_size)
 
+tokenizer.save_vocabulary("full_shakespeare_vocab")
+
 # %%
 import melpy.NeuralNetworks as nn
 from melpy.tensor import *
@@ -48,7 +50,7 @@ model.compile(nn.CategoricalCrossEntropy(), nn.Adam(learning_rate= 0.01))
 model.summary()
 
 # %%
-model.fit(epochs=5, batch_size=256, verbose=2)
+model.fit(epochs=2, batch_size=256, verbose=2)
 model.results()
 
 model.save_params("shakespeare_parameters")

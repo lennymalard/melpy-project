@@ -4,7 +4,7 @@ from melpy.preprocessing import Tokenizer
 
 # %%
 tokenizer = Tokenizer(strategy="char", lower=False)
-tokenizer.load_vocabulary("inference_ressources/shakespeare_vocab")
+tokenizer.load_vocabulary("inference_ressources/full_shakespeare_vocab")
 
 vocab_size = len(tokenizer.value_index)
 
@@ -12,13 +12,13 @@ vocab_size = len(tokenizer.value_index)
 model = nn.Sequential(input_shape=(1, 1, vocab_size))
 
 model.add(nn.Embedding(vocab_size, 128))
-model.add(nn.LSTM(128, 256, activation="tanh", num_layers=1))
+model.add(nn.LSTM(128, 256, activation="tanh", num_layers=2))
 model.add(nn.Dense(256, vocab_size, activation="softmax"))
 
 model.summary()
 
 # %%
-model.load_params("inference_ressources/shakespeare_parameters_01_26_2025-05_51_48.h5")
+model.load_params("inference_ressources/shakespeare_parameters_01_31_2025-20_52_29.h5")
 
 # %%
 def temperature_scaling(probabilities, temperature):
@@ -46,8 +46,8 @@ def generate_text(seed, length=500, context_window=50, temperature=0.8):
     return generated
 
 text_generated = generate_text(
-    seed="\nLARTIUS:",
-    length=500,
-    context_window=64,
+    seed="\nBRUTUS:",
+    length=1000,
+    context_window=32,
     temperature=0.6
 )
