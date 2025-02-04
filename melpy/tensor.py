@@ -112,7 +112,6 @@ class Tensor:
         self.grad = self.grad.reshape(*args, **kwargs)
         return self
 
-
     def zero_grad(self):
         self.grad = np.zeros_like(self.array)
 
@@ -121,6 +120,9 @@ class Tensor:
 
     def copy(self):
         return deepcopy(self)
+
+    def is_scalar(self):
+        return self.array.size == 1
 
 class zeros(Tensor):
     def __init__(self, *args, **kwargs):
@@ -266,6 +268,9 @@ class Operation:
     def copy(self):
         return deepcopy(self)
 
+    def is_scalar(self):
+        return self.output.is_scalar()
+
     def zero_grad(self):
         if isinstance(self.x1, Operation) or isinstance(self.x1, Tensor) and self.x1.requires_grad:
             self.x1.zero_grad()
@@ -371,8 +376,8 @@ class multiply(Operation):
     def backward(self, grad):
         x1_array = self._get_array(self.x1)
         x2_array = self._get_array(self.x2)
-        self._apply_grad(self.x1, grad * x2_array)
-        self._apply_grad(self.x2, grad * x1_array)
+        self._apply_grad(self.x1,  self._compress_grad(grad * x2_array, self.x1))
+        self._apply_grad(self.x2,  self._compress_grad(grad * x1_array, self.x2))
 
 class dot(Operation):
     def __init__(self, x1, x2, *args, **kwargs):
@@ -437,8 +442,8 @@ class floor_divide(Operation):
         return self.output
 
     def backward(self, grad):
-        self._apply_grad(self.x1, grad)
-        self._apply_grad(self.x2, grad)
+        self._apply_grad(self.x1, self._compress_grad(grad, self.x1))
+        self._apply_grad(self.x2, self._compress_grad(grad, self.x2))
 
 class power(Operation):
     def __init__(self, x1, x2, *args, **kwargs):
