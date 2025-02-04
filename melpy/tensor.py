@@ -1,4 +1,5 @@
 import numpy as np
+from copy import deepcopy
 
 class Tensor:
     def __init__(self, object, requires_grad=False, *args, **kwargs):
@@ -118,6 +119,9 @@ class Tensor:
     def to_numpy(self):
         return self.array
 
+    def copy(self):
+        return deepcopy(self)
+
 class zeros(Tensor):
     def __init__(self, *args, **kwargs):
         array = np.zeros(*args, **kwargs)
@@ -153,7 +157,7 @@ class Operation:
         self.x2 = x2
         self.output = None
         self.__dict__.update(kwargs)
-        self.forward(*args, **kwargs)
+        self.__call__(*args, **kwargs)
 
     @property
     def grad(self):
@@ -249,16 +253,18 @@ class Operation:
     def __pow__(self, value):
         return power(self, value).output
 
-    def forward(self, *args, **kwargs):
+    def __call__(self, *args, **kwargs):
         pass
 
     def backward(self, grad):
         pass
 
     def reshape(self, *args, **kwargs):
-        self.array = self.array.reshape(*args, **kwargs)
-        self.grad = self.grad.reshape(*args, **kwargs)
+        self.output.reshape(*args, **kwargs)
         return self
+
+    def copy(self):
+        return deepcopy(self)
 
     def zero_grad(self):
         if isinstance(self.x1, Operation) or isinstance(self.x1, Tensor) and self.x1.requires_grad:
@@ -306,7 +312,7 @@ class sum(Operation):
         self.keepdims=False
         super().__init__(x1, x2, *args,  **kwargs)
 
-    def forward(self, *args, **kwargs):
+    def __call__(self, *args, **kwargs):
         x1_array = self._get_array(self.x1)
         self.output = Tensor(np.sum(x1_array, *args, **kwargs),
                              requires_grad=self._requires_grad(self.x1))
@@ -323,7 +329,7 @@ class add(Operation):
     def __init__(self, x1, x2, *args, **kwargs):
         super().__init__(x1, x2, *args,  **kwargs)
 
-    def forward(self, *args, **kwargs):
+    def __call__(self, *args, **kwargs):
         x1_array = self._get_array(self.x1)
         x2_array = self._get_array(self.x2)
         self.output = Tensor(np.add(x1_array, x2_array, *args, **kwargs),
@@ -340,7 +346,7 @@ class subtract(Operation):
     def __init__(self, x1, x2, *args, **kwargs):
         super().__init__(x1, x2, *args,  **kwargs)
 
-    def forward(self, *args, **kwargs):
+    def __call__(self, *args, **kwargs):
         x1_array = self._get_array(self.x1)
         x2_array = self._get_array(self.x2)
         self.output = Tensor(np.subtract(x1_array, x2_array, *args, **kwargs),
@@ -355,7 +361,7 @@ class multiply(Operation):
     def __init__(self, x1, x2, *args, **kwargs):
         super().__init__(x1, x2, *args,  **kwargs)
 
-    def forward(self, *args, **kwargs):
+    def __call__(self, *args, **kwargs):
         x1_array = self._get_array(self.x1)
         x2_array = self._get_array(self.x2)
         self.output = Tensor(np.multiply(x1_array, x2_array, *args, **kwargs),
@@ -372,7 +378,7 @@ class dot(Operation):
     def __init__(self, x1, x2, *args, **kwargs):
         super().__init__(x1, x2, *args, **kwargs)
 
-    def forward(self, *args, **kwargs):
+    def __call__(self, *args, **kwargs):
         x1_array = self._get_array(self.x1)
         x2_array = self._get_array(self.x2)
         self.output = Tensor(np.dot(x1_array, x2_array, *args, **kwargs),
@@ -389,7 +395,7 @@ class matmul(Operation):
     def __init__(self, x1, x2, *args, **kwargs):
         super().__init__(x1, x2, *args,  **kwargs)
 
-    def forward(self, *args, **kwargs):
+    def __call__(self, *args, **kwargs):
         x1_array = self._get_array(self.x1)
         x2_array = self._get_array(self.x2)
         self.output = Tensor(np.matmul(x1_array, x2_array, *args, **kwargs),
@@ -406,7 +412,7 @@ class divide(Operation):
     def __init__(self, x1, x2, *args, **kwargs):
         super().__init__(x1, x2, *args,  **kwargs)
 
-    def forward(self, *args, **kwargs):
+    def __call__(self, *args, **kwargs):
         x1_array = self._get_array(self.x1)
         x2_array = self._get_array(self.x2)
         self.output = Tensor(np.divide(x1_array, x2_array, *args, **kwargs),
@@ -423,7 +429,7 @@ class floor_divide(Operation):
     def __init__(self, x1, x2, *args, **kwargs):
         super().__init__(x1, x2, *args,  **kwargs)
 
-    def forward(self, *args, **kwargs):
+    def __call__(self, *args, **kwargs):
         x1_array = self._get_array(self.x1)
         x2_array = self._get_array(self.x2)
         self.output = Tensor(np.floor_divide(x1_array, x2_array, *args, **kwargs),
@@ -438,40 +444,40 @@ class power(Operation):
     def __init__(self, x1, x2, *args, **kwargs):
         super().__init__(x1, x2, *args,  **kwargs)
 
-    def forward(self, *args, **kwargs):
+    def __call__(self, *args, **kwargs):
         x1_array = self._get_array(self.x1)
         x2_array = self._get_array(self.x2)
-        self.output = Tensor(np.power(x1_array, x2_array, *args, **kwargs),
+        self.output = Tensor(np.power(x1_array + 1e-7, x2_array, *args, **kwargs),
                              requires_grad=self._requires_grad(self.x1, self.x2))
         return self.output
 
     def backward(self, grad):
         x1_array = self._get_array(self.x1)
         x2_array = self._get_array(self.x2)
-        self._apply_grad(self.x1, grad * x2_array * np.power(x1_array, x2_array - 1))
-        self._apply_grad(self.x2, grad * np.power(x1_array, x2_array) * np.log(x1_array + 1e-15))
+        self._apply_grad(self.x1, grad * x2_array * np.power(x1_array + 1e-7, x2_array - 1))
+        self._apply_grad(self.x2, grad * np.power(x1_array + 1e-7, x2_array) * np.log(x1_array + 1e-7))
 
 class exp(Operation):
     def __init__(self, x1, x2=None, *args, **kwargs):
         super().__init__(x1, x2, *args,  **kwargs)
 
-    def forward(self, *args, **kwargs):
+    def __call__(self, *args, **kwargs):
         x1_array = self._get_array(self.x1)
-        self.output = Tensor(np.exp(x1_array, *args, **kwargs),
+        self.output = Tensor(np.exp(x1_array + 1e-7, *args, **kwargs),
                              requires_grad=self._requires_grad(self.x1))
         return self.output
 
     def backward(self, grad):
         x1_array = self._get_array(self.x1)
-        self._apply_grad(self.x1, grad * np.exp(x1_array))
+        self._apply_grad(self.x1, grad * np.exp(x1_array + 1e-7))
 
 class log(Operation):
     def __init__(self, x1, x2=None, *args, **kwargs):
         super().__init__(x1, x2, *args,  **kwargs)
 
-    def forward(self, *args, **kwargs):
+    def __call__(self, *args, **kwargs):
         x1_array = self._get_array(self.x1)
-        self.output = Tensor(np.log(x1_array, *args, **kwargs),
+        self.output = Tensor(np.log(x1_array + 1e-7, *args, **kwargs),
                              requires_grad=self._requires_grad(self.x1))
         return self.output
 
@@ -485,7 +491,7 @@ class max(Operation):
         self.keepdims = keepdims
         super().__init__(x1, x2, axis, keepdims, *args,  **kwargs)
 
-    def forward(self, axis, keepdims, *args, **kwargs):
+    def __call__(self, axis, keepdims, *args, **kwargs):
         x1_array = self._get_array(self.x1)
         self.output = Tensor(np.max(x1_array, axis=axis, keepdims=keepdims, *args, **kwargs),
                              requires_grad=self._requires_grad(self.x1))
@@ -502,7 +508,7 @@ class min(Operation):
         self.keepdims = keepdims
         super().__init__(x1, x2, *args,  **kwargs)
 
-    def forward(self, axis, keepdims, *args, **kwargs):
+    def __call__(self, axis, keepdims, *args, **kwargs):
         x1_array = self._get_array(self.x1)
         self.output = Tensor(np.min(x1_array, axis=axis, keepdims=keepdims, *args, **kwargs),
                              requires_grad=self._requires_grad(self.x1))
@@ -517,7 +523,7 @@ class maximum(Operation):
     def __init__(self, x1, x2=None, *args, **kwargs):
         super().__init__(x1, x2,  *args, **kwargs)
 
-    def forward(self, *args, **kwargs):
+    def __call__(self, *args, **kwargs):
         x1_array = self._get_array(self.x1)
         x2_array = self._get_array(self.x2)
         self.output = Tensor(np.maximum(x1_array, x2_array, *args, **kwargs),
@@ -537,7 +543,7 @@ class minimum(Operation):
     def __init__(self, x1, x2=None, *args, **kwargs):
         super().__init__(x1, x2, *args, **kwargs)
 
-    def forward(self, *args, **kwargs):
+    def __call__(self, *args, **kwargs):
         x1_array = self._get_array(self.x1)
         x2_array = self._get_array(self.x2)
         self.output = Tensor(np.minimum(x1_array, x2_array, *args, **kwargs),
@@ -557,7 +563,7 @@ class argmax(Operation):
     def __init__(self, x1, x2=None, *args, **kwargs):
         super().__init__(x1, x2, *args,  **kwargs)
 
-    def forward(self, *args, **kwargs):
+    def __call__(self, *args, **kwargs):
         x1_array = self._get_array(self.x1)
         self.output = Tensor(np.argmax(x1_array, *args, **kwargs),
                              requires_grad=self._requires_grad(self.x1))
@@ -570,7 +576,7 @@ class argmin(Operation):
     def __init__(self, x1, x2=None, *args, **kwargs):
         super().__init__(x1, x2, *args,  **kwargs)
 
-    def forward(self, *args, **kwargs):
+    def __call__(self, *args, **kwargs):
         x1_array = self._get_array(self.x1)
         self.output = Tensor(np.argmin(x1_array, *args, **kwargs),
                              requires_grad=self._requires_grad(self.x1))
@@ -583,7 +589,7 @@ class clip(Operation):
     def __init__(self, x1, x2=None, *args, **kwargs):
         super().__init__(x1, x2, *args,  **kwargs)
 
-    def forward(self, *args, **kwargs):
+    def __call__(self, *args, **kwargs):
         x1_array = self._get_array(self.x1)
         self.output = Tensor(np.clip(x1_array, *args, **kwargs),
                              requires_grad=self._requires_grad(self.x1))
@@ -601,11 +607,11 @@ class Function(Operation):
             raise TypeError('`value` must be bool.')
         if isinstance(obj, Tensor) or isinstance(obj, Operation):
             obj.requires_grad = value
-            self.forward()
+            self.__call__()
         else:
             raise TypeError('`obj` must be Tensor or Operation.')
 
-    def forward(self):
+    def __call__(self):
         pass
 
     def backward(self, grad):
@@ -624,7 +630,7 @@ class sigmoid(Function):
     def __init__(self, x1):
         super().__init__(x1)
 
-    def forward(self):
+    def __call__(self):
         self.output = 1 / (1 + exp(-self.x1))
         return self.output.output
 
@@ -632,7 +638,7 @@ class tanh(Function):
     def __init__(self, x1):
         super().__init__(x1)
 
-    def forward(self):
+    def __call__(self):
         self.output = (exp(self.x1) - exp(-self.x1)) / (exp(self.x1) + exp(-self.x1))
         return self.output.output
 
@@ -640,7 +646,7 @@ class softmax(Function):
     def __init__(self, x1):
         super().__init__(x1)
 
-    def forward(self):
+    def __call__(self):
         exp_values = exp(self.x1 - max(self.x1, axis=1, keepdims=True))
         probabilities = exp_values / sum(exp_values, axis=1, keepdims=True)
         self.output = probabilities
@@ -650,7 +656,7 @@ class relu(Function):
     def __init__(self, x1):
         super().__init__(x1)
 
-    def forward(self):
+    def __call__(self):
         self.output = maximum(0, self.x1)
         return self.output.output
 
@@ -658,7 +664,7 @@ class leaky_relu(Function):
     def __init__(self, x1):
         super().__init__(x1)
 
-    def forward(self):
+    def __call__(self):
         self.output = Tensor(np.where(self.x1.array > 0, self.x1.array, self.x1.array * 0.01),
                              requires_grad=self._requires_grad(self.x1))
         return self.output
