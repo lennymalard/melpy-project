@@ -15,7 +15,7 @@ dataset_file_path = tf.keras.utils.get_file(
 from melpy.preprocessing import Tokenizer, generate_sequence_dataset
 
 # Reading the database file.
-text = open(dataset_file_path, mode='r').read()[:10000]
+text = open(dataset_file_path, mode='r').read()
 
 print('Length of text: {} characters'.format(len(text)))
 
@@ -50,7 +50,7 @@ model.compile(nn.CategoricalCrossEntropy(), nn.Adam(learning_rate= 0.01))
 model.summary()
 
 # %%
-model.fit(epochs=2, batch_size=256, verbose=2)
+model.fit(epochs=10, batch_size=256, verbose=2)
 model.results()
 
 model.save_params("shakespeare_parameters")

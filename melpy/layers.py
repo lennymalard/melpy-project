@@ -223,7 +223,7 @@ class Dense(Layer):
         self.out_features = out_features
         self.leading_dims = ()
 
-        self.flattened_input = False
+        self.flattened = False
 
         self.activation = initialize_activation(activation, Layer)
 
@@ -257,7 +257,7 @@ class Dense(Layer):
 
         if self.inputs.ndim > 2:
             self.leading_dims = self.inputs.shape[:-1]
-            self.flattened_input = True
+            self.flattened = True
             self.inputs = flatten_tensor(self.inputs)
 
         self.inputs.requires_grad = True
@@ -269,9 +269,11 @@ class Dense(Layer):
             self.activation.inputs = self.outputs
             return self.activation.forward()
 
-        if self.flattened_input:
-            shape = (*self.leading_dims, self.out_features)
-            self.outputs = restore_flattened(self.outputs, shape)
+        if self.flattened:
+            input_shape = (*self.leading_dims, self.in_features)
+            output_shape = (*self.leading_dims, self.out_features)
+            self.inputs = restore_flattened(self.inputs, input_shape)
+            self.outputs = restore_flattened(self.outputs, output_shape)
 
         return self.outputs
 
@@ -294,16 +296,22 @@ class Dense(Layer):
 
         self.dY = dX
 
-        if self.flattened_input:
+        if self.flattened:
             dX = flatten_tensor(dX)
+            self.inputs = flatten_tensor(self.inputs)
+            self.outputs = flatten_tensor(self.outputs)
 
         self.outputs.backward(dX)
         self.dX = self.inputs.grad
         self.dW = self.weights.grad
 
-        if self.flattened_input:
-            shape = (*self.leading_dims, self.in_features)
-            self.dX = restore_flattened(self.dX, shape)
+        if self.flattened:
+            dX_shape = (*self.leading_dims, self.in_features)
+            input_shape = (*self.leading_dims, self.in_features)
+            output_shape = (*self.leading_dims, self.out_features)
+            self.dX = restore_flattened(self.dX, dX_shape)
+            self.inputs = restore_flattened(self.inputs, input_shape)
+            self.outputs = restore_flattened(self.outputs, output_shape)
 
         return self.dX
 
@@ -1857,7 +1865,7 @@ class Embedding(Layer):
         self.dX = None
         self.dW = None
 
-        self.flattened_input = False
+        self.flattened = False
 
     @property
     def weights(self):
@@ -1882,7 +1890,7 @@ class Embedding(Layer):
 
         if self.inputs.ndim > 2:
             self.leading_dims = self.inputs.shape[:-1]
-            self.flattened_input = True
+            self.flattened = True
             self.inputs = flatten_tensor(self.inputs)
 
         self.inputs.requires_grad = True
@@ -1890,9 +1898,11 @@ class Embedding(Layer):
 
         self.outputs = dot(self.inputs, self.weights)
 
-        if self.flattened_input:
-            shape = (*self.leading_dims, self.output_dim)
-            self.outputs = restore_flattened(self.outputs, shape)
+        if self.flattened:
+            input_shape = (*self.leading_dims, self.input_dim)
+            output_shape = (*self.leading_dims, self.output_dim)
+            self.inputs = restore_flattened(self.inputs, input_shape)
+            self.outputs = restore_flattened(self.outputs, output_shape)
 
         return self.outputs
 
@@ -1912,16 +1922,22 @@ class Embedding(Layer):
         """
         self.dY = dX
 
-        if self.flattened_input:
+        if self.flattened:
             dX = flatten_tensor(dX)
+            self.inputs = flatten_tensor(self.inputs)
+            self.outputs = flatten_tensor(self.outputs)
 
         self.outputs.backward(dX)
         self.dX = self.inputs.grad
         self.dW = self.weights.grad
 
-        if self.flattened_input:
-            shape = (*self.leading_dims, self.input_dim)
-            self.dX = restore_flattened(self.dX, shape)
+        if self.flattened:
+            dX_shape = (*self.leading_dims, self.input_dim)
+            input_shape = (*self.leading_dims, self.input_dim)
+            output_shape = (*self.leading_dims, self.output_dim)
+            self.dX = restore_flattened(self.dX, dX_shape)
+            self.inputs = restore_flattened(self.inputs, input_shape)
+            self.outputs = restore_flattened(self.outputs, output_shape)
 
         return self.dX
 
