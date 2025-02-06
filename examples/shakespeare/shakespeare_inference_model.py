@@ -34,7 +34,7 @@ def predict_next_token(text, temperature=0.8):
     scaled_probs = temperature_scaling(probs, temperature)
     return np.random.choice(vocab_size, p=scaled_probs)
 
-def generate_text(seed, length=500, context_window=50, temperature=0.8):
+def generate_text(seed, temperature=0.8, length=500, context_window=64):
     generated = seed
     print(seed, end="", flush=True)
     for _ in range(length):
@@ -45,9 +45,23 @@ def generate_text(seed, length=500, context_window=50, temperature=0.8):
         print(next_token, end="", flush=True)
     return generated
 
-text_generated = generate_text(
+"""text_generated = generate_text(
     seed="\nBRUTUS:",
     length=1000,
     context_window=32,
     temperature=0.6
-)
+)"""
+
+# %% 
+import gradio as gr
+
+app_inputs =  [
+    gr.Textbox(label="Seed", value="BRUTUS:"),
+    gr.Slider(label="Temperature", minimum=0, maximum=2, step=0.1, value=0.8),
+    gr.Slider(label="Text Length", minimum=50, maximum=5000, step=50, value=500)
+]
+
+app = gr.Interface(fn=generate_text, inputs=app_inputs, outputs="textbox")
+
+if __name__ == "__main__":
+    app.launch()

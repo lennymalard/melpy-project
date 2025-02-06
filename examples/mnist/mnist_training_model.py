@@ -4,11 +4,7 @@ import numpy as np
 
 (X_train, y_train), (X_test, y_test) = mnist.load_data()
 
-n_samples = X_train.shape[0]
-
-X_train = X_train[:n_samples, np.newaxis, :, :]/255
-y_train = y_train[:n_samples]
-
+X_train = X_train[:, np.newaxis, :, :]/255
 X_test = X_test[:, np.newaxis, :, :]/255
 
 # %% Data preprocessing
@@ -16,7 +12,7 @@ from melpy.preprocessing import StandardScaler, OneHotEncoder
 
 sc = StandardScaler()
 X_train_reshaped = X_train.reshape(X_train.shape[0],-1)
-X_train = sc.transform(X_train_reshaped).reshape(X_train.shape)
+X_train = sc.transform(X_train_reshaped).reshape(X_train.shape)  
 
 X_test_reshaped = X_test.reshape(X_test.shape[0], -1)
 X_test = sc.transform(X_test_reshaped).reshape(X_test.shape)
