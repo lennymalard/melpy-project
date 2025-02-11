@@ -76,7 +76,7 @@ with gr.Blocks() as iface:
         image_mode="RGB",
         value=default_canvas,
         layers=False,
-        brush= gr.Brush(default_color="black")
+        brush= gr.Brush(default_color="black", default_size=25)
     )
     gr.Textbox(label="Note", value="Ensure that the digit is centered and occupies sufficient space for proper recognition. "
                                    "Also, note that MNIST does not perform well in real-world scenarios, so some confusion from the model is expected.")
