@@ -2,13 +2,13 @@ import melpy.NeuralNetworks as nn
 from melpy.tensor import *
 from melpy.preprocessing import Tokenizer
 
-# %%
+# %% Tokenizer loading
 tokenizer = Tokenizer(strategy="char", lower=False)
 tokenizer.load_vocabulary("inference_ressources/full_shakespeare_vocab")
 
 vocab_size = len(tokenizer.value_index)
 
-# %%
+# %% Model loading
 model = nn.Sequential(input_shape=(1, 1, vocab_size))
 
 model.add(nn.Embedding(vocab_size, 128))
@@ -17,10 +17,9 @@ model.add(nn.Dense(256, vocab_size, activation="softmax"))
 
 model.summary()
 
-# %%
 model.load_params("inference_ressources/shakespeare_parameters_01_31_2025-20_52_29.h5")
 
-# %%
+# %% Inference functions definition
 def temperature_scaling(probabilities, temperature):
     logits = np.log(probabilities)
     scaled_logits = logits / temperature
@@ -52,7 +51,8 @@ def generate_text(seed, temperature=0.8, length=500, context_window=64):
     temperature=0.6
 )"""
 
-# %% 
+# %% Gradio app creation
+# To use it, just click on the local URL given in the Python console.
 import gradio as gr
 
 app_inputs =  [
