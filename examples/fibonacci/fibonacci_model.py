@@ -1,6 +1,6 @@
 # Library imports
 import melpy.NeuralNetworks as nn
-from melpy.tensor import *
+from melpy.Tensor import *
 from melpy.preprocessing import generate_sequence_dataset
 
 # Function definitions

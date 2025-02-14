@@ -130,33 +130,33 @@ class Tensor:
     def is_scalar(self):
         return self.array.size == 1
 
-class zeros(Tensor):
-    def __init__(self, *args, **kwargs):
-        array = np.zeros(*args, **kwargs)
-        super().__init__(object = array)
+def tensor(object, requires_grad=False, *args, **kwargs):
+    return Tensor(object, requires_grad, *args, **kwargs)
 
-class zeros_like(Tensor):
-    def __init__(self, a,  *args, **kwargs):
-        def _get_array(obj):
-            if isinstance(obj, Tensor):
-                return obj.array
-            else:
-                return np.array(obj)
+def zeros(*args, **kwargs):
+    return Tensor(np.zeros(*args, **kwargs))
 
-        array = np.zeros_like(_get_array(a), *args, **kwargs)
-        super().__init__(object = array)
+def ones(*args, **kwargs):
+    return Tensor(np.ones(*args, **kwargs))
+
+def zeros_like(a, *args, **kwargs):
+    return Tensor(np.zeros_like(a.array if isinstance(a, Tensor) else np.array(a), *args, **kwargs))
 
 class Parameter(Tensor):
     def __init__(self, object, *args, **kwargs):
         super().__init__(object, *args, **kwargs)
         self.momentums = zeros_like(self)
         self.cache = zeros_like(self)
+        self.requires_grad = True
 
     def zero_grad(self):
         self.grad = np.zeros_like(self.array)
         self.momentums.zero_grad()
         self.cache.zero_grad()
         self._op.zero_grad() if self._op is not None else None
+
+def parameter(object, *args, **kwargs):
+    return Parameter(object, *args, **kwargs)
 
 class Operation:
     def __init__(self, x1, *args, **kwargs):

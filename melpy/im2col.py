@@ -1,5 +1,5 @@
 import numpy as np
-from melpy.tensor import *
+from melpy.Tensor import *
 
 def get_indices(image_shape, window_shape, stride):
     """

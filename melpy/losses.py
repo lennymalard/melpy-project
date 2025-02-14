@@ -1,5 +1,5 @@
 import numpy as np
-from .tensor import *
+from .Tensor import *
 from .layers import *
 
 def check_tensor(obj, name):

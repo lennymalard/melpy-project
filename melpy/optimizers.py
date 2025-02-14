@@ -1,6 +1,6 @@
 from .layers import *
 import numpy as np
-from .tensor import *
+from .Tensor import *
 
 class Optimizer:
     """

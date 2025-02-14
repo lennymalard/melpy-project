@@ -1,5 +1,5 @@
 import numpy as np
-from .tensor import *
+from .Tensor import *
 
 def accuracy(targets, predictions):
     """

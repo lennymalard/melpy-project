@@ -5,4 +5,4 @@ from .metrics import *
 from .callbacks import *
 from .optimizers import *
 from .losses import *
-from .tensor import *
+from .Tensor import *

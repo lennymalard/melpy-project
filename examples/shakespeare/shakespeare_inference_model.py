@@ -1,5 +1,5 @@
 import melpy.NeuralNetworks as nn
-from melpy.tensor import *
+from melpy.Tensor import *
 from melpy.preprocessing import Tokenizer
 
 # %% Tokenizer loading

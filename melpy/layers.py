@@ -1,6 +1,6 @@
 import numpy as np
 from .im2col import *
-from .tensor import *
+from .Tensor import *
 
 def check_activation(activation):
     if not isinstance(activation, str) and activation is not None:

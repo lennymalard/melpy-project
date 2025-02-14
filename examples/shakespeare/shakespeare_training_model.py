@@ -38,7 +38,7 @@ tokenizer.save_vocabulary("full_shakespeare_vocab")
 
 # %%
 import melpy.NeuralNetworks as nn
-from melpy.tensor import *
+from melpy.Tensor import *
 
 model = nn.Sequential(X_train, y_train)
 
