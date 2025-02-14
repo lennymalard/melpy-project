@@ -513,14 +513,14 @@ class Tokenizer:
 
         text = text.lower() if self.lower else text
         pattern = r"""
-                (?:[A-Z\xC0-\xD6\xD8-\xDE]\.)+   # Abbreviations (including accented uppercase)
+                (?:[A-Z\xC0-\xD6\xD8-\xDE]\.)+    # Abbreviations (including accented uppercase)
+                | <[A-Za-z0-9_]+>                 # Special tokens like <PAD>, <EOS>
                 | \$?\d+(?:[.,]\d+)*%?            # Currency, numbers, percentages
                 | \d+(?:-\d+)+                    # Hyphenated numbers (e.g., dates)
                 | [a-zA-Z\xC0-\xFF]+(?:[-'’][a-zA-Z\xC0-\xFF]*)* # Words with accents, hyphens, apostrophes
                 | [_]                             # Underscores
                 | [\n\t\r\f\v]                    # Whitespace characters
                 | [^\w\s]                         # Punctuation
-                | <[A-Z0-9_]+>                    # Special tokens like <PAD>, <EOS>
             """
         tokens = re.findall(pattern, text, re.VERBOSE | re.IGNORECASE)
         return tokens
@@ -767,7 +767,7 @@ class Tokenizer:
         elif isinstance(token, str):
             return self.encoder.transform(self.value_index[token])
         else:
-            raise TypeError("'token' must be of type int or str.")
+            raise TypeError("'token' must be of type array, int or str.")
 
 def generate_sequence_dataset(tokens, context_window=2):
     """
