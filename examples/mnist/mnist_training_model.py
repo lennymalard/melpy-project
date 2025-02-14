@@ -77,19 +77,19 @@ for i in range(1, n_samples+1):
 figure = plt.figure()
 
 for i in range(1,10,3):
-    rand_channel1 = randint(0, model.train_layers[0].outputs.shape[1] - 1)
-    rand_channel2 = randint(0, model.train_layers[1].outputs.shape[1] - 1)
+    rand_channel1 = randint(0, model.layers[0].outputs.shape[1] - 1)
+    rand_channel2 = randint(0, model.layers[1].outputs.shape[1] - 1)
 
     rand_n = randint(0, predictions.shape[0] - 1)
 
     plt.subplot(3, 3, i)
     plt.title("input")
-    plt.imshow(model.train_layers[0].inputs.array[rand_n, 0,  :, :], cmap="gray")
+    plt.imshow(model.layers[0].inputs.array[rand_n, 0,  :, :], cmap="gray")
 
     plt.subplot(3, 3, i+1)
     plt.title("conv2d")
-    plt.imshow(model.train_layers[0].outputs.array[rand_n, rand_channel1,  :, :], cmap="gray")
+    plt.imshow(model.layers[0].outputs.array[rand_n, rand_channel1,  :, :], cmap="gray")
 
     plt.subplot(3, 3, i+2)
     plt.title("pooling2d")
-    plt.imshow(model.train_layers[1].outputs.array[rand_n, rand_channel2,  :, :], cmap="gray")
+    plt.imshow(model.layers[1].outputs.array[rand_n, rand_channel2,  :, :], cmap="gray")
