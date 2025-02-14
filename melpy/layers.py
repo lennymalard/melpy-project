@@ -1447,10 +1447,10 @@ class LSTMCell(Layer):
 
         self.input_gate = sigmoid(Tensor(input_gate))
         self.forget_gate = sigmoid(Tensor(forget_gate))
-        self.cell_input = self.activation(Tensor(cell_input))
+        self.cell_input = (self.activation(Tensor(cell_input)), self.activation(Tensor(cell_input), derivative=True))
         self.output_gate = sigmoid(Tensor(output_gate))
 
-        self.cell_state = self.forget_gate * self.previous_cell_state + self.input_gate * self.cell_input
+        self.cell_state = self.forget_gate * self.previous_cell_state + self.input_gate * self.cell_input[0]
         self.hidden_state = self.output_gate * self.activation(self.cell_state)
         self.outputs = self.hidden_state
 
@@ -1483,10 +1483,10 @@ class LSTMCell(Layer):
         dX : ndarray
             Gradient of loss with respect to the input.
         """
-        self.dC = (Tensor(hidden_state_grad) * self.output_gate * Tensor(self.activation(self.cell_state).derivative()) +
+        self.dC = (Tensor(hidden_state_grad) * self.output_gate * Tensor(self.activation(self.cell_state, derivative=True)) +
                    Tensor(cell_state_grad) * self.next_forget_gate).array
 
-        dI = self.dC * self.cell_input.array
+        dI = self.dC * self.cell_input[0].array
         dF = self.dC * self.previous_cell_state.array
         dO = hidden_state_grad * self.activation(self.cell_state).array
         dTildeC = self.dC * self.input_gate.array
@@ -1494,7 +1494,7 @@ class LSTMCell(Layer):
         gates_grad = np.hstack(
             [dI * self.input_gate.array * (1 - self.input_gate.array),
              dF * self.forget_gate.array * (1 - self.forget_gate.array),
-             dTildeC * self.cell_input.derivative(),
+             dTildeC * self.cell_input[1],
              dO * self.output_gate.array * (1 - self.output_gate.array)
              ]
         )
