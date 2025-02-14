@@ -142,6 +142,9 @@ def ones(*args, **kwargs):
 def zeros_like(a, *args, **kwargs):
     return Tensor(np.zeros_like(a.array if isinstance(a, Tensor) else np.array(a), *args, **kwargs))
 
+def ones_like(a, *args, **kwargs):
+    return Tensor(np.ones_like(a.array if isinstance(a, Tensor) else np.array(a), *args, **kwargs))
+
 class Parameter(Tensor):
     def __init__(self, object, *args, **kwargs):
         super().__init__(object, *args, **kwargs)
