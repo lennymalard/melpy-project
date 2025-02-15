@@ -206,7 +206,7 @@ class Operation:
                 grad = np.sum(grad, axis=i, keepdims=True)
         return grad
 
-class Sum(Operation):
+class _Sum(Operation):
     def __init__(self, x1, axis=None, keepdims=False, *args, **kwargs):
         self.axis = axis
         self.keepdims = keepdims
@@ -233,9 +233,9 @@ class Sum(Operation):
             self._apply_grad(self.x1, self._compress_grad(grad, self.x1))
 
 def sum(x1, axis=None, keepdims=False, *args, **kwargs):
-    return Sum(x1, axis=axis, keepdims=keepdims, *args, **kwargs)()
+    return _Sum(x1, axis=axis, keepdims=keepdims, *args, **kwargs)()
 
-class Add(Operation):
+class _Add(Operation):
     def __init__(self, x1, x2, *args, **kwargs):
         self.x2 = x2
         super().__init__(x1, *args,  **kwargs)
@@ -260,9 +260,9 @@ class Add(Operation):
         self._apply_grad(self.x2, self._compress_grad(grad, x2_array))
 
 def add(x1, x2, *args, **kwargs):
-    return Add(x1, x2, *args, **kwargs)()
+    return _Add(x1, x2, *args, **kwargs)()
 
-class Subtract(Operation):
+class _Subtract(Operation):
     def __init__(self, x1, x2, *args, **kwargs):
         self.x2 = x2
         super().__init__(x1, *args,  **kwargs)
@@ -284,9 +284,9 @@ class Subtract(Operation):
         self._apply_grad(self.x2, -self._compress_grad(grad, self.x2))
 
 def subtract(x1, x2, *args, **kwargs):
-    return Subtract(x1, x2, *args, **kwargs)()
+    return _Subtract(x1, x2, *args, **kwargs)()
 
-class Multiply(Operation):
+class _Multiply(Operation):
     def __init__(self, x1, x2, *args, **kwargs):
         self.x2 = x2
         super().__init__(x1, *args,  **kwargs)
@@ -310,9 +310,9 @@ class Multiply(Operation):
         self._apply_grad(self.x2,  self._compress_grad(grad * x1_array, self.x2))
 
 def multiply(x1, x2, *args, **kwargs):
-    return Multiply(x1, x2, *args, **kwargs)()
+    return _Multiply(x1, x2, *args, **kwargs)()
 
-class Dot(Operation):
+class _Dot(Operation):
     def __init__(self, x1, x2, *args, **kwargs):
         self.x2 = x2
         super().__init__(x1, *args, **kwargs)
@@ -336,9 +336,9 @@ class Dot(Operation):
         self._apply_grad(self.x2, np.dot(x1_array.T, grad))
 
 def dot(x1, x2, *args, **kwargs):
-    return Dot(x1, x2, *args, **kwargs)()
+    return _Dot(x1, x2, *args, **kwargs)()
 
-class Matmul(Operation):
+class _Matmul(Operation):
     def __init__(self, x1, x2, *args, **kwargs):
         self.x2 = x2
         super().__init__(x1, *args,  **kwargs)
@@ -362,9 +362,9 @@ class Matmul(Operation):
         self._apply_grad(self.x2, np.matmul(x1_array.T, grad))
 
 def matmul(x1, x2, *args, **kwargs):
-    return Matmul(x1, x2, *args, **kwargs)()
+    return _Matmul(x1, x2, *args, **kwargs)()
 
-class Divide(Operation):
+class _Divide(Operation):
     def __init__(self, x1, x2, *args, **kwargs):
         self.x2 = x2
         super().__init__(x1,  *args,  **kwargs)
@@ -388,9 +388,9 @@ class Divide(Operation):
         self._apply_grad(self.x2, self._compress_grad(-grad * x1_array / (x2_array ** 2), self.x2))
 
 def divide(x1, x2, *args, **kwargs):
-    return Divide(x1, x2, *args, **kwargs)()
+    return _Divide(x1, x2, *args, **kwargs)()
 
-class FloorDivide(Operation):
+class _FloorDivide(Operation):
     def __init__(self, x1, x2, *args, **kwargs):
         self.x2 = x2
         super().__init__(x1, *args,  **kwargs)
@@ -412,9 +412,9 @@ class FloorDivide(Operation):
         self._apply_grad(self.x2, self._compress_grad(grad, self.x2))
 
 def floor_divide(x1, x2, *args, **kwargs):
-    return FloorDivide(x1, x2, *args, **kwargs)()
+    return _FloorDivide(x1, x2, *args, **kwargs)()
 
-class Power(Operation):
+class _Power(Operation):
     def __init__(self, x1, x2, *args, **kwargs):
         self.x2 = x2
         super().__init__(x1, *args,  **kwargs)
@@ -450,9 +450,9 @@ class Power(Operation):
         )
 
 def power(x1, x2, *args, **kwargs):
-    return Power(x1, x2, *args, **kwargs)()
+    return _Power(x1, x2, *args, **kwargs)()
 
-class Exp(Operation):
+class _Exp(Operation):
     def __init__(self, x1, *args, **kwargs):
         super().__init__(x1, *args,  **kwargs)
 
@@ -471,9 +471,9 @@ class Exp(Operation):
         self._apply_grad(self.x1, grad * np.exp(np.clip(x1_array, None, 700)))
 
 def exp(x1, *args, **kwargs):
-    return Exp(x1, *args, **kwargs)()
+    return _Exp(x1, *args, **kwargs)()
 
-class Log(Operation):
+class _Log(Operation):
     def __init__(self, x1, *args, **kwargs):
         super().__init__(x1, *args,  **kwargs)
 
@@ -492,9 +492,9 @@ class Log(Operation):
         self._apply_grad(self.x1, grad / x1_array)
 
 def log(x1, *args, **kwargs):
-    return Log(x1, *args, **kwargs)()
+    return _Log(x1, *args, **kwargs)()
 
-class Max(Operation):
+class _Max(Operation):
     def __init__(self, x1, axis=None, keepdims=False, *args, **kwargs):
         self.axis = axis
         self.keepdims = keepdims
@@ -518,9 +518,9 @@ class Max(Operation):
         self._apply_grad(self.x1, grad * mask)
 
 def max(x1, axis=None, keepdims=False, *args, **kwargs):
-    return Max(x1, axis=axis, keepdims=keepdims, *args, **kwargs)()
+    return _Max(x1, axis=axis, keepdims=keepdims, *args, **kwargs)()
 
-class Min(Operation):
+class _Min(Operation):
     def __init__(self, x1, axis=None, keepdims=False, *args, **kwargs):
         self.axis = axis
         self.keepdims = keepdims
@@ -544,9 +544,9 @@ class Min(Operation):
         self._apply_grad(self.x1, grad * mask)
 
 def min(x1, axis=None, keepdims=False, *args, **kwargs):
-    return Min(x1, axis=axis, keepdims=keepdims, *args, **kwargs)()
+    return _Min(x1, axis=axis, keepdims=keepdims, *args, **kwargs)()
 
-class Maximum(Operation):
+class _Maximum(Operation):
     def __init__(self, x1, x2, *args, **kwargs):
         self.x2 = x2
         super().__init__(x1,  *args, **kwargs)
@@ -573,9 +573,9 @@ class Maximum(Operation):
         self._apply_grad(self.x2, grad * mask2)
 
 def maximum(x1, x2, *args, **kwargs):
-    return Maximum(x1, x2, *args, **kwargs)()
+    return _Maximum(x1, x2, *args, **kwargs)()
 
-class Minimum(Operation):
+class _Minimum(Operation):
     def __init__(self, x1, x2, *args, **kwargs):
         self.x2 = x2
         super().__init__(x1,  *args, **kwargs)
@@ -602,9 +602,9 @@ class Minimum(Operation):
         self._apply_grad(self.x2, grad * mask2)
 
 def minimum(x1, x2, *args, **kwargs):
-    return Minimum(x1, x2, *args, **kwargs)()
+    return _Minimum(x1, x2, *args, **kwargs)()
 
-class Argmax(Operation):
+class _Argmax(Operation):
     def __init__(self, x1, *args, **kwargs):
         super().__init__(x1,  *args,  **kwargs)
 
@@ -622,9 +622,9 @@ class Argmax(Operation):
         self._apply_grad(self.x1, grad)
 
 def argmax(x1, *args, **kwargs):
-    return Argmax(x1,  *args, **kwargs)()
+    return _Argmax(x1,  *args, **kwargs)()
 
-class Argmin(Operation):
+class _Argmin(Operation):
     def __init__(self, x1, x2=None, *args, **kwargs):
         super().__init__(x1, x2, *args,  **kwargs)
 
@@ -641,7 +641,10 @@ class Argmin(Operation):
     def backward(self, grad):
         self._apply_grad(self.x1, grad)
 
-class Clip(Operation):
+def argmin(x1, *args, **kwargs):
+    return _Argmin(x1, *args, **kwargs)()
+
+class _Clip(Operation):
     def __init__(self, x1, *args, **kwargs):
         super().__init__(x1, *args,  **kwargs)
 
@@ -659,7 +662,7 @@ class Clip(Operation):
         self._apply_grad(self.x1, grad)
 
 def clip(x1, *args, **kwargs):
-    return Clip(x1,  *args, **kwargs)()
+    return _Clip(x1,  *args, **kwargs)()
 
 class Function(Operation):
     def __init__(self, x1):
@@ -689,7 +692,7 @@ class Function(Operation):
         self.x1 = x1
         return grad
 
-class Sigmoid(Function):
+class _Sigmoid(Function):
     def __init__(self, x1):
         super().__init__(x1)
 
@@ -698,9 +701,9 @@ class Sigmoid(Function):
         return self.output
 
 def sigmoid(x, derivative=False):
-    return Sigmoid(x)() if not derivative else Sigmoid(x).derivative()
+    return _Sigmoid(x)() if not derivative else _Sigmoid(x).derivative()
 
-class Tanh(Function):
+class _Tanh(Function):
     def __init__(self, x1):
         super().__init__(x1)
 
@@ -709,9 +712,9 @@ class Tanh(Function):
         return self.output
 
 def tanh(x, derivative=False):
-    return Tanh(x)() if not derivative else Tanh(x).derivative()
+    return _Tanh(x)() if not derivative else _Tanh(x).derivative()
 
-class Softmax(Function):
+class _Softmax(Function):
     def __init__(self, x1):
         super().__init__(x1)
 
@@ -722,9 +725,9 @@ class Softmax(Function):
         return self.output
 
 def softmax(x, derivative=False):
-    return Softmax(x)() if not derivative else Softmax(x).derivative()
+    return _Softmax(x)() if not derivative else _Softmax(x).derivative()
 
-class ReLU(Function):
+class _ReLU(Function):
     def __init__(self, x1):
         super().__init__(x1)
 
@@ -733,9 +736,9 @@ class ReLU(Function):
         return self.output
 
 def relu(x, derivative=False):
-    return ReLU(x)() if not derivative else ReLU(x).derivative()
+    return _ReLU(x)() if not derivative else _ReLU(x).derivative()
 
-class LeakyReLU(Function):
+class _LeakyReLU(Function):
     def __init__(self, x1):
         super().__init__(x1)
 
@@ -759,4 +762,4 @@ class LeakyReLU(Function):
         return dA
 
 def leaky_relu(x, derivative=False):
-    return LeakyReLU(x)() if not derivative else LeakyReLU(x).derivative()
+    return _LeakyReLU(x)() if not derivative else _LeakyReLU(x).derivative()
