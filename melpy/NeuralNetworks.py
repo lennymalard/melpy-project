@@ -6,7 +6,6 @@ from .optimizers import *
 from .callbacks import *
 from .preprocessing import *
 from .Tensor import *
-from math import sqrt
 from copy import deepcopy
 import matplotlib.pyplot as plt
 from tqdm import tqdm
