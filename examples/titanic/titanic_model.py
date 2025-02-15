@@ -60,10 +60,12 @@ import melpy.NeuralNetworks as nn
 
 model = nn.Sequential(X_train, y_train, X_val, y_val)
 
-model.layers= [nn.Dense(X_train.shape[1], 12),
-                    nn.ReLU(),
-                    nn.Dense(12,y_train.shape[1]),
-                    nn.Sigmoid()]
+model.layers= [
+    nn.Dense(X_train.shape[1], 12),
+    nn.ReLU(),
+    nn.Dense(12,y_train.shape[1]),
+    nn.Sigmoid()
+]
 
 model.compile(loss_function=nn.BinaryCrossEntropy(), optimizer=nn.Adam(learning_rate=0.01))
 

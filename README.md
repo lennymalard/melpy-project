@@ -122,35 +122,37 @@ Melpy computations are based on an extended version of NumPy arrays called Tenso
 These components work together to create computational graphs, enabling precise gradient calculations throughout the graph using an automatic differentiation 
 algorithm, which simplifies the backward pass computations for each layer type.
 
-[Tensor](https://github.com/lennymalard/melpy-project/blob/main/melpy/tensor.py#L3) is an object that extends the NumPy array type by adding two key attributes : whether it requires gradient computation and its gradient, determined from the computational graph.
+[Tensor](https://github.com/lennymalard/melpy-project/blob/main/melpy/tensor.py#L3) is an object that extends the NumPy array type by adding three key attributes : whether it requires gradient computation, its gradient (determined from the computational graph), and the operation that produced it.
 
 ```
 Class Tensor:
-    Function __init__(object, requires_grad, additional arguments):
+    Function __init__(object, requires_grad, _operation, additional arguments):
         Attributes
         - array : float64 numpy array
-        - requires_grad : bool
         - grad : float64 numpy array
+        - requires_grad : bool
+        - _op : melpy operation
+       
 ```
 
 [Operation](https://github.com/lennymalard/melpy-project/blob/main/melpy/tensor.py#L154) enhances primitive operations by adding a forward pass that constructs a sub-computational graph 
-and a backward pass that computes their derivatives, updates gradients for the operation and its edges, and propagates gradients to preceding Operations. To ensure intuitive 
-usage while integrating these features, Operation is designed as an object that automatically triggers the forward pass upon creation.
+and a backward pass that computes their derivatives, updates gradients for the operation and its edges, and propagates gradients to preceding Tensors. 
 
 ```
-Class Operation:
+Class _Operation:
     Function __init__(x1, x2, additional arguments):
         Attributes
-        - x1 : Tensor or Operation
-        - x2 : Tensor or Operation
-        - output : Tensor
-        - forward() 
+        - x1 : melpy tensor 
+        - x2 : melpy tensor 
+        - output : melpy tensor
 ```
+
+Note that the Operation type handles computations and manages the connections between associated tensors, while the actual computation performed by the user is executed through a static function.
 
 Here is an example of using Tensor and Operation to compute the derivative of a simple operation :
 
 ```python
-x = Tensor([1,2,3,4,5], requires_grad=True)
+x = tensor([1,2,3,4,5], requires_grad=True)
 y = 5 * x
 
 print(y)
@@ -173,7 +175,7 @@ print(x.grad)
 ```
 Output :
 ```sh
-Tensor([5., 5., 5., 5., 5.])
+array([5., 5., 5., 5., 5.])
 ```
 
 The output shows that the derivative of y with respect to x is 5 for each element in the tensor, as expected from the operation  y = 5 * x.
@@ -356,7 +358,7 @@ model.save_params("iris_parameters")
 model.save_histories("iris_metrics")
 ```
 
-You can reload the parameters with load_params(path) and the metrics using the [pickle](https://docs.python.org/3/library/pickle.html) library or the [h5py](https://docs.h5py.org/en/stable/) library depending on the file extension.
+You can reload the parameters with load_params(path) and the metrics using the [h5py](https://docs.h5py.org/en/stable/) library.
 
 
 _For more examples, please refer to the [Examples](https://github.com/lennymalard/melpy-project/tree/main/examples)_
@@ -434,7 +436,7 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 <!-- CONTACT -->
 ## Contact
 
-Lenny Malard - lennymalard@gmail.com or [linkedin](https://www.linkedin.com/in/lennymalard/)
+Lenny Malard - lennymalard@gmail.com or [Linkedin](https://www.linkedin.com/in/lennymalard/)
 
 Project Link: [https://github.com/lennymalard/melpy-project](https://github.com/lennymalard/melpy-project")
 
