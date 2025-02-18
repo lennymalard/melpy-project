@@ -122,7 +122,7 @@ Melpy computations are based on an extended version of NumPy arrays called Tenso
 These components work together to create computational graphs, enabling precise gradient calculations throughout the graph using an automatic differentiation 
 algorithm, which simplifies the backward pass computations for each layer type.
 
-[Tensor](https://github.com/lennymalard/melpy-project/blob/main/melpy/tensor.py#L3) is an object that extends the NumPy array type by adding three key attributes : whether it requires gradient computation, its gradient (determined from the computational graph), and the operation that produced it.
+[Tensor](https://github.com/lennymalard/melpy-project/blob/main/melpy/Tensor.py#L4) is an object that extends the NumPy array type by adding three key attributes : whether it requires gradient computation, its gradient (determined from the computational graph), and the operation that produced it.
 
 ```
 Class Tensor:
@@ -135,7 +135,7 @@ Class Tensor:
        
 ```
 
-[Operation](https://github.com/lennymalard/melpy-project/blob/main/melpy/tensor.py#L154) enhances primitive operations by adding a forward pass that constructs a sub-computational graph 
+[Operation](https://github.com/lennymalard/melpy-project/blob/main/melpy/Tensor.py#L164) enhances primitive operations by adding a forward pass that constructs a sub-computational graph 
 and a backward pass that computes their derivatives, updates gradients for the operation and its edges, and propagates gradients to preceding Tensors. 
 
 ```
