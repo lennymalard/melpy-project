@@ -254,8 +254,8 @@ y_test = ohe.transform(y_test)
 ### Model Creation
 
 For this multi-class tabular **classification** problem, we need:
-*	[Dense](https://en.wikipedia.org/wiki/Multilayer_perceptron) Layers (Fully Connected) for feature learning.
-*	[Softmax](https://en.wikipedia.org/wiki/Softmax_function) [Activation](https://en.wikipedia.org/wiki/Activation_function) for probability outputs.
+*	[Dense](https://en.wikipedia.org/wiki/Multilayer_perceptron) layers (Fully Connected) for feature learning.
+*	[Softmax](https://en.wikipedia.org/wiki/Softmax_function) activation for probability outputs.
 *	[Categorical Cross-Entropy](https://en.wikipedia.org/wiki/Cross-entropy) loss function for optimization.
 
 Build the **neural network** model with `Sequential`:
