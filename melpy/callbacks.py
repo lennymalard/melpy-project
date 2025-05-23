@@ -290,7 +290,7 @@ class LiveMetrics(Callback):
                 X1, X2 = np.meshgrid(np.arange(start=X_set[:, self.f1].min() - 1, stop=X_set[:, self.f1].max() + 1, step=0.01),
                                      np.arange(start=X_set[:, self.f2].min() - 1, stop=X_set[:, self.f2].max() + 1, step=0.01))
 
-                predictions = model.predict(Tensor(np.array([X1.ravel(), X2.ravel()]).T)).reshape(X1.shape)
+                predictions = model.predict(Tensor(np.array([X1.ravel(), X2.ravel()]).T)).array.reshape(X1.shape)
 
                 plt.contourf(X1, X2, predictions,
                              alpha=0.3, cmap="coolwarm", c=predictions.ravel())
@@ -320,7 +320,7 @@ class LiveMetrics(Callback):
                 X1, X2 = np.meshgrid(np.arange(start=X_set[:, self.f1].min() - 1, stop=X_set[:, self.f1].max() + 1, step=0.01),
                                      np.arange(start=X_set[:, self.f2].min() - 1, stop=X_set[:, self.f2].max() + 1, step=0.01))
 
-                predictions =  model.predict(Tensor(np.array([X1.ravel(), X2.ravel()]).T)).reshape(X1.shape)
+                predictions =  model.predict(Tensor(np.array([X1.ravel(), X2.ravel()]).T)).array.reshape(X1.shape)
 
                 plt.contourf(X1, X2, predictions,
                              alpha=0.3, cmap="coolwarm", c=predictions.ravel())

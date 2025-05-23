@@ -1,6 +1,10 @@
 import numpy as np
 from melpy.Tensor import *
 
+def check_tensor(obj, name, none_allowed=False):
+    if not isinstance(obj, Tensor) and not isinstance(obj, Operation) and not none_allowed:
+        raise TypeError(f"`{name}` must be a Tensor.")
+
 def get_indices(image_shape, window_shape, stride):
     """
     Computes the indices for converting an image to a column matrix.
@@ -59,6 +63,10 @@ def im2col(images, window_shape, stride):
     columns : Tensor
         The column matrix representation of the input images.
     """
+    try:
+        check_tensor(images, "images")
+    except TypeError:
+        images = Tensor(images, requires_grad=True)
     k, i, j = get_indices(images.shape, window_shape, stride)
     columns = Tensor(np.concatenate(images.array[:, k, i, j], axis=-1), requires_grad=True)
     return columns
@@ -83,6 +91,10 @@ def col2im(columns, image_shape, window_shape, stride):
     images : Tensor
         The reconstructed images with shape (batch_size, channels, height, width).
     """
+    try:
+        check_tensor(columns, "columns")
+    except TypeError:
+        columns = Tensor(columns, requires_grad=True)
     images = np.zeros(image_shape)
     k, i, j = get_indices(image_shape, window_shape, stride)
     cols_reshaped = np.array(np.hsplit(columns.array, image_shape[0]))
