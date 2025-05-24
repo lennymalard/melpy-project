@@ -142,7 +142,7 @@ print(y)
 ```
 Output:
 ```sh
-Tensor([0., 5., 10., 15., 20.])
+[0., 5., 10., 15., 20.]
 ```
 
 Propagate gradient backward:
@@ -153,7 +153,7 @@ print(x.grad)
 ```
 Output shows dy/dx = 5 for each element, as expected:
 ```sh
-Tensor([5., 5., 5., 5., 5.])
+[5., 5., 5., 5., 5.]
 ```
 
 <br>
