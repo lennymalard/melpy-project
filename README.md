@@ -112,13 +112,13 @@ Melpy is available on PyPI. Install the latest version using pip:
 
 Melpy computations rely on `Tensor` objects (extended **NumPy** arrays) and `Operation` types. Together, they construct **computational graphs**, enabling precise **gradient calculation** via an **automatic differentiation** algorithm. This simplifies implementing the **backpropagation** step for various layer types in your **neural network**.
 
-[Tensor](https://github.com/lennymalard/melpy-project/blob/main/melpy/Tensor.py#L4) extends NumPy arrays, adding `requires_grad` (bool), `grad` (gradient array), and `_op` (producing operation) attributes.
+[Tensor](https://github.com/lennymalard/melpy-project/blob/main/melpy/Tensor.py#L4) extends NumPy arrays, adding `requires_grad` (bool), `grad` (gradient tensor), and `_op` (producing operation) attributes.
 ```
 Class Tensor:
     Function __init__(object, requires_grad, _operation, additional arguments):
         Attributes
         - array : float64 numpy array
-        - grad : float64 numpy array
+        - grad : melpy tensor
         - requires_grad : bool
         - _op : melpy operation
 ```
@@ -135,14 +135,14 @@ Class _Operation:
 
 Example: Compute y = 5 * x, find dy/dx using **automatic differentiation**.
 ```python
-x = tensor([1,2,3,4,5], requires_grad=True)
+x = tensor([0, 1, 2, 3, 4], requires_grad=True)
 y = 5 * x
 
 print(y)
 ```
 Output:
 ```sh
-Tensor([5., 10., 15., 20., 25.])
+Tensor([0., 5., 10., 15., 20.])
 ```
 
 Propagate gradient backward:
@@ -153,7 +153,7 @@ print(x.grad)
 ```
 Output shows dy/dx = 5 for each element, as expected:
 ```sh
-array([5., 5., 5., 5., 5.])
+Tensor([5., 5., 5., 5., 5.])
 ```
 
 <br>
