@@ -170,6 +170,9 @@ class Operation:
         self.__dict__.update(kwargs)
 
     def __call__(self):
+        return self.forward()
+
+    def forward(self):
         pass
 
     def zero_grad(self):
@@ -212,7 +215,7 @@ class _Sum(Operation):
         self.keepdims = keepdims
         super().__init__(x1, *args,  **kwargs)
 
-    def __call__(self):
+    def forward(self):
         x1_array = self._get_array(self.x1)
         self.output = Tensor(
             np.sum(
@@ -240,7 +243,7 @@ class _Add(Operation):
         self.x2 = x2
         super().__init__(x1, *args,  **kwargs)
 
-    def __call__(self):
+    def forward(self):
         x1_array = self._get_array(self.x1)
         x2_array = self._get_array(self.x2)
         self.output = Tensor(
@@ -267,7 +270,7 @@ class _Subtract(Operation):
         self.x2 = x2
         super().__init__(x1, *args,  **kwargs)
 
-    def __call__(self):
+    def forward(self):
         x1_array = self._get_array(self.x1)
         x2_array = self._get_array(self.x2)
         self.output = Tensor(
@@ -291,7 +294,7 @@ class _Multiply(Operation):
         self.x2 = x2
         super().__init__(x1, *args,  **kwargs)
 
-    def __call__(self):
+    def forward(self):
         x1_array = self._get_array(self.x1)
         x2_array = self._get_array(self.x2)
         self.output = Tensor(
@@ -317,7 +320,7 @@ class _Dot(Operation):
         self.x2 = x2
         super().__init__(x1, *args, **kwargs)
 
-    def __call__(self):
+    def forward(self):
         x1_array = self._get_array(self.x1)
         x2_array = self._get_array(self.x2)
         self.output = Tensor(
@@ -343,7 +346,7 @@ class _Matmul(Operation):
         self.x2 = x2
         super().__init__(x1, *args,  **kwargs)
 
-    def __call__(self):
+    def forward(self):
         x1_array = self._get_array(self.x1)
         x2_array = self._get_array(self.x2)
         self.output = Tensor(
@@ -369,7 +372,7 @@ class _Divide(Operation):
         self.x2 = x2
         super().__init__(x1,  *args,  **kwargs)
 
-    def __call__(self):
+    def forward(self):
         x1_array = self._get_array(self.x1)
         x2_array = self._get_array(self.x2)
         self.output = Tensor(
@@ -395,7 +398,7 @@ class _FloorDivide(Operation):
         self.x2 = x2
         super().__init__(x1, *args,  **kwargs)
 
-    def __call__(self):
+    def forward(self):
         x1_array = self._get_array(self.x1)
         x2_array = self._get_array(self.x2)
         self.output = Tensor(
@@ -419,7 +422,7 @@ class _Power(Operation):
         self.x2 = x2
         super().__init__(x1, *args,  **kwargs)
 
-    def __call__(self):
+    def forward(self):
         x1_array = self._get_array(self.x1)
         x2_array = self._get_array(self.x2)
         self.output = Tensor(
@@ -456,7 +459,7 @@ class _Exp(Operation):
     def __init__(self, x1, *args, **kwargs):
         super().__init__(x1, *args,  **kwargs)
 
-    def __call__(self):
+    def forward(self):
         x1_array = self._get_array(self.x1)
         self.output = Tensor(
             np.exp(
@@ -477,7 +480,7 @@ class _Log(Operation):
     def __init__(self, x1, *args, **kwargs):
         super().__init__(x1, *args,  **kwargs)
 
-    def __call__(self):
+    def forward(self):
         x1_array = self._get_array(self.x1)
         self.output = Tensor(
             np.log(
@@ -500,7 +503,7 @@ class _Max(Operation):
         self.keepdims = keepdims
         super().__init__(x1, *args,  **kwargs)
 
-    def __call__(self):
+    def forward(self):
         x1_array = self._get_array(self.x1)
         self.output = Tensor(
             np.max(
@@ -526,7 +529,7 @@ class _Min(Operation):
         self.keepdims = keepdims
         super().__init__(x1, *args,  **kwargs)
 
-    def __call__(self):
+    def forward(self):
         x1_array = self._get_array(self.x1)
         self.output = Tensor(
             np.min(
@@ -551,7 +554,7 @@ class _Maximum(Operation):
         self.x2 = x2
         super().__init__(x1,  *args, **kwargs)
 
-    def __call__(self):
+    def forward(self):
         x1_array = self._get_array(self.x1)
         x2_array = self._get_array(self.x2)
         self.output = Tensor(
@@ -580,7 +583,7 @@ class _Minimum(Operation):
         self.x2 = x2
         super().__init__(x1,  *args, **kwargs)
 
-    def __call__(self):
+    def forward(self):
         x1_array = self._get_array(self.x1)
         x2_array = self._get_array(self.x2)
         self.output = Tensor(
@@ -608,7 +611,7 @@ class _Argmax(Operation):
     def __init__(self, x1, *args, **kwargs):
         super().__init__(x1,  *args,  **kwargs)
 
-    def __call__(self):
+    def forward(self):
         x1_array = self._get_array(self.x1)
         self.output = Tensor(
             np.argmax(
@@ -628,7 +631,7 @@ class _Argmin(Operation):
     def __init__(self, x1, x2=None, *args, **kwargs):
         super().__init__(x1, x2, *args,  **kwargs)
 
-    def __call__(self, *args, **kwargs):
+    def forward(self, *args, **kwargs):
         x1_array = self._get_array(self.x1)
         self.output = Tensor(
             np.argmin(
@@ -648,7 +651,7 @@ class _Clip(Operation):
     def __init__(self, x1, *args, **kwargs):
         super().__init__(x1, *args,  **kwargs)
 
-    def __call__(self):
+    def forward(self):
         x1_array = self._get_array(self.x1)
         self.output = Tensor(
             np.clip(
@@ -668,7 +671,7 @@ class Function(Operation):
     def __init__(self, x1):
         super().__init__(x1)
 
-    def __call__(self):
+    def forward(self):
         pass
 
     def update_requires_grad(self, obj, value):
@@ -676,7 +679,7 @@ class Function(Operation):
             raise TypeError('`value` must be bool.')
         if isinstance(obj, Tensor):
             obj.requires_grad = value
-            self.__call__()
+            self.forward()
         else:
             raise TypeError('`obj` must be Tensor.')
 
@@ -696,7 +699,7 @@ class _Sigmoid(Function):
     def __init__(self, x1):
         super().__init__(x1)
 
-    def __call__(self):
+    def forward(self):
         self.output = 1 / (1 + exp(-self.x1))
         return self.output
 
@@ -707,7 +710,7 @@ class _Tanh(Function):
     def __init__(self, x1):
         super().__init__(x1)
 
-    def __call__(self):
+    def forward(self):
         self.output = (exp(self.x1) - exp(-self.x1)) / (exp(self.x1) + exp(-self.x1))
         return self.output
 
@@ -718,7 +721,7 @@ class _Softmax(Function):
     def __init__(self, x1):
         super().__init__(x1)
 
-    def __call__(self):
+    def forward(self):
         exp_values = exp(self.x1 - max(self.x1, axis=1, keepdims=True))
         probabilities = exp_values / sum(exp_values, axis=1, keepdims=True)
         self.output = probabilities
@@ -731,7 +734,7 @@ class _ReLU(Function):
     def __init__(self, x1):
         super().__init__(x1)
 
-    def __call__(self):
+    def forward(self):
         self.output = maximum(0, self.x1)
         return self.output
 
@@ -742,7 +745,7 @@ class _LeakyReLU(Function):
     def __init__(self, x1):
         super().__init__(x1)
 
-    def __call__(self):
+    def forward(self):
         self.output = Tensor(
             np.where(
                 self.x1.array > 0,
