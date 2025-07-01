@@ -706,6 +706,9 @@ class Function(Operation):
     def __init__(self, x1):
         super().__init__(x1)
 
+    def __call__(self):
+        return self.forward()
+
     def forward(self):
         pass
 

@@ -43,6 +43,7 @@ def generate_text(seed, temperature=0.8, length=500, context_window=64):
         generated += next_token
         print(next_token, end="", flush=True)
     return generated
+
 text_generated = generate_text(
     seed="\nBRUTUS:",
     length=1000,
