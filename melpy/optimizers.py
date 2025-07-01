@@ -2,6 +2,12 @@ from .layers import *
 import numpy as np
 from .Tensor import *
 
+# TODO Network update (.step() method)
+
+def check_parameter(obj, name):
+    if not isinstance(obj, Parameter) and obj is not None:
+        raise TypeError(f"`{name}` must be a Parameter.")
+
 class Optimizer:
     """
     Base class for optimizers used to update model parameters during training.
@@ -82,14 +88,16 @@ class SGD(Optimizer):
         parameter : Parameter
             The parameter updated.
         """
-        if np.linalg.norm(parameter.grad) >= self.gradnorm:
-            parameter.grad = self.gradnorm * parameter.grad / np.linalg.norm(parameter.grad)
+        check_parameter(parameter, "parameter")
+
+        if np.linalg.norm(parameter.grad.array) >= self.gradnorm:
+            parameter.grad = Tensor(self.gradnorm * parameter.grad.array / np.linalg.norm(parameter.grad.array))
         if self.momentum is not None:
-            update_value = self.momentum * parameter.momentums.array - parameter.grad * self.learning_rate
-            parameter.momentums = Tensor(update_value)
-            parameter.array += update_value
+            update_value = self.momentum * parameter.momentums - parameter.grad * self.learning_rate
+            parameter.momentums = update_value
+            parameter.array += update_value.array
         else:
-            parameter.array -= parameter.grad * self.learning_rate
+            parameter.array -= parameter.grad.array * self.learning_rate
 
         return parameter
 
@@ -167,17 +175,19 @@ class Adam(Optimizer):
         parameter : Parameter
             The parameter updated.
         """
-        if np.linalg.norm(parameter.grad) >= self.gradnorm:
-            parameter.grad = self.gradnorm * parameter.grad / np.linalg.norm(parameter.grad)
+        check_parameter(parameter, "parameter")
 
-        parameter.momentums = Tensor(self.beta1 * parameter.momentums.array + (1 - self.beta1) * parameter.grad)
-        momentums_corrected = Tensor(parameter.momentums.array / (1 - self.beta1 ** self.step))
+        if np.linalg.norm(parameter.grad.array) >= self.gradnorm:
+            parameter.grad = Tensor(self.gradnorm * parameter.grad.array / np.linalg.norm(parameter.grad.array))
 
-        parameter.cache = Tensor(self.beta2 * parameter.cache.array + (1 - self.beta2) * parameter.grad ** 2)
-        cache_corrected = Tensor(parameter.cache.array / (1 - self.beta2 ** self.step))
+        parameter.momentums = self.beta1 * parameter.momentums + (1 - self.beta1) * parameter.grad
+        momentums_corrected = parameter.momentums / (1 - self.beta1 ** self.step)
+
+        parameter.cache = self.beta2 * parameter.cache + (1 - self.beta2) * parameter.grad * parameter.grad
+        cache_corrected = parameter.cache / (1 - self.beta2 ** self.step)
 
         update_value = - self.learning_rate * momentums_corrected.array / (
-                    np.sqrt(cache_corrected.array) + self.epsilon)
+                np.sqrt(cache_corrected.array) + self.epsilon)
 
         parameter.array += update_value
 

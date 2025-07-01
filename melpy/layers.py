@@ -45,9 +45,9 @@ class Layer:
         Input data.
     outputs : Tensor
         Output data.
-    dX : ndarray
+    dX : Tensor
         Partial derivative of loss with respect to input.
-    dY : ndarray
+    dY : Tensor
         Partial derivative of loss with respect to output.
 
     Methods
@@ -56,7 +56,7 @@ class Layer:
         Computes the derivative of the layer.
     forward()
         Computes the forward pass of the layer.
-    backward(dX : ndarray)
+    backward(dX : Tensor)
         Computes the backward pass of the layer.
     """
     def __init__(self):
@@ -96,7 +96,7 @@ class Layer:
 
         Parameters
         ----------
-        dX : ndarray
+        dX : Tensor
             Partial derivative of loss with respect to output data.
 
         Returns
@@ -136,9 +136,9 @@ class Dense(Layer):
         Input data with the shape format `(batch size, input size)`.
     outputs : Tensor
         Output data with the shape format `(batch size, output size)`.
-    dX : ndarray
+    dX : Tensor
         Partial derivative of loss with respect to input.
-    dY : ndarray
+    dY : Tensor
         Partial derivative of loss with respect to output.
     dW : ndarray
         Partial derivative of loss with respect to weight.
@@ -155,7 +155,7 @@ class Dense(Layer):
     -------
     forward()
         Computes the forward pass of the dense layer.
-    backward(dX : ndarray)
+    backward(dX : Tensor)
         Computes the backward pass of the dense layer.
     """
     def __init__(self, in_features, out_features, activation=None, weight_initializer="he_uniform"):
@@ -216,8 +216,8 @@ class Dense(Layer):
 
         self.parameters = [initialize_weights(weight_initializer, in_features, out_features), Parameter(np.random.rand(1, out_features), requires_grad=True)]
 
-        self.dW = np.zeros_like(self.weights.array)
-        self.dB = np.zeros_like(self.biases.array)
+        self.dW = zeros_like(self.weights)
+        self.dB = zeros_like(self.biases)
 
         self.in_features = in_features
         self.out_features = out_features
@@ -283,7 +283,7 @@ class Dense(Layer):
 
         Parameters
         ----------
-        dX : ndarray
+        dX : Tensor
             Partial derivative of loss with respect to output data.
 
         Returns
@@ -337,9 +337,9 @@ class ReLU(Layer, Activation):
         Input data.
     outputs : Tensor
         Output data.
-    dX : ndarray
+    dX : Tensor
         Partial derivative of loss with respect to input.
-    dY : ndarray
+    dY : Tensor
         Partial derivative of loss with respect to output.
 
     Methods
@@ -348,7 +348,7 @@ class ReLU(Layer, Activation):
         Computes the ReLU derivative.
     forward()
         Computes the ReLU forward pass.
-    backward(dX : ndarray)
+    backward(dX : Tensor)
         Computes the ReLU backward pass.
     """
     def __init__(self):
@@ -368,7 +368,7 @@ class ReLU(Layer, Activation):
         """
         dA = np.ones_like(self.inputs.array)
         dA[self.inputs.array <= 0] = 0
-        return dA
+        return Tensor(dA)
 
     def forward(self):
         """
@@ -391,7 +391,7 @@ class ReLU(Layer, Activation):
 
         Parameters
         ----------
-        dX : ndarray
+        dX : Tensor
             Partial derivative of loss with respect to output data.
 
         Returns
@@ -413,9 +413,9 @@ class LeakyReLU(Layer, Activation):
         Input data.
     outputs : Tensor
         Output data.
-    dX : ndarray
+    dX : Tensor
         Partial derivative of loss with respect to input.
-    dY : ndarray
+    dY : Tensor
         Partial derivative of loss with respect to output.
 
     Methods
@@ -424,7 +424,7 @@ class LeakyReLU(Layer, Activation):
         Computes the Leaky ReLU derivative.
     forward()
         Computes the Leaky ReLU forward pass.
-    backward(dX : ndarray)
+    backward(dX : Tensor)
         Computes the Leaky ReLU backward pass.
     """
     def __init__(self):
@@ -444,7 +444,7 @@ class LeakyReLU(Layer, Activation):
         """
         dA = np.ones_like(self.inputs.array)
         dA[self.inputs.array < 0] = 0.01
-        return dA
+        return Tensor(dA)
 
     def forward(self):
         """
@@ -467,7 +467,7 @@ class LeakyReLU(Layer, Activation):
 
         Parameters
         ----------
-        dX : ndarray
+        dX : Tensor
             Partial derivative of loss with respect to output data.
 
         Returns
@@ -489,9 +489,9 @@ class Sigmoid(Layer, Activation):
         Input data.
     outputs : Tensor
         Output data.
-    dX : ndarray
+    dX : Tensor
         Partial derivative of loss with respect to input.
-    dY : ndarray
+    dY : Tensor
         Partial derivative of loss with respect to output.
 
     Methods
@@ -500,7 +500,7 @@ class Sigmoid(Layer, Activation):
         Computes the Sigmoid derivative.
     forward()
         Computes the Sigmoid forward pass.
-    backward(dX : ndarray)
+    backward(dX : Tensor)
         Computes the Sigmoid backward pass.
     """
     def __init__(self):
@@ -541,7 +541,7 @@ class Sigmoid(Layer, Activation):
 
         Parameters
         ----------
-        dX : ndarray
+        dX : Tensor
             Partial derivative of loss with respect to output data.
 
         Returns
@@ -574,16 +574,16 @@ class Tanh(Layer, Activation):
         Input data.
     outputs : Tensor
         Output data.
-    dX : ndarray
+    dX : Tensor
         Partial derivative of loss with respect to input.
-    dY : ndarray
+    dY : Tensor
         Partial derivative of loss with respect to output.
 
     Methods
     -------
     forward()
         Computes the forward pass of the Tanh activation function.
-    backward(dX : ndarray)
+    backward(dX : Tensor)
         Computes the backward pass of the Tanh activation function.
     zero_grad()
         Zeros the gradients of the Tanh activation function.
@@ -616,7 +616,7 @@ class Tanh(Layer, Activation):
 
         Parameters
         ----------
-        dX : ndarray
+        dX : Tensor
             Partial derivative of loss with respect to output data.
 
         Returns
@@ -650,16 +650,16 @@ class Softmax(Layer, Activation):
         Input data.
     outputs : Tensor
         Output data.
-    dX : ndarray
+    dX : Tensor
         Partial derivative of loss with respect to input.
-    dY : ndarray
+    dY : Tensor
         Partial derivative of loss with respect to output.
 
     Methods
     -------
     forward()
         Computes the Softmax forward pass.
-    backward(dX : ndarray)
+    backward(dX : Tensor)
         Computes the Softmax backward pass.
     """
     def __init__(self):
@@ -691,7 +691,7 @@ class Softmax(Layer, Activation):
 
         Parameters
         ----------
-        dX : ndarray
+        dX : Tensor
             Partial derivative of loss with respect to output data.
 
         Returns
@@ -749,7 +749,7 @@ class Convolution2D(Layer):
         Gets the output size of the convolution.
     forward()
         Computes the forward pass of the convolution layer.
-    backward(dX : ndarray)
+    backward(dX : Tensor)
         Computes the backward pass of the convolution layer.
     """
     def __init__(self, in_channels, out_channels, kernel_size, activation=None, padding="valid", stride=1, weight_initializer="he_uniform", use_bias=True):
@@ -831,11 +831,11 @@ class Convolution2D(Layer):
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.parameters = [initialize_weights(weight_initializer, in_channels, out_channels, kernel_size), None]
-        self.dW = np.zeros_like(self.weights)
+        self.dW = zeros_like(self.weights)
 
         if use_bias is True:
             self.parameters[1] = Parameter(np.zeros(shape=(1, out_channels, 1, 1)).astype(np.float64), requires_grad=True)
-            self.dB = np.zeros_like(self.biases)
+            self.dB = zeros_like(self.biases)
 
         self.padding = padding
         self.kernel_size = kernel_size
@@ -864,6 +864,7 @@ class Convolution2D(Layer):
         self.parameters[1] = value
 
     def calculate_padding(self):
+        # TODO Needs improvement
         """
         Calculates the padding for the input.
 
@@ -891,6 +892,7 @@ class Convolution2D(Layer):
             pad_right = pad_along_width.array.astype(int) - pad_left
 
             return (pad_top, pad_bottom, pad_left, pad_right)
+        return None 
 
     def explicit_padding(self):
         """
@@ -920,6 +922,7 @@ class Convolution2D(Layer):
         tuple
             Output height and width.
         """
+        output_height, output_width = 0, 0
         if self.padding == 'valid':
             output_height = (input_height - self.kernel_size) // self.stride + 1
             output_width = (input_width - self.kernel_size) // self.stride + 1
@@ -972,7 +975,7 @@ class Convolution2D(Layer):
 
         Parameters
         ----------
-        dX : ndarray
+        dX : Tensor
             Partial derivative of loss with respect to output data.
 
         Returns
@@ -985,11 +988,11 @@ class Convolution2D(Layer):
 
         self.dY = dX
 
-        self.dY_reshaped = self.dY.reshape(self.dY.shape[0] * self.dY.shape[1], self.dY.shape[2] * self.dY.shape[3])
-        self.dY_reshaped = np.array(np.vsplit(self.dY_reshaped, self.inputs.shape[0]))
+        self.dY_reshaped = self.dY.array.reshape(self.dY.shape[0] * self.dY.shape[1], self.dY.shape[2] * self.dY.shape[3])
+        self.dY_reshaped = np.vsplit(self.dY_reshaped, self.inputs.shape[0])
         self.dY_reshaped = np.concatenate(self.dY_reshaped, axis=-1)
 
-        self.output_cols.backward(self.dY_reshaped)
+        self.output_cols.backward(Tensor(self.dY_reshaped, requires_grad=True))
 
         self.dX_cols = self.input_cols.grad
         self.dW_cols = self.filter_cols.grad
@@ -1006,7 +1009,6 @@ class Convolution2D(Layer):
 
         self.outputs.backward(self.dY)
         self.dB = self.biases.grad
-
         return self.dX
 
     def zero_grad(self):
@@ -1042,7 +1044,7 @@ class Pooling2D(Layer):
     -------
     forward()
         Computes the forward pass of the pooling layer.
-    backward(dX : ndarray)
+    backward(dX : Tensor)
         Computes the backward pass of the pooling layer.
     """
     def __init__(self, pool_size, stride, mode="max"):
@@ -1107,7 +1109,7 @@ class Pooling2D(Layer):
 
         Parameters
         ----------
-        dX : ndarray
+        dX : Tensor
             Partial derivative of loss with respect to output data.
 
         Returns
@@ -1116,17 +1118,16 @@ class Pooling2D(Layer):
             Partial derivative of loss with respect to input data.
         """
         self.dY = dX
-        self.dX = np.zeros_like(self.inputs)
+        self.dX = zeros_like(self.inputs)
 
         self.dY_cols = im2col(Tensor(self.dY, requires_grad=True), 1, 1)
-        self.dY_cols_reshaped = np.array(
-            np.hsplit(np.array(np.hsplit(self.dY_cols.array, self.dY.shape[0])), self.dY.shape[1]))
+        self.dY_cols_reshaped = np.hsplit(np.array(np.hsplit(self.dY_cols.array, self.dY.shape[0])), self.dY.shape[1])
 
-        self.maxima.backward(self.dY_cols_reshaped)
+        self.maxima.backward(Tensor(self.dY_cols_reshaped, requires_grad=True))
 
-        self.dX_cols = np.concatenate(np.concatenate(self.input_cols_reshaped.grad, axis=1), axis=1)
+        self.dX_cols = np.concatenate(np.concatenate(self.input_cols_reshaped.grad.array, axis=1), axis=1)
 
-        self.dX = col2im(Tensor(self.dX_cols, requires_grad=True), self.inputs.shape, self.pool_size, self.stride).array
+        self.dX = col2im(Tensor(self.dX_cols, requires_grad=True), self.inputs.shape, self.pool_size, self.stride)
 
         return self.dX
 
@@ -1150,16 +1151,16 @@ class Flatten(Layer):
         Input data.
     outputs : Tensor
         Output data.
-    dX : ndarray
+    dX : Tensor
         Partial derivative of loss with respect to input data.
-    dY : ndarray
+    dY : Tensor
         Partial derivative of loss with respect to output data.
 
     Methods
     -------
     forward()
         Computes the forward pass of the flattening layer.
-    backward(dX : ndarray)
+    backward(dX : Tensor)
         Computes the backward pass of the flattening layer.
     """
     def __init__(self):
@@ -1189,7 +1190,7 @@ class Flatten(Layer):
 
         Parameters
         ----------
-        dX : ndarray
+        dX : Tensor
             Partial derivative of loss with respect to output data.
 
         Returns
@@ -1211,9 +1212,9 @@ class Dropout(Layer):
         Input data.
     outputs : Tensor
         Output data.
-    dX : ndarray
+    dX : Tensor
         Partial derivative of loss with respect to input data.
-    dY : ndarray
+    dY : Tensor
         Partial derivative of loss with respect to output data.
     p : float
         Dropout probability.
@@ -1226,7 +1227,7 @@ class Dropout(Layer):
     -------
     forward()
         Computes the forward pass of the dropout layer.
-    backward(dX : ndarray)
+    backward(dX : Tensor)
         Computes the backward pass of the dropout layer.
     """
     def __init__(self, p):
@@ -1275,7 +1276,7 @@ class Dropout(Layer):
 
         Parameters
         ----------
-        dX : ndarray
+        dX : Tensor
             Partial derivative of loss with respect to output data.
 
         Returns
@@ -1317,11 +1318,11 @@ class LSTMCell(Layer):
         Current hidden state.
     input_gate, forget_gate, output_gate, cell_input : Tensor
         Intermediate gate computations.
-    dH : ndarray
+    dH : Tensor
             Gradient of loss with respect to the previous hidden state.
-    dC : ndarray
+    dC : Tensor
         Gradient of loss with respect to the previous cell state.
-    dX : ndarray
+    dX : Tensor
         Gradient of loss with respect to the input.
 
     Methods
@@ -1407,6 +1408,7 @@ class LSTMCell(Layer):
     def biases(self):
         if self.use_bias:
             return self.parameters[2]
+        return None
 
     @biases.setter
     def biases(self, value):
@@ -1469,51 +1471,56 @@ class LSTMCell(Layer):
 
         Parameters
         ----------
-        hidden_state_grad : ndarray
+        hidden_state_grad : Tensor
             Gradient of loss with respect to the hidden state.
-        cell_state_grad : ndarray
+        cell_state_grad : Tensor
             Gradient of loss with respect to the cell state.
 
         Returns
         -------
-        dH : ndarray
+        dH : Tensor
             Gradient of loss with respect to the previous hidden state.
-        dC : ndarray
+        dC : Tensor
             Gradient of loss with respect to the previous cell state.
-        dX : ndarray
+        dX : Tensor
             Gradient of loss with respect to the input.
         """
-        self.dC = (Tensor(hidden_state_grad) * self.output_gate * Tensor(self.activation(self.cell_state, derivative=True)) +
-                   Tensor(cell_state_grad) * self.next_forget_gate).array
+        self.dC = (hidden_state_grad * self.output_gate * self.activation(self.cell_state, derivative=True) +
+                   cell_state_grad * self.next_forget_gate)
 
-        dI = self.dC * self.cell_input[0].array
-        dF = self.dC * self.previous_cell_state.array
-        dO = hidden_state_grad * self.activation(self.cell_state).array
-        dTildeC = self.dC * self.input_gate.array
+        dI = self.dC * self.cell_input[0]
+        dF = self.dC * self.previous_cell_state
+        dO = hidden_state_grad * self.activation(self.cell_state)
+        dTildeC = self.dC * self.input_gate
 
         gates_grad = np.hstack(
-            [dI * self.input_gate.array * (1 - self.input_gate.array),
-             dF * self.forget_gate.array * (1 - self.forget_gate.array),
-             dTildeC * self.cell_input[1],
-             dO * self.output_gate.array * (1 - self.output_gate.array)
+            [dI.array * self.input_gate.array * (1 - self.input_gate.array),
+             dF.array * self.forget_gate.array * (1 - self.forget_gate.array),
+             dTildeC.array * self.cell_input[1].array,
+             dO.array * self.output_gate.array * (1 - self.output_gate.array)
              ]
         )
+        gates_grad = Tensor(gates_grad)
 
-        self.input_weights.grad += self.inputs.T.array @ gates_grad
-        self.hidden_weights.grad += self.previous_hidden_state.T.array @ gates_grad
+        self.input_weights.grad += self.inputs.T @ gates_grad
+        self.hidden_weights.grad += self.previous_hidden_state.T @ gates_grad
 
         if self.use_bias:
-            self.biases.grad += np.sum(gates_grad, axis=0, keepdims=True)
+            self.biases.grad += sum(gates_grad, axis=0, keepdims=True)
 
-        self.dH = (gates_grad[:, :self.hidden_size] @ self.hidden_weights.array[:, :self.hidden_size].T +
-                   gates_grad[:, self.hidden_size:2*self.hidden_size] @ self.hidden_weights.array[:, self.hidden_size:2*self.hidden_size].T +
-                   gates_grad[:, 2*self.hidden_size:3*self.hidden_size] @ self.hidden_weights.array[:, 2*self.hidden_size:3*self.hidden_size].T +
-                   gates_grad[:, 3*self.hidden_size:4*self.hidden_size] @ self.hidden_weights.array[:, 3*self.hidden_size:4*self.hidden_size].T)
+        self.dH = (gates_grad.array[:, :self.hidden_size] @ self.hidden_weights.array[:, :self.hidden_size].T +
+                   gates_grad.array[:, self.hidden_size:2*self.hidden_size] @ self.hidden_weights.array[:, self.hidden_size:2*self.hidden_size].T +
+                   gates_grad.array[:, 2*self.hidden_size:3*self.hidden_size] @ self.hidden_weights.array[:, 2*self.hidden_size:3*self.hidden_size].T +
+                   gates_grad.array[:, 3*self.hidden_size:4*self.hidden_size] @ self.hidden_weights.array[:, 3*self.hidden_size:4*self.hidden_size].T)
 
-        self.dX = (gates_grad[:, :self.hidden_size] @ self.input_weights.array[:, :self.hidden_size].T +
-                   gates_grad[:, self.hidden_size:2*self.hidden_size] @ self.input_weights.array[:, self.hidden_size:2*self.hidden_size].T +
-                   gates_grad[:, 2*self.hidden_size:3*self.hidden_size] @ self.input_weights.array[:, 2*self.hidden_size:3*self.hidden_size].T +
-                   gates_grad[:, 3*self.hidden_size:4*self.hidden_size] @ self.input_weights.array[:, 3*self.hidden_size:4*self.hidden_size].T)
+        self.dH = Tensor(self.dH)
+
+        self.dX = (gates_grad.array[:, :self.hidden_size] @ self.input_weights.array[:, :self.hidden_size].T +
+                   gates_grad.array[:, self.hidden_size:2*self.hidden_size] @ self.input_weights.array[:, self.hidden_size:2*self.hidden_size].T +
+                   gates_grad.array[:, 2*self.hidden_size:3*self.hidden_size] @ self.input_weights.array[:, 2*self.hidden_size:3*self.hidden_size].T +
+                   gates_grad.array[:, 3*self.hidden_size:4*self.hidden_size] @ self.input_weights.array[:, 3*self.hidden_size:4*self.hidden_size].T)
+
+        self.dX = Tensor(self.dX)
 
         self.sequence_inputs_grads.append(self.dX)
 
@@ -1702,12 +1709,12 @@ class LSTM(Layer):
 
         Parameters
         ----------
-        dX : ndarray
+        dX : Tensor
             Gradient of loss with respect to the output.
 
         Returns
         -------
-        dX : ndarray
+        dX : Tensor
             Gradient of loss with respect to the input.
         """
         batch_size, sequence_length, input_size = self.inputs.shape
@@ -1715,8 +1722,8 @@ class LSTM(Layer):
         hidden_state_grad = dX
         for i in reversed(range(len(self.cells))):
             if i < len(self.cells) - 1 or self.return_sequences:
-                hidden_state_grad = np.zeros_like(self.cells[i].hidden_state.array)
-            cell_state_grad = np.zeros((batch_size, self.hidden_size))
+                hidden_state_grad = zeros_like(self.cells[i].hidden_state)
+            cell_state_grad = zeros((batch_size, self.hidden_size))
 
             for t in reversed(range(sequence_length)):
                 if t < sequence_length-1:
@@ -1740,11 +1747,11 @@ class LSTM(Layer):
                     self.cells[i].previous_cell_state = zeros((batch_size, self.hidden_size))
 
                 if i < len(self.cells) - 1:
-                    hidden_state_grad += self.sequence_to_tensor(
-                        list(reversed(self.cells[i + 1].sequence_inputs_grads))).array[:, t, :]
+                    hidden_state_grad += Tensor(self.sequence_to_tensor(
+                        list(reversed(self.cells[i + 1].sequence_inputs_grads))).array[:, t, :])
 
                 elif i == len(self.cells) - 1 and self.return_sequences:
-                    hidden_state_grad += self.dY[:, t, :]
+                    hidden_state_grad += Tensor(self.dY.array[:, t, :])
 
                 self.cells[i].sequence_hidden_states[t].grad = hidden_state_grad
                 self.cells[i].sequence_cell_states[t].grad = cell_state_grad
@@ -1753,7 +1760,7 @@ class LSTM(Layer):
 
                 self.cells[i].sequence_inputs[t].grad = dX
 
-        self.dX = self.sequence_to_tensor(list(reversed(self.cells[0].sequence_inputs_grads))).array
+        self.dX = self.sequence_to_tensor(list(reversed(self.cells[0].sequence_inputs_grads)))
 
         self.inputs.grad = self.dX
         self.outputs.grad = self.dY
@@ -1804,7 +1811,7 @@ class Embedding(Layer):
        Input tensor (one-hot encoded) from the last forward pass.
     outputs : Tensor
        Output tensor (dense embeddings) from the last forward pass.
-    dX : ndarray
+    dX : Tensor
        Gradient of the loss with respect to the inputs.
     dW : ndarray
        Gradient of the loss with respect to the weights.
@@ -1917,7 +1924,7 @@ class Embedding(Layer):
 
         Returns
         -------
-        ndarray
+        Tensor
             Gradient of loss with respect to layer inputs (shape matches `inputs`)
         """
         self.dY = dX
