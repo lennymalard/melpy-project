@@ -43,15 +43,14 @@ def generate_text(seed, temperature=0.8, length=500, context_window=64):
         generated += next_token
         print(next_token, end="", flush=True)
     return generated
-
-"""text_generated = generate_text(
+text_generated = generate_text(
     seed="\nBRUTUS:",
     length=1000,
     context_window=32,
     temperature=0.6
-)"""
+)
 
-# %% Gradio app creation
+"""# %% Gradio app creation
 # To use it, just click on the local URL given in the Python console.
 import gradio as gr
 
@@ -64,4 +63,4 @@ app_inputs =  [
 app = gr.Interface(fn=generate_text, inputs=app_inputs, outputs="textbox")
 
 if __name__ == "__main__":
-    app.launch()
+    app.launch()"""
