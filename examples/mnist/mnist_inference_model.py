@@ -47,7 +47,7 @@ predictions = model.predict(X_test[:1000])
 print(f"\nTest Accuracy: {nn.accuracy(y_test[:1000], predictions)}")
 
 # %% App
-import gradio as gr
+"""import gradio as gr
 import cv2
 
 default_canvas = np.ones((800, 800, 3), dtype=np.uint8) * 255
@@ -87,4 +87,4 @@ with gr.Blocks() as iface:
     clear_button.click(clear_canvas, outputs=sketchpad)
 
 if __name__ == "__main__":
-    iface.launch(share=True)
+    iface.launch(share=True)"""
